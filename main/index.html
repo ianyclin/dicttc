@@ -25,29 +25,31 @@
         .streak-badge { font-size: 1.25rem; font-weight: bold; display: flex; align-items: center; gap: 8px; }
         .streak-badge span { font-size: 1.8rem; color: #fde047; font-weight: 900; }
 
-        /* === 🚀 史詩級進度條 CSS === */
-        #realmJourneyContainer { width: 100%; position: relative; margin-top: 10px; }
+/* === 🚀 史詩級進度條 CSS (新版扁平化) === */
+        #realmJourneyContainer { width: 100%; margin-top: 15px; }
         
-        /* 懸浮的稱號標籤 */
-        #currentRealmLabel { position: absolute; top: -30px; transform: translateX(-50%); background: white; color: var(--primary); padding: 4px 12px; border-radius: 12px; font-weight: 900; font-size: 1rem; white-space: nowrap; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition: left 0.5s ease; border: 2px solid var(--text); z-index: 10;}
-        #currentRealmLabel::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); border-width: 6px 6px 0; border-style: solid; border-color: white transparent transparent; }
+        .journey-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; padding: 0 4px; }
+        .journey-title { font-size: 1.05rem; color: rgba(255,255,255,0.85); font-weight: bold; }
+        .journey-title span { font-size: 1.4rem; color: #fde047; margin-left: 6px; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .journey-count { font-size: 0.9rem; color: rgba(255,255,255,0.8); }
+        .journey-count span { font-size: 1.15rem; font-weight: bold; color: #ffffff; font-family: monospace; }
 
         /* 進度條本體 */
-        .journey-bar { height: 16px; background: rgba(255,255,255,0.15); border-radius: 8px; position: relative; overflow: hidden; border: 2px solid rgba(255,255,255,0.3); box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+        .journey-bar { height: 16px; background: rgba(0,0,0,0.25); border-radius: 8px; position: relative; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.15); }
         
         /* 已累積的進度 + 🚀 閃爍動畫 */
-        .journey-fill { height: 100%; background-color: var(--success); background-image: linear-gradient( 45deg, rgba(255, 255, 255, 0.3) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0.3) 75%, transparent 75%, transparent ); background-size: 40px 40px; border-radius: 6px; width: 0%; transition: width 0.5s ease; position: relative; animation: journey-stripes 2s linear infinite, journey-glow 3s ease-in-out infinite; }
+        .journey-fill { height: 100%; background-color: var(--success); background-image: linear-gradient( 45deg, rgba(255, 255, 255, 0.3) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0.3) 75%, transparent 75%, transparent ); background-size: 40px 40px; border-radius: 8px; width: 0%; transition: width 0.5s ease; position: relative; animation: journey-stripes 2s linear infinite, journey-glow 3s ease-in-out infinite; }
 
-        /* 條紋滑動動畫 */
         @keyframes journey-stripes { from { background-position: 40px 0; } to { background-position: 0 0; } }
-        /* 🚀 顯眼閃爍動畫 (Glow) */
         @keyframes journey-glow { 0%, 100% { box-shadow: 0 0 5px rgba(14, 165, 233, 0.5); filter: brightness(1); } 50% { box-shadow: 0 0 20px rgba(14, 165, 233, 0.9), 0 0 30px rgba(255, 255, 255, 0.4); filter: brightness(1.2); } }
 
         /* 字數刻度 */
-        .journey-ticks { display: flex; justify-content: space-between; margin-top: 8px; position: relative; padding: 0 2px; }
-        .tick { font-size: 11px; color: rgba(255,255,255,0.7); font-family: monospace; position: relative; font-weight: bold;}
-        .tick::before { content: ''; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 2px; height: 6px; background: rgba(255,255,255,0.5); border-radius: 1px; }
+        .journey-ticks { display: flex; justify-content: space-between; margin-top: 6px; position: relative; padding: 0 2px; }
+        .tick { font-size: 11px; color: rgba(255,255,255,0.6); font-family: monospace; position: relative; font-weight: normal;}
+        .tick::before { content: ''; position: absolute; top: -8px; left: 50%; transform: translateX(-50%); width: 2px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 1px; }
 
+        /* (補上標楷體設定) */
+        .char-title { font-size: 100px; margin: 20px 0; color: var(--text); font-weight: normal; font-family: "BiauKai", "DFKai-SB", "Kaiti TC", "KaiTi", serif; line-height: 1; text-shadow: 2px 2px 0px rgba(0,0,0,0.02); }
         /* === 其他 UI 樣式恢復原本檔案 === */
         .controls { margin-bottom: 24px; padding: 30px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
         .controls h2 { margin-top: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; color: var(--text); margin-bottom: 20px;}
@@ -64,8 +66,7 @@
         .card.review { border-top-color: var(--danger); }
         .card.new { border-top-color: var(--success); }
         .card.penalty { border-top-color: #334155; background: #f8fafc; } 
-        .char-title { font-size: 100px; margin: 20px 0; color: var(--text); font-weight: 900; line-height: 1; text-shadow: 2px 2px 0px rgba(0,0,0,0.02); }
-        .badge { font-size: 13px; padding: 6px 14px; border-radius: 20px; color: white; margin: 0 6px; display: inline-block; font-weight: bold; letter-spacing: 0.5px; }
+.char-title { font-size: 100px; margin: 20px 0; color: var(--text); font-weight: normal; font-family: "BiauKai", "DFKai-SB", "Kaiti TC", "KaiTi", serif; line-height: 1; text-shadow: 2px 2px 0px rgba(0,0,0,0.02); }        .badge { font-size: 13px; padding: 6px 14px; border-radius: 20px; color: white; margin: 0 6px; display: inline-block; font-weight: bold; letter-spacing: 0.5px; }
         .tier-基礎 { background: var(--success); } .tier-進階 { background: #8b5cf6; } .tier-挑戰 { background: #6366f1; }
         #dashboard { background: #ffffff; padding: 30px; border-radius: 16px; margin-top: 24px; box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); }
         .tier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
@@ -107,8 +108,11 @@
             <div class="streak-badge">🔥 連續學習天數 <span id="streakDays">0</span> 天</div>
         </div>
         
-        <div id="realmJourneyContainer">
-            <div id="currentRealmLabel">凡人境 (0 字)</div>
+<div id="realmJourneyContainer">
+            <div class="journey-header">
+                <div class="journey-title">🎖️ 冒險者軍階：<span id="currentRealmName">新手村民</span></div>
+                <div class="journey-count">已掌握：<span id="currentRealmCount">0</span> / 2867</div>
+            </div>
             <div class="journey-bar">
                 <div class="journey-fill" id="journeyFill" style="width: 0%"></div>
             </div>
@@ -433,13 +437,20 @@
             updateRPGRealm(totalKnown);
         }
 
-        // 🚀 獨立的稱號更新函數
-        function updateRPGRealm(knownCount) {
-            const labelEl = document.getElementById('currentRealmLabel');
-            const fillEl = document.getElementById('journeyFill');
-            const maxVocab = 2867; // 總字數刻度終點
+// 🚀 獨立的稱號更新引擎 (支援全域呼叫，不依賴 dashboard)
+        function updateRPGRealm() {
+            // 自動結算當前已知字數 (間隔 >= 21 天)
+            let knownCount = 0;
+            for (const word in srsDatabase) {
+                if (srsDatabase[word].interval >= 21) knownCount++;
+            }
 
-            // 稱號與等距間隔設計 (線性模型，每 300 字一階)
+            const nameEl = document.getElementById('currentRealmName');
+            const countEl = document.getElementById('currentRealmCount');
+            const fillEl = document.getElementById('journeyFill');
+            const maxVocab = 2867;
+
+            // RPG 稱號陣列
             const realms = [
                 { threshold: 2867, name: "識字之神" },
                 { threshold: 2700, name: "救世勇者" },
@@ -454,8 +465,8 @@
                 { threshold: 0,    name: "新手村民" }
             ];
 
-            // 1. 判定當前頭銜
-            let currentRealm = realms[realms.length - 1]; // 預設新手村民
+            // 判定當前頭銜
+            let currentRealm = realms[realms.length - 1]; 
             for (let i = 0; i < realms.length; i++) {
                 if (knownCount >= realms[i].threshold) {
                     currentRealm = realms[i];
@@ -463,53 +474,27 @@
                 }
             }
 
-            // 2. 更新懸浮標籤內容
-            labelEl.innerText = `${currentRealm.name} (${knownCount} 字)`;
-
-            // 3. 計算並更新藍色閃爍進度條寬度 (線性比例)
+            // 更新 UI 介面
+            if (nameEl) nameEl.innerText = currentRealm.name;
+            if (countEl) countEl.innerText = knownCount;
+            
+            // 更新進度條寬度
             const percentage = Math.min(100, (knownCount / maxVocab) * 100);
-            fillEl.style.width = `${percentage}%`;
-
-            // 4. 動態調整懸浮標籤位置，使其對齊藍色條的右緣
-            // 由於 CSS 有 transition，JS 直接設定即可，會同步移動
-            labelEl.style.left = `${percentage}%`;
+            if (fillEl) fillEl.style.width = `${percentage}%`;
         }
 
-        // === 8. 細節檢視 ===
-        function showDetail(cat) {
-            const view = document.getElementById('detailView');
-            const list = document.getElementById('detailList');
-            const titles = { graduated: '畢業 (Mastered)', mastered: '長期記憶 (>21d)', learning: '建構中 (Learning)', hard: '困難 (Hard)', unlearned: '尚未解鎖' };
-            view.classList.remove('hidden');
-            document.getElementById('detailTitle').innerText = `${titles[cat]}：`;
-            if (currentCategorizedWords[cat].length === 0) { list.innerHTML = `<span style="color:var(--text-light); font-size:14px;">(空)</span>`; } 
-            else { list.innerHTML = currentCategorizedWords[cat].map(w => `<a href="https://www.moedict.tw/${encodeURIComponent(w)}" target="_blank" class="dict-pill">${w}</a>`).join(''); }
-        }
+        // ==========================================
+        // ⚡ 系統初始化綁定 (確保首頁載入及點擊按鈕時立刻更新)
+        // ==========================================
+        updateRPGRealm(); // 網頁載入時立刻結算一次
 
-        function toggleDashboard() {
-            const db = document.getElementById('dashboard');
-            db.classList.toggle('hidden');
-            if (!db.classList.contains('hidden')) renderStatistics();
-        }
-
-        function exportData() {
-            const blob = new Blob([JSON.stringify({db: srsDatabase, stats: stats})], {type: "application/json"});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `srs_backup.json`; a.click();
-        }
-
-        function importData(e) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const data = JSON.parse(ev.target.result);
-                if(data.db) { srsDatabase = data.db; stats = data.stats || { streak: 0, lastDate: null }; } 
-                else { srsDatabase = data; }
-                localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
-                localStorage.setItem('srs_stats', JSON.stringify(stats));
-                location.reload();
-            };
-            reader.readAsText(e.target.files[0]);
-        }
+        // 在 processReview 函數原本的邏輯中，我們用一個小技巧監聽點擊，
+        // 確保只要卡片狀態改變，稱號與進度條就即時推進：
+        const originalProcessReview = processReview;
+        processReview = function(word, q) {
+            originalProcessReview(word, q);
+            updateRPGRealm(); // 按下按鈕後即時更新進度條！
+        };
     </script>
 </body>
 </html>
