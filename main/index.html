@@ -61,27 +61,28 @@
             renderDeck(availableWords);
         });
 
-        function renderDeck(words) {
-            const deck = document.getElementById('deck');
-            deck.innerHTML = '';
-            words.forEach(word => {
-                // 教育部字典搜尋 URL
-                const moeduUrl = `https://dict.concised.moe.edu.tw/search.jsp?q=${encodeURIComponent(word)}`;
-                const cardHtml = `
-                    <div class="card" id="card-${word}">
-                        <div class="char-title">${word}</div>
-                        <a class="dict-link" href="${moeduUrl}" target="_blank">📖 查詢教育部辭典簡編本</a>
-                        <div class="anki-controls">
-                            <button class="btn-danger" onclick="processReview('${word}', 0)">重來 (Again)</button>
-                            <button class="btn-warning" onclick="processReview('${word}', 1)">困難 (Hard)</button>
-                            <button class="btn-success" onclick="processReview('${word}', 2)">良好 (Good)</button>
-                            <button class="btn-primary" onclick="processReview('${word}', 3)">簡單 (Easy)</button>
-                        </div>
-                    </div>
-                `;
-                deck.innerHTML += cardHtml;
-            });
-        }
+function renderDeck(words) {
+    const deck = document.getElementById('deck');
+    deck.innerHTML = '';
+    words.forEach(word => {
+        // 直接拼接萌典網址，無需任何 ID 參數
+        const moeduUrl = `https://www.moedict.tw/${encodeURIComponent(word)}`;
+        
+        const cardHtml = `
+            <div class="card" id="card-${word}">
+                <div class="char-title">${word}</div>
+                <a class="dict-link" href="${moeduUrl}" target="_blank">📖 查詢萌典 (${word})</a>
+                <div class="anki-controls">
+                    <button class="btn-danger" onclick="processReview('${word}', 0)">重來</button>
+                    <button class="btn-warning" onclick="processReview('${word}', 1)">困難</button>
+                    <button class="btn-success" onclick="processReview('${word}', 2)">良好</button>
+                    <button class="btn-primary" onclick="processReview('${word}', 3)">簡單</button>
+                </div>
+            </div>
+        `;
+        deck.innerHTML += cardHtml;
+    });
+}
 
         // 3. SM-2 演算法核心
         function processReview(word, quality) {
