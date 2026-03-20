@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小學生 SRS 字卡系統 v2.1 (雙軌加權版)</title>
+    <title>小學生 SRS 字卡系統 v3.0 (動態演算法版)</title>
     <style>
         :root {
             --primary: #4361ee; --secondary: #3f37c9; --success: #4cc9f0;
@@ -12,11 +12,9 @@
         }
         body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; max-width: 900px; margin: auto; line-height: 1.6; }
         
-        /* UI 頂部裝飾 */
         .header-stats { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px 25px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(63, 55, 201, 0.3); flex-wrap: wrap; gap: 10px;}
         .streak-badge { font-size: 1.2rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
         .streak-badge span { font-size: 1.8rem; color: #fee440; }
-        .target-badge { font-size: 1.1rem; font-weight: bold; background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 8px; }
 
         .controls { margin-bottom: 20px; padding: 20px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         button { padding: 10px 20px; margin: 5px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.2s; }
@@ -25,15 +23,15 @@
         .btn-warning { background-color: var(--warning); color: white; }
         .btn-info { background-color: var(--secondary); color: white; width: 100%; margin-top: 10px; }
 
-        /* 字卡美化 */
-        .card { background: var(--card-bg); border-radius: 16px; padding: 30px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); text-align: center; border-top: 8px solid #ddd; }
+        .card { background: var(--card-bg); border-radius: 16px; padding: 30px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); text-align: center; border-top: 8px solid #ddd; transition: all 0.3s ease; }
         .card.review { border-top-color: var(--danger); }
         .card.new { border-top-color: var(--success); }
+        .card.penalty { border-top-color: #343a40; background: #fff5f5; } /* 1分鐘重罰的視覺 */
+        
         .char-title { font-size: 80px; margin: 15px 0; color: var(--text); font-weight: 900; }
         .badge { font-size: 14px; padding: 5px 12px; border-radius: 20px; color: white; margin: 0 5px; display: inline-block;}
         .tier-基礎 { background: #4cc9f0; } .tier-進階 { background: #4895ef; } .tier-挑戰 { background: #3f37c9; }
 
-        /* 數據看板美化 */
         #dashboard { background: #fff; padding: 25px; border-radius: 15px; margin-top: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         #dashboard h3 { border-bottom: 2px solid #f1f3f5; padding-bottom: 10px; color: var(--text); margin-top: 0; }
         
@@ -44,7 +42,6 @@
         .progress-bar-mini { height: 8px; background: #e9ecef; border-radius: 4px; overflow: hidden; margin-top: 8px; }
         .progress-fill { height: 100%; background: var(--success); transition: width 0.5s; }
 
-        /* 記憶象限進度條 */
         .progress-wrapper { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #e9ecef; }
         .progress-bar { display: flex; height: 24px; border-radius: 12px; overflow: hidden; margin-top: 15px; background: #e9ecef; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
         .seg { height: 100%; transition: width 0.5s; cursor: pointer; }
@@ -81,12 +78,11 @@
 
     <div class="header-stats">
         <div class="streak-badge">🔥 連續學習天數 <span id="streakDays">0</span> 天</div>
-        <div class="target-badge" id="todayProgress">🎯 今日任務計算中...</div>
     </div>
 
     <div class="controls">
         <h2>📚 字卡管理面板</h2>
-        <button class="btn-primary" id="generateBtn">抽取今日字卡 (上限 10 字)</button>
+        <button class="btn-primary" id="generateBtn">抽取每次字卡 (10 張)</button>
         <button class="btn-warning" onclick="exportData()">備份 (Export)</button>
         <button class="btn-warning" onclick="document.getElementById('importFile').click()">還原 (Import)</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
@@ -140,7 +136,6 @@
     </footer>
 
     <script>
-        // === 1. 初始化與數據 ===
         const TIER_1_1000 = "的一是在人不有了我他這個們中來上大為和國地到以說時要就出會可也你對生能而子那得於著下自之年過發後作裡用道行所然家種事成方多經麼去法學如都同日沒公實起看又但理些只機當無外文心前明本好天兩其三新水意動正開長點月回手十分把字己面物電高頭小見主此比期情問代最重相體更部從與或展現表化全老平做教打兒路原車女認知先通入度建想別四被走數話性幾管氣常真海間界少立指算特果書結信目聲計金空吃交白百向市加名色男馬光記神風變讓期活帶區力聽品死找許告近星樂定身音萬關千愛夜師直親題買太容客答室城思位決病完覺球往半難友院衣落笑機寫媽非候畫哥拿遠言樹飛火跑早王母姐弟父妹爸休玩步唱錢站".split('');
         const TIER_1001_2000 = "艦疆屢齋叢覆藉鬱龜籲鑿豔贏竊聽臟舊藏轉雜醫雙額題願騎驗體鬆麵魔鱗鼠齡鑑彎鑄鐵顧躍霸轟露響驅髓驗驚驛驟驢驥驪骨髒髓體高髦髮髯髻髭鬃鬆鬍鬚鬢鬥鬧鬨鬱鬼魁魂魅魄魏魔魘鬲魚魷魯鮑鮮鮫鮪鯊鯉鯽鯨鯧鰓鰍鰭鰥鱉鰱鰾鰻鱔鱗鱖鱷鱸鳥鳩鳴鳶鳳鴆鴉鴕鴣鴦鴨鴒鴛鴻鴿鵑鵝鵠鶉鵡鵲鵪鵬鶯鶴鷂鷓鷗鷥鷹鷺鸚鸞鹹鹼鹽鹿麂麋麒麗麓麝麟麥麩麴麵麻麼麾黃黍黎黏黑墨默黔點黜黝黛黠黨黯黴黷鼇鼎鼓鼕鼙鼠鼬鼴鼻鼾齊齋齒齟齣齡齜齦齬齪齷齲龍龔龜".split('');
         const TIER_2000_PLUS = "龘齉齾爩麤龗灪龖厵靐魑魅魍魎饕餮耄耋羸贔驫猋麤毳淼焱垚犇羴贔靐龘齉齾爩麤龗灪龖厵靐".split('');
@@ -149,9 +144,8 @@
         let srsDatabase = JSON.parse(localStorage.getItem('srs_db')) || {};
         let stats = JSON.parse(localStorage.getItem('srs_stats')) || { streak: 0, lastDate: null };
         let currentCategorizedWords = { mastered: [], learning: [], hard: [], unlearned: [] };
-        let activeDeckCount = 0; // 追蹤目前畫面上的卡片數
 
-        // === 2. 連擊邏輯與今日目標計算 ===
+        // === 1. 連擊邏輯 ===
         function updateStreak() {
             const today = new Date().toLocaleDateString();
             if (stats.lastDate === today) return;
@@ -162,38 +156,166 @@
             localStorage.setItem('srs_stats', JSON.stringify(stats));
             document.getElementById('streakDays').innerText = stats.streak;
         }
-        
-        function calculateTodayGoal() {
-            const now = Date.now();
-            const dueCount = Object.keys(srsDatabase).filter(w => srsDatabase[w].nextReview <= now).length;
-            const targetTotal = Math.min(10, dueCount > 0 ? 10 : 10); // 上限10字，含新字
-            document.getElementById('todayProgress').innerText = `🎯 待命任務：${dueCount} 複習 + 新字 = 10`;
-            document.getElementById('streakDays').innerText = stats.streak;
-        }
-        calculateTodayGoal();
+        document.getElementById('streakDays').innerText = stats.streak;
 
-        // === 3. 雙軌數據引擎 (核心還原與升級) ===
+        // === 2. 動態區間推演 (取代寫死的 1d/4d) ===
+        function calculateNextInterval(word, q) {
+            let r = srsDatabase[word] || { interval: 0, repetitions: 0, easeFactor: 2.5 };
+            if (q === 0) return 0; // 0代表1分鐘
+            let nextInt = 0;
+            if (q === 1) {
+                nextInt = r.repetitions === 0 ? 1 : Math.max(1, Math.round(r.interval * 1.2));
+            } else if (q === 2) {
+                if (r.repetitions === 0) nextInt = 1;
+                else if (r.repetitions === 1) nextInt = 6;
+                else nextInt = Math.round(r.interval * r.easeFactor);
+            } else if (q === 3) {
+                if (r.repetitions === 0) nextInt = 4;
+                else if (r.repetitions === 1) nextInt = 8;
+                else nextInt = Math.round(r.interval * r.easeFactor * 1.3);
+            }
+            return nextInt;
+        }
+
+        // === 3. 抽卡引擎 (強制配額：7舊3新) ===
+        document.getElementById('generateBtn').addEventListener('click', () => {
+            updateStreak();
+            document.getElementById('dashboard').classList.add('hidden');
+            
+            const now = Date.now();
+            let dueWords = Object.keys(srsDatabase).filter(w => srsDatabase[w].nextReview <= now);
+            dueWords.sort((a, b) => srsDatabase[a].nextReview - srsDatabase[b].nextReview);
+            
+            let maxDraw = 10;
+            let targetReviews = 7; 
+            
+            let reviewsToDraw = Math.min(dueWords.length, targetReviews);
+            let newToDraw = maxDraw - reviewsToDraw; 
+            
+            let unlearned = FULL_POOL.filter(w => !srsDatabase[w]);
+            if (newToDraw > unlearned.length) {
+                newToDraw = unlearned.length;
+                reviewsToDraw = Math.min(dueWords.length, maxDraw - newToDraw); 
+            }
+
+            let dailyDeck = dueWords.slice(0, reviewsToDraw).map(w => ({ word: w, type: 'review', tier: getWordTier(w) }));
+            let newWordsStats = { t1: 0, t2: 0, t3: 0 };
+            
+            for (let i = 0; i < newToDraw; i++) {
+                let chosenWord = unlearned[Math.floor(Math.random() * unlearned.length)];
+                if (chosenWord) {
+                    dailyDeck.push({ word: chosenWord, type: 'new', tier: getWordTier(chosenWord) });
+                    unlearned = unlearned.filter(w => w !== chosenWord);
+                    if (TIER_1_1000.includes(chosenWord)) newWordsStats.t1++;
+                    else if (TIER_1001_2000.includes(chosenWord)) newWordsStats.t2++;
+                    else newWordsStats.t3++;
+                }
+            }
+            
+            if (dailyDeck.length === 0) { alert("目前完全沒有需要複習的字，且新字已學完！"); return; }
+            document.getElementById('drawStats').innerText = `本次任務：複習 ${reviewsToDraw} 字 ｜ 解鎖新字 ${newToDraw} 字`;
+            renderDeck(dailyDeck);
+        });
+
+        function getWordTier(word) {
+            if (TIER_1_1000.includes(word)) return '基礎';
+            if (TIER_1001_2000.includes(word)) return '進階';
+            return '挑戰';
+        }
+
+        // === 4. 渲染字卡 (注入動態預測) ===
+        function renderDeck(deckArray) {
+            const deck = document.getElementById('deck');
+            deck.innerHTML = '';
+            deckArray.forEach(item => {
+                deck.innerHTML += createCardHTML(item.word, item.type, item.tier);
+            });
+        }
+
+        function createCardHTML(word, type, tier) {
+            let int1 = calculateNextInterval(word, 1);
+            let int2 = calculateNextInterval(word, 2);
+            let int3 = calculateNextInterval(word, 3);
+            
+            let str1 = int1 === 0 ? '1m' : int1 + 'd';
+            let str2 = int2 + 'd';
+            let str3 = int3 + 'd';
+
+            return `
+                <div class="card ${type}" id="card-${word}">
+                    <div class="badge ${type}">${type==='review'?'待複習':'新解鎖'}</div>
+                    <div class="badge tier-${tier}">${tier}</div>
+                    <div class="char-title">${word}</div>
+                    <a href="https://www.moedict.tw/${encodeURIComponent(word)}" target="_blank" style="text-decoration:none; color:var(--primary); font-weight:bold; font-size:1.1rem;">📖 萌典釋義</a>
+                    <div style="margin-top:25px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+                        <button class="btn-warning" onclick="processReview('${word}', 1)">困難 (${str1})</button>
+                        <button class="btn-primary" style="background:var(--success)" onclick="processReview('${word}', 2)">良好 (${str2})</button>
+                        <button class="btn-primary" onclick="processReview('${word}', 3)">簡單 (${str3})</button>
+                        <button style="background:#ced4da; color:#495057; border:none; border-radius:8px; padding:10px 20px; font-weight:bold; cursor:pointer;" onclick="processReview('${word}', 0)">完全忘記 (1m)</button>
+                    </div>
+                </div>`;
+        }
+
+        // === 5. 處理結果 (1分鐘懲罰機制) ===
+        function processReview(word, q) {
+            let r = srsDatabase[word] || { interval: 0, repetitions: 0, easeFactor: 2.5 };
+            
+            if (q === 0) {
+                r.repetitions = 0; r.interval = 0;
+            } else {
+                r.interval = calculateNextInterval(word, q);
+                r.repetitions++;
+            }
+            
+            if (q !== 0) {
+                r.easeFactor = Math.max(1.3, r.easeFactor + (0.1 - (3 - q) * (0.08 + (3 - q) * 0.02)));
+            } else {
+                r.easeFactor = Math.max(1.3, r.easeFactor - 0.2); // 忘記扣除易用度
+            }
+
+            r.nextReview = q === 0 ? Date.now() : Date.now() + (r.interval * 24 * 60 * 60 * 1000);
+            srsDatabase[word] = r;
+            localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
+            
+            let card = document.getElementById(`card-${word}`);
+            
+            if (q === 0) {
+                // 1分鐘邏輯：卡片不消失，移動到最下方要求重新作答
+                let deck = document.getElementById('deck');
+                card.style.opacity = '0.3';
+                setTimeout(() => {
+                    deck.appendChild(card); // 將 DOM 移到尾端
+                    card.style.opacity = '1';
+                    card.classList.remove('review', 'new');
+                    card.classList.add('penalty');
+                    card.querySelector('.badge').innerText = '🔥 重新記憶';
+                    card.querySelector('.badge').style.background = '#343a40';
+                    card.outerHTML = createCardHTML(word, 'penalty', getWordTier(word)); // 重新生成按鈕天數
+                }, 300);
+            } else {
+                // 正常答對，卡片消失
+                card.style.display = 'none';
+            }
+        }
+
+        // === 6. 數據面板 (保持不變) ===
         function renderStatistics() {
-            // 重置矩陣
             currentCategorizedWords = { mastered: [], learning: [], hard: [], unlearned: [] };
             const hardList = document.getElementById('hardWordsList');
             const upcomingList = document.getElementById('upcomingWordsList');
             hardList.innerHTML = ''; upcomingList.innerHTML = '';
             let upcomingArr = [];
 
-            // 掃描資料庫 (Y軸記憶狀態)
             for (const [word, data] of Object.entries(srsDatabase)) {
                 if (data.easeFactor <= 2.1 && data.repetitions > 0) {
                     currentCategorizedWords.hard.push(word);
-                    hardList.innerHTML += `<li><b>${word}</b> (難度系數: ${data.easeFactor.toFixed(2)})</li>`;
+                    hardList.innerHTML += `<li><b>${word}</b> (難度: ${data.easeFactor.toFixed(2)})</li>`;
                 } else if (data.interval >= 21) { currentCategorizedWords.mastered.push(word); }
                 else { currentCategorizedWords.learning.push(word); }
-                
                 if (data.nextReview) upcomingArr.push({ word, time: data.nextReview });
             }
             currentCategorizedWords.unlearned = FULL_POOL.filter(w => !srsDatabase[w]);
 
-            // 渲染 Y 軸 (記憶留存光譜)
             const total = FULL_POOL.length;
             const pM = (currentCategorizedWords.mastered.length / total * 100).toFixed(1);
             const pL = (currentCategorizedWords.learning.length / total * 100).toFixed(1);
@@ -202,9 +324,9 @@
             document.getElementById('progressContainer').innerHTML = `
                 <div style="font-size:14px; margin-bottom:10px; color:#6c757d;">總字元池：${total} 字</div>
                 <div class="progress-bar">
-                    <div class="seg seg-mastered" style="width: ${pM}%" onclick="showDetail('mastered')" title="長期記憶 ${pM}%"></div>
-                    <div class="seg seg-learning" style="width: ${pL}%" onclick="showDetail('learning')" title="建構中 ${pL}%"></div>
-                    <div class="seg seg-hard" style="width: ${pH}%" onclick="showDetail('hard')" title="困難 ${pH}%"></div>
+                    <div class="seg seg-mastered" style="width: ${pM}%" onclick="showDetail('mastered')"></div>
+                    <div class="seg seg-learning" style="width: ${pL}%" onclick="showDetail('learning')"></div>
+                    <div class="seg seg-hard" style="width: ${pH}%" onclick="showDetail('hard')"></div>
                 </div>
                 <div class="legend">
                     <span class="leg-mastered" onclick="showDetail('mastered')">長期記憶 (${currentCategorizedWords.mastered.length})</span>
@@ -213,7 +335,6 @@
                     <span class="leg-unlearned" onclick="showDetail('unlearned')">尚未解鎖 (${currentCategorizedWords.unlearned.length})</span>
                 </div>`;
 
-            // 渲染 X 軸 (分級解鎖達成率)
             const getMasteredCount = (tier) => tier.filter(w => srsDatabase[w] && srsDatabase[w].interval >= 21).length;
             const updateUI = (id, count, t_len) => {
                 const p = ((count/t_len)*100).toFixed(1);
@@ -224,7 +345,6 @@
             updateUI('t2', getMasteredCount(TIER_1001_2000), TIER_1001_2000.length);
             updateUI('t3', getMasteredCount(TIER_2000_PLUS), TIER_2000_PLUS.length);
 
-            // 未來排程清單
             upcomingArr.sort((a,b)=>a.time-b.time).filter(item => item.time > Date.now()).slice(0,10).forEach(item => {
                 const d = new Date(item.time);
                 upcomingList.innerHTML += `<li><b>${item.word}</b>排定於 -> ${d.getMonth()+1}/${d.getDate()}</li>`;
@@ -232,112 +352,13 @@
             if(upcomingList.innerHTML === '') upcomingList.innerHTML = '<li>目前無未來排程</li>';
         }
 
-        // === 4. 細節檢視面板 (復原) ===
         function showDetail(cat) {
             const view = document.getElementById('detailView');
             const list = document.getElementById('detailList');
             const titles = { mastered: '✅ 長期記憶 (間隔>21天)', learning: '🔄 建構中 (發展中記憶)', hard: '⚠️ 困難阻力 (低易用度)', unlearned: '🔒 尚未解鎖' };
-            
             view.classList.remove('hidden');
             document.getElementById('detailTitle').innerText = `${titles[cat]} 字元清單：`;
-            
-            if(currentCategorizedWords[cat].length === 0) {
-                list.innerHTML = `<span style="background:transparent; box-shadow:none; color:#adb5bd;">(此區間目前沒有字元)</span>`;
-            } else {
-                list.innerHTML = currentCategorizedWords[cat].map(w => `<span>${w}</span>`).join('');
-            }
-        }
-
-        // === 5. 抽卡引擎 (7:2:1) ===
-        document.getElementById('generateBtn').addEventListener('click', () => {
-            updateStreak();
-            document.getElementById('dashboard').classList.add('hidden'); // 抽卡時收起看板
-            
-            const now = Date.now();
-            let dueWords = Object.keys(srsDatabase).filter(w => srsDatabase[w].nextReview <= now);
-            dueWords.sort((a, b) => srsDatabase[a].nextReview - srsDatabase[b].nextReview);
-            
-            let dailyDeck = dueWords.slice(0, 10).map(w => ({ word: w, type: 'review', tier: getWordTier(w) }));
-            let newQuota = 10 - dailyDeck.length;
-            let newWordsStats = { t1: 0, t2: 0, t3: 0 };
-            
-            if (newQuota > 0) {
-                let unlearnedT1 = TIER_1_1000.filter(word => !srsDatabase[word]);
-                let unlearnedT2 = TIER_1001_2000.filter(word => !srsDatabase[word]);
-                let unlearnedT3 = TIER_2000_PLUS.filter(word => !srsDatabase[word]);
-                
-                for (let i = 0; i < newQuota; i++) {
-                    let rand = Math.floor(Math.random() * 100) + 1;
-                    let chosenWord = null;
-                    if (rand <= 70 && unlearnedT1.length > 0) { chosenWord = unlearnedT1.splice(Math.floor(Math.random() * unlearnedT1.length), 1)[0]; newWordsStats.t1++; }
-                    else if (rand > 70 && rand <= 90 && unlearnedT2.length > 0) { chosenWord = unlearnedT2.splice(Math.floor(Math.random() * unlearnedT2.length), 1)[0]; newWordsStats.t2++; }
-                    else if (rand > 90 && unlearnedT3.length > 0) { chosenWord = unlearnedT3.splice(Math.floor(Math.random() * unlearnedT3.length), 1)[0]; newWordsStats.t3++; }
-                    else {
-                        if (unlearnedT1.length > 0) chosenWord = unlearnedT1.splice(Math.floor(Math.random() * unlearnedT1.length), 1)[0];
-                        else if (unlearnedT2.length > 0) chosenWord = unlearnedT2.splice(Math.floor(Math.random() * unlearnedT2.length), 1)[0];
-                        else if (unlearnedT3.length > 0) chosenWord = unlearnedT3.splice(Math.floor(Math.random() * unlearnedT3.length), 1)[0];
-                    }
-                    if (chosenWord) dailyDeck.push({ word: chosenWord, type: 'new', tier: getWordTier(chosenWord) });
-                }
-            }
-            
-            if (dailyDeck.length === 0) { alert("任務已清空！"); return; }
-            document.getElementById('drawStats').innerText = `本次任務：複習 ${dailyDeck.length - newQuota} 字 ｜ 新字 ${newQuota} 字 (基礎:${newWordsStats.t1}, 進階:${newWordsStats.t2}, 挑戰:${newWordsStats.t3})`;
-            activeDeckCount = dailyDeck.length;
-            document.getElementById('todayProgress').innerText = `🎯 執行中：剩餘 ${activeDeckCount} 張`;
-            renderDeck(dailyDeck);
-        });
-
-        function getWordTier(word) {
-            if (TIER_1_1000.includes(word)) return '基礎';
-            if (TIER_1001_2000.includes(word)) return '進階';
-            return '挑戰';
-        }
-
-        function renderDeck(deckArray) {
-            const deck = document.getElementById('deck');
-            deck.innerHTML = '';
-            deckArray.forEach(item => {
-                deck.innerHTML += `
-                    <div class="card ${item.type}" id="card-${item.word}">
-                        <div class="badge ${item.type}">${item.type==='review'?'待複習':'新解鎖'}</div>
-                        <div class="badge tier-${item.tier}">${item.tier}</div>
-                        <div class="char-title">${item.word}</div>
-                        <a href="https://www.moedict.tw/${encodeURIComponent(item.word)}" target="_blank" style="text-decoration:none; color:var(--primary); font-weight:bold; font-size:1.1rem;">📖 萌典釋義</a>
-                        <div style="margin-top:25px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
-                            <button class="btn-warning" onclick="processReview('${item.word}', 1)">困難 (1m)</button>
-                            <button class="btn-primary" style="background:var(--success)" onclick="processReview('${item.word}', 2)">良好 (1d)</button>
-                            <button class="btn-primary" onclick="processReview('${item.word}', 3)">簡單 (4d)</button>
-                            <button style="background:#ced4da; color:#495057; border:none; border-radius:8px; padding:10px 20px; font-weight:bold; cursor:pointer;" onclick="processReview('${item.word}', 0)">完全忘記</button>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function processReview(word, q) {
-            let r = srsDatabase[word] || { interval: 0, repetitions: 0, easeFactor: 2.5 };
-            if (q === 0) { r.repetitions = 0; r.interval = 1; }
-            else { 
-                r.repetitions++; 
-                if (r.repetitions === 1) r.interval = 1; 
-                else if (r.repetitions === 2) r.interval = 6; 
-                else r.interval = Math.round(r.interval * r.easeFactor); 
-            }
-            r.easeFactor = Math.max(1.3, r.easeFactor + (0.1 - (3 - q) * (0.08 + (3 - q) * 0.02)));
-            r.nextReview = Date.now() + (r.interval * 24 * 60 * 60 * 1000);
-            srsDatabase[word] = r;
-            localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
-            
-            // 隱藏卡片並更新計數器
-            document.getElementById(`card-${word}`).style.display = 'none';
-            activeDeckCount--;
-            
-            if (activeDeckCount === 0) {
-                document.getElementById('todayProgress').innerText = `✅ 今日任務完成！`;
-                calculateTodayGoal(); // 重新計算是否有欠債
-            } else {
-                document.getElementById('todayProgress').innerText = `🎯 執行中：剩餘 ${activeDeckCount} 張`;
-            }
+            list.innerHTML = currentCategorizedWords[cat].length === 0 ? `<span style="background:transparent; box-shadow:none; color:#adb5bd;">(空)</span>` : currentCategorizedWords[cat].map(w => `<span>${w}</span>`).join('');
         }
 
         function toggleDashboard() {
@@ -349,14 +370,13 @@
         function exportData() {
             const blob = new Blob([JSON.stringify({db: srsDatabase, stats: stats})], {type: "application/json"});
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `srs_backup_v2.json`; a.click();
+            const a = document.createElement('a'); a.href = url; a.download = `srs_backup_v3.json`; a.click();
         }
 
         function importData(e) {
             const reader = new FileReader();
             reader.onload = (ev) => {
                 const data = JSON.parse(ev.target.result);
-                // 兼容舊版僅有 db 的備份檔
                 if(data.db) { srsDatabase = data.db; stats = data.stats || { streak: 0, lastDate: null }; } 
                 else { srsDatabase = data; }
                 localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
