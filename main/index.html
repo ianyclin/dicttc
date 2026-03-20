@@ -30,17 +30,26 @@
         .controls { margin-bottom: 24px; padding: 30px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
         .controls h2 { margin-top: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; color: var(--text); margin-bottom: 20px;}
         
-        .btn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 10px; }
-        .btn-full-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+/* --- 替換起點：控制面板 CSS --- */
+        .btn-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+        .btn-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 
-        button { padding: 12px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: 100%; display: flex; justify-content: center; align-items: center; gap: 6px;}
-        button:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); filter: brightness(1.05); }
-        button:active { transform: translateY(1px); }
+        /* 移除了強制 100% 寬度，恢復按鈕彈性 */
+        button { padding: 12px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 8px;}
+        button:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); filter: brightness(1.05); }
+        button:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         
         .btn-primary { background-color: var(--primary); color: white; }
-        .btn-warning { background-color: var(--warning); color: white; }
         .btn-info { background-color: var(--secondary); color: white; }
         .btn-secondary { background-color: #64748b; color: white; }
+
+        /* 評估按鈕專屬精緻 UI */
+        .eval-buttons { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 35px; }
+        .btn-eval { flex: 1; min-width: 120px; max-width: 160px; padding: 14px 0; font-size: 16px; border-radius: 12px; }
+        .btn-eval-forget { background-color: #e2e8f0; color: #475569; }
+        .btn-eval-hard { background-color: var(--warning); color: white; }
+        .btn-eval-good { background-color: var(--success); color: white; }
+        .btn-eval-easy { background-color: var(--primary); color: white; }
 
         /* 隱藏式說明面板 */
         .manual-panel { background: #f8fafc; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 20px; font-size: 14.5px; border-left: 6px solid #64748b; }
@@ -108,8 +117,14 @@
         .reset-link { color: #94a3b8; text-decoration: none; cursor: pointer; font-size: 0.85rem; padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 6px; transition: all 0.2s; background: #f8fafc;}
         .reset-link:hover { background: #e2e8f0; color: #475569; }
 
-        .hidden { display: none; }
-        @media (max-width: 600px) { .stat-grid { grid-template-columns: 1fr; } .legend { flex-direction: column; gap: 8px; } }
+.hidden { display: none; }
+        @media (max-width: 600px) { 
+            .stat-grid { grid-template-columns: 1fr; } 
+            .legend { flex-direction: column; gap: 8px; } 
+            .btn-grid-3, .btn-grid-2 { grid-template-columns: 1fr; } /* 手機版面板直列 */
+            .eval-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } /* 手機版評估按鈕變 2x2 陣列，避免太長 */
+            .btn-eval { max-width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -141,14 +156,14 @@
             </div>
         </div>
 
-        <div class="btn-grid">
-            <button class="btn-primary" id="generateBtn">抽取每日字卡 (10 張)</button>
-            <button class="btn-warning" onclick="exportData()">儲存進度 (Export)</button>
-            <button class="btn-warning" onclick="document.getElementById('importFile').click()">讀取進度 (Import)</button>
+<div class="btn-grid-3">
+            <button class="btn-secondary" onclick="document.getElementById('manualPanel').classList.toggle('hidden')">📘 系統操作指南</button>
+            <button class="btn-secondary" onclick="exportData()">💾 儲存進度</button>
+            <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📂 讀取進度</button>
             <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
         </div>
-        <div class="btn-full-grid">
-            <button class="btn-secondary" onclick="document.getElementById('manualPanel').classList.toggle('hidden')">📘 系統操作指南</button>
+        <div class="btn-grid-2">
+            <button class="btn-primary" id="generateBtn">🃏 抽取每日字卡 (10 張)</button>
             <button class="btn-info" onclick="toggleDashboard()">📊 學習數據看板</button>
         </div>
     </div>
@@ -330,12 +345,12 @@ const FULL_POOL = [...TIER_1_1000, ...TIER_1001_2000, ...TIER_2000_PLUS];
                     <div class="badge ${type}">${type==='review'?'待複習':'新解鎖'}</div>
                     <div class="badge tier-${tier}">${tier}</div>
                     <div class="char-title">${word}</div>
-                    <a href="https://www.moedict.tw/${encodeURIComponent(word)}" target="_blank" style="text-decoration:none; color:var(--primary); font-weight:bold; font-size:1.1rem;">📖 萌典釋義</a>
-                    <div style="margin-top:35px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
-                        <button class="btn-warning" onclick="processReview('${word}', 1)">困難 (${str1})</button>
-                        <button class="btn-primary" style="background:var(--success)" onclick="processReview('${word}', 2)">良好 (${str2})</button>
-                        <button class="btn-primary" onclick="processReview('${word}', 3)">簡單 (${str3})</button>
-                        <button style="background:#e2e8f0; color:#475569; border:none; border-radius:8px; padding:12px 24px; font-weight:bold; cursor:pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onclick="processReview('${word}', 0)">完全忘記 (1m)</button>
+<a href="https://www.moedict.tw/${encodeURIComponent(word)}" target="_blank" style="text-decoration:none; color:var(--primary); font-weight:bold; font-size:1.1rem;">📖 萌典釋義</a>
+                    <div class="eval-buttons">
+                        <button class="btn-eval btn-eval-forget" onclick="processReview('${word}', 0)">完全忘記 (1m)</button>
+                        <button class="btn-eval btn-eval-hard" onclick="processReview('${word}', 1)">困難 (${str1})</button>
+                        <button class="btn-eval btn-eval-good" onclick="processReview('${word}', 2)">良好 (${str2})</button>
+                        <button class="btn-eval btn-eval-easy" onclick="processReview('${word}', 3)">簡單 (${str3})</button>
                     </div>
                 </div>`;
         }
