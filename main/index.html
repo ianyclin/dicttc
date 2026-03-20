@@ -88,18 +88,36 @@
         .seg { height: 100%; transition: width 0.5s ease-out; cursor: pointer; }
         .seg-mastered { background: #38bdf8; }
         .seg-learning { background: var(--primary); }
-        .seg-hard { background: var(--danger); }
+.seg-hard { background: var(--danger); }
         .seg-graduated { background: #fbbf24; }
+        
         .legend { display: flex; justify-content: space-between; flex-wrap: wrap; font-size: 13px; margin-top: 15px; color: var(--text-light); font-weight: bold; }
         .legend span { cursor: pointer; padding: 6px 10px; border-radius: 6px; display: flex; align-items: center;}
         .legend span::before { content: ''; display: inline-block; width: 12px; height: 12px; margin-right: 8px; border-radius: 50%; }
+        /* 修正 3：補回光譜圖例圓點顏色 */
+        .leg-graduated::before { background: #fbbf24; }
+        .leg-mastered::before { background: #38bdf8; }
+        .leg-learning::before { background: var(--primary); }
+        .leg-hard::before { background: var(--danger); }
+        .leg-unlearned::before { background: #cbd5e1; }
+
         .pill-container { display: flex; flex-wrap: wrap; gap: 8px; }
         .dict-pill { display: inline-flex; align-items: center; padding: 6px 14px; background: #ffffff; border-radius: 20px; font-size: 16px; font-weight: bold; color: var(--secondary); text-decoration: none; border: 1px solid #e2e8f0; transition: all 0.2s; }
         .dict-pill:hover { transform: translateY(-2px); background: var(--secondary); color: white; }
+        
+        /* 修正 1：補回細節選單的 UI 與獨立滾動軸 (清單限高 240px) */
+        .detail-view { background: #f8fafc; border-radius: 10px; padding: 20px; margin-top: 15px; border: 1px dashed #cbd5e1; }
+        .detail-list-scroll { max-height: 240px; overflow-y: auto; padding-right: 10px; margin-top: 10px; }
+
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
         .stat-box { background: #f8fafc; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; }
-        footer { text-align: center; margin-top: 40px; padding: 24px; color: var(--text-light); font-size: 0.9rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: center; align-items: center; gap: 15px; }
-        .reset-link { color: #94a3b8; text-decoration: none; cursor: pointer; font-size: 0.85rem; padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc;}
+        
+        /* 修正 2：統一困難字庫與待複習的標題樣式 (加入底線) */
+        .stat-box h4 { margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 15px; }
+        .stat-box-hard h4 { color: var(--warning); }
+        .stat-box-upcoming h4 { color: var(--primary); }
+
+        footer { text-align: center; margin-top: 40px; padding: 24px; color: var(--text-light); font-size: 0.9rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: center; align-items: center; gap: 15px; }.reset-link { color: #94a3b8; text-decoration: none; cursor: pointer; font-size: 0.85rem; padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc;}
         .reset-link:hover { background: #e2e8f0; color: #475569; }
         .hidden { display: none; }
 
@@ -152,20 +170,20 @@
         
         <div id="manualPanel" class="manual-panel hidden">
             <div class="content-block">
-                <strong>1. 字庫配置 (2867 字，臺灣教育研究資訊網 108年高頻字)：</strong>
+<strong>1. 字庫配置 (總計 2867 字，資料來源為臺灣教育研究資訊網 108 年高頻字，約覆蓋 99% 語料)：</strong>
                 <ul>
-                    <li><b>基礎區間</b> (前 1000 字)：約佔 <b>85%</b> 日常語料。</li>
-                    <li><b>進階區間</b> (1001~2000 字)：約佔 <b>10%</b>。</li>
-                    <li><b>挑戰區間</b> (2001~2867 字)：約佔 <b>4%</b>。</li>
+                    <li><b>基礎區間</b> (第 1~1000 字)：約佔 <b>85%</b>，是識字核心。</li>
+                    <li><b>進階區間</b> (第 1001~2000 字)：約佔 <b>10%</b>，可提升閱讀流暢度與語意精確度。</li>
+                    <li><b>挑戰區間</b> (第 2001~2867 字)：約佔 <b>4%</b>，構築長尾防線，用以應付艱深文本。</li>
                 </ul>
                 <hr style="border:0; border-top:1px dashed #cbd5e1; margin: 15px 0;">
                 <strong>2. 按鈕評估準則 (主動回想與演算法)：</strong>
                 <ul>
-                    <li>🔴 <b>完全忘記</b>：一片空白。 <i>(系統：重置連擊，1分鐘後重考)</i></li>
-                    <li>🟠 <b>困難</b>：猶豫超過 3 秒，或差點認錯。 <i>(系統：間隔天數折半)</i></li>
-                    <li>🔵 <b>良好</b>：稍微想 1~2 秒，順利答出。 <i>(系統：正常拉長間隔)</i></li>
-                    <li>🟣 <b>簡單</b>：瞬間秒答。 <i>(系統：大幅延後複習時間)</i></li>
-                    <li>🎓 <b>畢業機制</b>：複習間隔 > <b>180 天</b>，判定永久掌握並剔除。</li>
+<li><b>完全忘記</b>：一片空白，看萌典才想起。(打回原形，1分鐘後重考)</li>
+                    <li><b>困難</b>：猶豫超過 3 秒，或差點認錯。(間隔天數折半，加強監控)</li>
+                    <li><b>良好</b>：稍微想 1~2 秒，順利且正確答出。(正常拉長複習間隔)</li>
+                    <li><b>簡單</b>：看到字瞬間 (0.5秒內) 知道讀音跟意思。(系統：大幅延後複習時間)</li>
+                    <li><b>畢業機制</b>：當單字複習間隔大於 <b>180 天</b>，判定為「永久掌握」，系統將自動剔除以釋放記憶頻寬。</li>
                 </ul>
             </div>
         </div>
@@ -204,18 +222,18 @@
 
         <h3 style="color:var(--text); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top:30px;">🧠 維度二：記憶留存光譜 (縱向)</h3>
         <div id="progressContainer" class="progress-wrapper"></div>
-        <div id="detailView" class="detail-view hidden">
+<div id="detailView" class="detail-view hidden">
             <h4 id="detailTitle" style="margin-top:0; color:var(--primary);">點擊上方標籤查看字元...</h4>
-            <div id="detailList" class="pill-container"></div>
+            <div id="detailList" class="pill-container detail-list-scroll"></div>
         </div>
 
         <div class="stat-grid">
-            <div class="stat-box">
+            <div class="stat-box stat-box-hard">
                 <h4>⚠️ 困難字庫 (需介入指導)</h4>
                 <div id="hardWordsList" class="pill-container"></div>
             </div>
-            <div class="stat-box">
-                <h4 style="color:var(--primary); margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 15px;">🗓️ 待複習佇列 (未來排程)</h4>
+            <div class="stat-box stat-box-upcoming">
+                <h4>🗓️ 待複習佇列 (未來排程)</h4>
                 <div id="upcomingWordsList" class="pill-container"></div>
             </div>
         </div>
