@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小學生 SRS 字卡系統 v3.3 (高頻字庫終極版)</title>
+    <title>小學生 SRS 字卡系統 v3.4 (高頻字庫與分析強化版)</title>
     <style>
         :root {
             --primary: #4361ee; --secondary: #3f37c9; --success: #4cc9f0;
@@ -23,7 +23,6 @@
         .btn-warning { background-color: var(--warning); color: white; }
         .btn-info { background-color: var(--secondary); color: white; width: 100%; margin-top: 10px; }
 
-        /* 系統設計指南區塊 */
         details.manual { background: #f1f3f5; border-radius: 8px; padding: 15px 20px; margin-bottom: 15px; font-size: 14.5px; border-left: 5px solid var(--primary); transition: all 0.3s ease; }
         details.manual summary { font-weight: bold; cursor: pointer; color: var(--secondary); outline: none; font-size: 16px; }
         details.manual .content-block { margin-top: 15px; color: #495057; line-height: 1.7; }
@@ -59,23 +58,34 @@
         .legend span { cursor: pointer; padding: 6px 10px; border-radius: 6px; transition: background 0.2s; position: relative; display: flex; align-items: center;}
         .legend span:hover { background: #e9ecef; color: var(--text); }
         .legend span::before { content: ''; display: inline-block; width: 12px; height: 12px; margin-right: 8px; border-radius: 50%; }
-        /* 統一五個燈號的 CSS 偽元素 */
         .leg-graduated::before { background: var(--graduated); }
         .leg-mastered::before { background: #4cc9f0; }
         .leg-learning::before { background: #4361ee; }
         .leg-hard::before { background: #f72585; }
         .leg-unlearned::before { background: #ced4da; }
 
-        .detail-view { background: #f1f3f5; border-radius: 10px; padding: 20px; margin-top: 15px; border: 1px dashed #adb5bd; max-height: 250px; overflow-y: auto; }
-        .detail-view span { display: inline-block; padding: 4px 10px; margin: 4px; background: #fff; border-radius: 6px; font-size: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); font-weight: bold; color: var(--secondary); }
+        /* 膠囊式標籤 (Pill UI) 共用設計 */
+        .pill-container { display: flex; flex-wrap: wrap; gap: 8px; padding: 5px 0; }
+        .dict-pill { display: inline-flex; align-items: center; padding: 5px 12px; background: #fff; border-radius: 20px; font-size: 16px; font-weight: bold; color: var(--secondary); text-decoration: none; border: 1px solid #dee2e6; box-shadow: 0 2px 4px rgba(0,0,0,0.04); transition: all 0.2s; }
+        .dict-pill:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); background: var(--secondary); color: white; border-color: var(--secondary); }
+        
+        /* 困難字與排程的專屬標籤 */
+        .hard-pill { background: #fff0f3; color: var(--danger); border-color: #ffc8dd; }
+        .hard-pill:hover { background: var(--danger); color: white; border-color: var(--danger); }
+        .upcoming-pill { background: #f8f9fa; color: #6c757d; border-color: #e9ecef; font-weight: normal; font-size: 14px;}
+        .upcoming-pill:hover { background: #dee2e6; }
+        .pill-sub { font-size: 11px; margin-left: 6px; opacity: 0.8; font-weight: normal; background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 10px; }
+
+        .detail-view { background: #f1f3f5; border-radius: 10px; padding: 20px; margin-top: 15px; border: 1px dashed #adb5bd; max-height: 280px; overflow-y: auto; }
         
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
         .stat-box { background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #e9ecef; }
-        .stat-box h4 { margin-top: 0; color: var(--danger); border-bottom: 2px solid #e9ecef; padding-bottom: 8px; }
-        .stat-box ul { padding-left: 20px; margin: 0; font-size: 14px; color: #495057; }
+        .stat-box h4 { margin-top: 0; color: var(--danger); border-bottom: 2px solid #e9ecef; padding-bottom: 8px; margin-bottom: 15px; }
 
-        footer { text-align: center; margin-top: 40px; padding: 20px; color: #adb5bd; font-size: 0.9rem; border-top: 1px solid #eee; }
+        footer { text-align: center; margin-top: 40px; padding: 20px; color: #adb5bd; font-size: 0.9rem; border-top: 1px solid #eee; display: flex; justify-content: center; align-items: center; gap: 15px; flex-wrap: wrap;}
         .fb-link { color: #1877F2; text-decoration: none; font-weight: bold; }
+        .reset-link { color: var(--danger); text-decoration: none; cursor: pointer; font-size: 0.85rem; padding: 4px 8px; border: 1px solid #ffc8dd; border-radius: 4px; transition: all 0.2s;}
+        .reset-link:hover { background: var(--danger); color: white; }
 
         .hidden { display: none; }
         @media (max-width: 600px) { .stat-grid { grid-template-columns: 1fr; } .legend { flex-direction: column; gap: 5px; } }
@@ -93,11 +103,11 @@
         <details class="manual">
             <summary>📘 系統設計理念與高頻字庫解析</summary>
             <div class="content-block">
-                <strong>1. 識字庫配置 (總計 2867 字，覆蓋 99% 語料)：</strong>
+                <strong>1. 字庫配置 (總計 2867 字，資料來源為臺灣教育研究資訊網 108年高頻字，約覆蓋 99%語料)：</strong>
                 <ul>
-                    <li><b>基礎區間</b> (第 1~1000 字)：佔日常語料 <b>85%</b>，是識字核心，目標為「秒答」。</li>
-                    <li><b>進階區間</b> (第 1001~2000 字)：佔日常語料 <b>10%</b>，可大幅提升閱讀流暢度與語意精確度。</li>
-                    <li><b>挑戰區間</b> (第 2001~2867 字)：佔日常語料 <b>4%</b>，構築長尾防線，用以應付艱深文本。</li>
+                    <li><b>基礎區間</b> (第 1~1000 字)：約佔 <b>85%</b>，是識字核心。</li>
+                    <li><b>進階區間</b> (第 1001~2000 字)：約佔 <b>10%</b>，可提升閱讀流暢度與語意精確度。</li>
+                    <li><b>挑戰區間</b> (第 2001~2867 字)：約佔 <b>4%</b>，構築長尾防線，用以應付艱深文本。</li>
                 </ul>
                 <hr style="border:0; border-top:1px dashed #ccc; margin: 15px 0;">
                 <strong>2. 按鈕評估準則 (主動回想與 SRS 演算法)：</strong>
@@ -142,17 +152,17 @@
         <div id="progressContainer" class="progress-wrapper"></div>
         <div id="detailView" class="detail-view hidden">
             <h4 id="detailTitle" style="margin-top:0; color:var(--primary);">點擊上方標籤查看字元...</h4>
-            <div id="detailList"></div>
+            <div id="detailList" class="pill-container"></div>
         </div>
 
         <div class="stat-grid">
             <div class="stat-box">
                 <h4>⚠️ 困難字庫 (需介入指導)</h4>
-                <ul id="hardWordsList"></ul>
+                <div id="hardWordsList" class="pill-container"></div>
             </div>
             <div class="stat-box">
                 <h4 style="color:var(--primary)">🗓️ 待複習佇列 (未來排程)</h4>
-                <ul id="upcomingWordsList"></ul>
+                <div id="upcomingWordsList" class="pill-container"></div>
             </div>
         </div>
     </div>
@@ -160,14 +170,30 @@
     <div id="deck"></div>
 
     <footer>
-        <p>© 2026 小學生 SRS 字卡系統｜<a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" class="fb-link">fb/指數三寶飯</a></p>
+        <span>© 2026 小學生 SRS 字卡系統｜<a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" class="fb-link">fb/指數三寶飯</a></span>
+        <a class="reset-link" onclick="resetAllData()">☠️ 清空所有紀錄</a>
     </footer>
 
     <script>
-        // === 1. 初始化與數據 (全量字庫) ===
-        const TIER_1_1000 = "的一是在人不有了我他這個們中來上大為和國地到以說時要就出會可也你對生能而子那得於著下自之年過發後作裡用道行所然家種事成方多經麼去法學如都同日沒公實起看又但理些只機當無外文心前明本好天兩其三新水意動正開長點月回手十分把字己面物電高頭小見主此比期情問代最重相體更部從與或展現表化全老平做教打兒路原車女認知先通入度建想別四被走數話性幾管氣常真海間界少立指算特果書結信目聲計金空吃交白百向市加名色男馬光記神風變讓期活帶區力聽品死找許告近星樂定身音萬關千愛夜師直親題買太容客答室城思位決病完覺球往半難友院衣落笑機寫媽非候畫哥拿遠言樹飛火跑早王母姐弟父妹爸休玩步唱錢站".split('');
-        const TIER_1001_2000 = "艦疆屢齋叢覆藉鬱龜籲鑿豔贏竊聽臟舊藏轉雜醫雙額題願騎驗體鬆麵魔鱗鼠齡鑑彎鑄鐵顧躍霸轟露響驅髓驗驚驛驟驢驥驪骨髒髓體高髦髮髯髻髭鬃鬆鬍鬚鬢鬥鬧鬨鬱鬼魁魂魅魄魏魔魘鬲魚魷魯鮑鮮鮫鮪鯊鯉鯽鯨鯧鰓鰍鰭鰥鱉鰱鰾鰻鱔鱗鱖鱷鱸鳥鳩鳴鳶鳳專門國營利事業機構場所負責人勞務契約受僱人職業工會團體會計師律師專利代理人地政士技師不動產估價師".split('');
-        const TIER_2000_PLUS = "龘齉齾爩麤龗灪龖厵靐魑魅魍魎饕餮耄耋羸贔驫猋麤毳淼焱垚犇羴贔靐龘齉齾爩麤龗灪龖厵靐".split('');
+        // === 0. 星期五備份提醒 (防呆機制) ===
+        window.onload = function() {
+            const todayStr = new Date().toLocaleDateString();
+            if (new Date().getDay() === 5 && localStorage.getItem('last_backup_reminder') !== todayStr) {
+                setTimeout(() => {
+                    alert("💡 系統提醒：今天是星期五！\n\n為避免資料遺失，請記得在複習完畢後，點擊上方的「備份 (Export)」下載最新的進度檔案。");
+                    localStorage.setItem('last_backup_reminder', todayStr);
+                }, 1000);
+            }
+        };
+
+        // === 1. 初始化與數據 ===
+// 經工具自動清洗與降維壓縮之字庫
+
+// 經工具自動清洗與降維壓縮之字庫
+
+const TIER_1_1000 = "的是一不有人在國年中大會為台出上到以時也民來要他對與生成日長後了家能可前市發這行多說就過公我表高地動政新學自下法個分選都開美現場主但方業月於和作天及全最經進用心將外小示文力工等因灣機事得子定同當元者好區部之加合還重黨員提本而車讓北名理總金關手去更立面間度如體起沒資至所內其已入萬們次期無她統意第化明路點此府品被實今議道應打很兩並電三看回相共情計調產安建局報保只由持受教水然從通果任林再正位著案未交院性展球近數身平活導指影設感目二接代或韓比女處特運想戰利港商投強問務認昨海南程物每辦少參眾造東常師團才量題社老氣結陳十推則達華委口式約隊基舉原園演做管先包助各向香光制連單續費醫己反觀求治風價空友客頭解賽專山網花首望陸完照蔡警張英知放書見縣帶色創除種規司直變線傳清畫營世聯周收樣界信使支查樂流取改科預權協王視門校該請麼別太四非許服愛決軍給義親透布育系整遊五農言件轉曾供易百兒歲片論何節料記際馬卻組雄住難又告即些勢消術黃質率環男真需超獲走店引希增標士把那檢防型西滿往房若德格濟站據送且食仍爭李失技官票話集步像境考證你護裡容領備較雙跟熱例配億初另條僅排旅必瑜藝聲職落段獎補斯低具稱響確白級幾施病神驗研修否季維半輕列深火升依星媽快款始態源六紅覺福底優習離擔吃音孩亞戶席景顯攝致號限雖項養製形邊算裝準牌里早擊效精策善登評健普宣便買歷九功購拉圖智綠執吳拍訪克柯獨象角況城拿晚千免鄉龍談採味廠餐停積阿傷母卡速興假佳狀企值廣勝置越括極隨須息班紀八岸眼識館候察郭青史謝斷足航壓待害居桃命退減威訊甚顧類層戲根留媒念署午破鐵土川終遭志衛試歌益判療銷找險什嚴酒副喜責幫究蘭貿劇歡搭疑適嘉屬控群黑止負座洲承死換注稅聽訴七樓爾字審遠復油願練錢派賴榮語粉係讀課錄器股吸歐財降模寶笑藍溫享富思銀唱石賣休婚競露室屋售均呼父康故禮令討族額勞央羅飛臉秀監絕宜核童針差繼存春波測切寫延突藥蘇構菜盟移肉京域律批申緊哲幣庭抗素追聞圍講血惠竹米違印夜爆邀攻街陽板永貨輪刻劃救估材恐衝左巴典夠雲姓密朋古董融互奇守臨博楊玩訂納絲鄭穿細爸夫挑版魚彈啟暴盡燈雨麗冠穩劉付充洋跑島急慧擇痛皮盤幕績背餘似右犯短範舞乎彩順銘罪避敗微播慶草錯鎮堅橋泰缺亮蘋竟江私翻豪曲久招棒簡般豬徵鐘潮症簽苦野倒嗎障哥蛋飯屆殺湖茶訓釋罰迷階貼危宮良迎刑含異豐靠懷村衣遇陣尚租舊詢驚尼木飲毒瑞困略筆腳駕廳怎幸倫坪逐搶樹架仁葉套授畢脫剛田籍武鼓怕擁禁築努宗激屏患腦圈州彰捷隆宅愈擴昌編跨".split('');
+const TIER_1001_2000 = "介弟織附召慢河涉份勵夢牛輸它聚鮮盛距冷勇染省趣醒幅序棄旗紛頂齡忙掉澳戴朝妻析薪返拜損朱烈偏慮散端伴巨裁冰尤尺疫累診零夏幼玉癌索藉跳坐惡揮災雅沙乾森浪苗貴培尋操蓮述隔洗漸碼震偉堂峰籲船章束賞掌援漲諾載雞革促捐輔靈靜伊弱恩亂圓誤壞妹廚秋緩廿旁映熟燒符臺藏鬆亡射庫植輛鍵占吉楚洪邦喊折抽漁贏飾咖探替頻婦挺聖遺鏡陪嫌歸珍蓋哪誰坦皆答封湯綜觸呈徐叫唯奧尊抱暫雜予憲握檔罷骨麻乘奪宏溪牙甜寬軟駐兵隻倍漫駛麵按敏汙紙趕巧廢塊揚敢祖迫雷鴻抵縮雪亦刺哈憶捕溝滑巡勤暖糖詞誠賓槍珠複傑喝宇柏硬逾籃純肯儀固忘忠措汽獻菸姊孫憂莊覽俊兼冬宿晨欣睡逃閱啡婆梅毛豆頓奶淡仔既辛塞帳敦松游盼漢騎壇拒邱尾概甲胡輩週麥振耳袋阻凌刀床撞某焦箱鄰債扣鞋擬朗淨赴趨券吧旦池礙緣佛凱塑牆賠鳥匯桌掛擺虎貓贈輯剩壘拚讚侵摩斤濃顏髮句慣攤敬潛詩貞跌霸齊侯廟伯徒泡疾祝莫隱鳳氛混紐舒覆途酸陷鬥儘厚君坡塔寧幹怪托烏鋼閒偵狗瓜礎鎖默繳併偶壽末祕裂丁洛盧託貝轟惜潔玲緒肌谷顆借呢嘗忍截擾晶燕祭謂賺慈梁芳償宋敵沉沿潘皇籌胞鍋串伸拆暗涯督繁艦艾貸側圾垃毫狂淚遷契妳彭役抓櫃澤蕭邁掃撤旺栗絡繪翔腸芬軌閉仲后殊煮膠萊衡兄喬姐涵炎稿虛販賢嚇奈廖杯添輝秘搞淑秒脅腿鋒丹啊孟戀戒洞窗荷迪俄刷勒干揭搖獅耀遍埔帝彼循扮杜熊莉誌趙閃炸燃瓦蜜詹辣鹿乏刊恢攜泉爐碰辭逆錦鏈餅鬧魯津煙祥郵頒騙魔唐嘴懂拖棟紹膚菲蟲鑑闆哭妝尖悉撐敲聊肥舍遲凡冒卅呂乳佩卓寒扁扶梯穎跡迴佔偷姿怡燦胎臟譽薦饋宴悲拓琴襲誕踏傾准劑曼噸怒怨慎搜橫牽盒睛逼鑽黎丟兆奮寄廷徑毀沈繫蹤醬騰夥尿拼曉瓶箭罵肝蒙辯閣壯浮液烤翁逢飽伍壁妙嬰幻恰搬榜歉殖滅炒罹耐仰余堆孕慘暑柔滲裕貌墨砲俗噴址堪夕忽抹柱浩渡潭綁螢鬼凍募泥滾澎潤糕胸茲錶鍾奏孔押洽瑪甘耗聘肺貢躍遞駁鹽吹暨泛漏爺牠綱腹衰雕啦夾姆孝巷拔插撥欲灰番疏碩篇紋肩胃脈荒菌諸頃颱擠擦曝椅殘漂稍膽蔣詐謀賭采韻濕勁姻弄紫蝦詳陰頗鼻傅允暢繞羽蔬賀霧儲帥描斥晉涼滋盃禍腐腰袖註軸闖頁龜割娃拋枝櫻泳濱獄眠縱耕腫虧趁酬瑋乃吊恆憑曆氏汁盈腕鋪催剪吞娜寮峽帽彥挖旋欠毅稻耶范薩褲陶驅仙佐悠昭桶梨犬盜羊芒貫贊馨飆嘆妥彎懲扭浴猶疼碳磨脂膜菊薄諮謹鍊井冊勸嗆埋堡寵龐捨杰沖煩爬猛碎薇蜂辨逮蹟函勘奉妮娘廉憾懸捲擋湧澄琳脆鳴吐喪坑孤桿爛玻璃肚銅倉兌坊塵廈徹慰敘斑旭框械汗爽碗籤糾罩魏昇填崩廁您懼掩栽煤疊瘋瘦祈胖茂誘貪迅遵釀鈴丈凝寺崇抬摸斗昆欄淺葛虐迄鄧飼倆墊妨娛屍悅披旬椒欺殼汰淋疲窮緻艇艱訟頸俱厲奔廊".split('');
+const TIER_2000_PLUS = "彷忌怖憤拘檻歧氧灘炮盾瞬碧稀縫聰舟蒸蒐誼貧蹈錫嬤屢挫攀朵濫灌玫瘤禦粗締腔蒂誇轄鴨鷹鼠捍伏咬彿欽獸竊籠肇蔥謙譜遙釐佑僚凸喚奕婷岡摘滴瑩篩紗罕翰莎菁賈逛遣郎鬱魂洩仇仿僑劍吵堵幽拳撒昏瓊甄礦秉糊腎臣譯踐逸酷鈞麟鼎傲卸塗嫁宛履掀沛牧磚臭蕾衍豔趴踩躲逝遮隧雇曬亭儒勿卷厭垂撲撫擅晴桑柴棚珊琪瑰盪砂筋糧纖蛇蝶諷銳霖飄魅侶坤屈岩桂淹淪甫痕癒穆翠肢芝葡蚊賦趟邏污刪喻帆弘棲潑眷碑繩臥裸諜辰銜于剝婉寸彬扎抑撿橘溢灑烘獵疆粒膩舌蓄賄赫踢郁酥傘勾吋吻啤墜寓嶼廂恨悔慕撼擎斜柳淘滯焚牲矚砍臂艘茄萄藤虹謠辱醉菇俠偽傻凶卿叔喘嘲囊嫩岳征拾漆犧癮盆砸秩粹綿羞膝蒜蘆螺詮赤躺轎酵韋黏齒紓丘劣哀庸彌悶摔昂棋溼煎煌熬眉矛翼蓬蘿衫裙襪襯闊騷夯勳倡傍僵刮勉卵喔巾弊悍扯拌昔棉殷殿淵煉煞爵狼罐謊阪饒驟檯乖乙峻巢帕悟惟扛攔攬杉毯汪沾淇潰猜粽腺莓葬薛衷貶輿釣闢雀餵鵝勃匙吾咪塌墓奢姑嬌崛嶺惑慌捉撕烹燙玄琉瓷睞肅肖膏芭蠻裔訝誓諒諧辜遂醜鹹斌唇削噪尬庇恭捧椎樺泊溜漠漿狠盲礁纏芋萌蕉虞遜鑲陌霍伐叉喉姚悄惱惹抄拱摺撰晃枚株歇浸渴牢睹磁磯秦筍糟繽醇顛髒崗仕俐卑叛哩嘛坎崎愉挨旨溯熙狹猴畏瞭紮艙薑賜霜馮滷丸匹埃墾宵尷崔慨扇抨掘撈敷濾畜窄肪脊臘逗驕町仗咽塢壤宙御捏掏擲攏暈橡澡燥癱穀穴窩膀芙芽蔔蕩蝕邪餓餡鮑伶兇划剖叢宰寂屁弦挽挪搏枕槓槽檸浦碌竄筒緬翅聆肆蝴袍裹豹陵韌舖潢鉅匿叮呀姜姨慾戈抖掙斬梭棵樁樸檬泌炫甸盯禽窘竭羈耍脹覓豚鞏佈樑偕劫呆夷恤懶戚楓榕渣炭煥狄瑟畔綴繃脾蒼蔓諱醋釘鈔鑼馳亨俏倘冤卦咳哨壺奠彙挾揪攪杏枯歹沸湊燉甩癢矽稚穫絨綻纜羨膨萃萎薯訣詭豫躁酌酪攸兔勻匆匠匪吟垮峙嶄愁擱敞斐昧晰梗樞渾濤瑚瑕瓣禪竿紡缸蘊謬賊跪蹲郊醃鈕鉤鞭頌頰鴉郝伺呵嚼寡寨崑弗恥愧懇撇摧札椰歪汀溶澱澀睜矮矯碟粥茫蔽蛙謎輒鋁阱餃髓倖凹哇嘯囚姬悼憐揣梵泣溺澈瀏燭犀狐疵瞄禱簿糞腥蛛蠟輻遼鉛鑰隙痠伙倦倚冥凳吼咒喇嘔奎奴妄寞寢崖帖拐拭梳棕橙沫漬焰甦皺眶眺磅窺綽脖鍛隸艷裏琦乍侮俯剔吶喀嗅嘻噓囉屑怠惶懈揉暇炙爪瞞矩笨笛簾肋臀蠢譬豎躬轍鈣鋸靴顫鬍齣丙劈噹嚨愚拯掠櫥氫瑯疤瞎翹肘陋飢鹼叭哄唸嚐弧恍憊沮瞧筷糙絞聳莖誦贖軀鎂靡噁癡".split('');
         const FULL_POOL = [...TIER_1_1000, ...TIER_1001_2000, ...TIER_2000_PLUS];
         const GRADUATION_INTERVAL = 180;
         
@@ -187,10 +213,22 @@
         }
         document.getElementById('streakDays').innerText = stats.streak;
 
-        // === 2. 動態演算法核心 ===
+        // === 2. 核彈級清除功能 (雙重安全鎖) ===
+        function resetAllData() {
+            if(confirm("⚠️ 警告：這將會清空所有的字卡複習紀錄與連擊天數！\n您確定要繼續嗎？")) {
+                if(confirm("🔴 最終確認：清空後無法復原（除非您有備份檔）。\n真的要全部重來嗎？")) {
+                    localStorage.removeItem('srs_db');
+                    localStorage.removeItem('srs_stats');
+                    alert("已清空所有資料，系統將重新載入。");
+                    location.reload();
+                }
+            }
+        }
+
+        // === 3. 動態演算法核心 ===
         function calculateNextInterval(word, q) {
             let r = srsDatabase[word] || { interval: 0, repetitions: 0, easeFactor: 2.5 };
-            if (q === 0) return 0; // 0代表1分鐘
+            if (q === 0) return 0;
             
             let nextInt = 0;
             if (r.repetitions === 0) {
@@ -205,7 +243,7 @@
             return nextInt;
         }
 
-        // === 3. 抽卡引擎 ===
+        // === 4. 抽卡引擎 ===
         document.getElementById('generateBtn').addEventListener('click', () => {
             updateStreak();
             document.getElementById('dashboard').classList.add('hidden');
@@ -246,7 +284,7 @@
             return '挑戰';
         }
 
-        // === 4. 渲染字卡 ===
+        // === 5. 渲染字卡 ===
         function renderDeck(deckArray) {
             const deck = document.getElementById('deck');
             deck.innerHTML = '';
@@ -279,7 +317,7 @@
                 </div>`;
         }
 
-        // === 5. 處理結果 ===
+        // === 6. 處理結果 ===
         function processReview(word, q) {
             let r = srsDatabase[word] || { interval: 0, repetitions: 0, easeFactor: 2.5 };
             
@@ -319,7 +357,7 @@
             }
         }
 
-        // === 6. 數據面板 ===
+        // === 7. 數據面板 (Pill UI 全面升級) ===
         function renderStatistics() {
             currentCategorizedWords = { mastered: [], learning: [], hard: [], unlearned: [], graduated: [] };
             const hardList = document.getElementById('hardWordsList');
@@ -332,7 +370,8 @@
                     currentCategorizedWords.graduated.push(word);
                 } else if (data.easeFactor <= 2.1 && data.repetitions > 0) {
                     currentCategorizedWords.hard.push(word);
-                    hardList.innerHTML += `<li><b>${word}</b> (難度: ${data.easeFactor.toFixed(2)})</li>`;
+                    // 生成萌典連結 Pill
+                    hardList.innerHTML += `<a href="https://www.moedict.tw/${encodeURIComponent(word)}" target="_blank" class="dict-pill hard-pill">${word} <span class="pill-sub">阻力 ${data.easeFactor.toFixed(2)}</span></a>`;
                 } else if (data.interval >= 21) { 
                     currentCategorizedWords.mastered.push(word); 
                 } else { 
@@ -344,6 +383,7 @@
                 }
             }
             currentCategorizedWords.unlearned = FULL_POOL.filter(w => !srsDatabase[w]);
+            if (hardList.innerHTML === '') hardList.innerHTML = '<span style="color:#adb5bd; font-size:14px;">(目前無困難字元，太棒了！)</span>';
 
             const total = FULL_POOL.length;
             const pG = (currentCategorizedWords.graduated.length / total * 100).toFixed(1);
@@ -379,18 +419,26 @@
 
             upcomingArr.sort((a,b)=>a.time-b.time).filter(item => item.time > Date.now()).slice(0,10).forEach(item => {
                 const d = new Date(item.time);
-                upcomingList.innerHTML += `<li><b>${item.word}</b>排定於 -> ${d.getMonth()+1}/${d.getDate()}</li>`;
+                // 生成排程 Pill
+                upcomingList.innerHTML += `<a href="https://www.moedict.tw/${encodeURIComponent(item.word)}" target="_blank" class="dict-pill upcoming-pill">${item.word} <span class="pill-sub">${d.getMonth()+1}/${d.getDate()}</span></a>`;
             });
-            if(upcomingList.innerHTML === '') upcomingList.innerHTML = '<li>目前無未來排程</li>';
+            if(upcomingList.innerHTML === '') upcomingList.innerHTML = '<span style="color:#adb5bd; font-size:14px;">(目前無未來排程)</span>';
         }
 
+        // === 8. 細節檢視面板 (Pill 互動化) ===
         function showDetail(cat) {
             const view = document.getElementById('detailView');
             const list = document.getElementById('detailList');
             const titles = { graduated: '🎓 永久掌握 (已畢業不複習)', mastered: '✅ 長期記憶 (間隔>21天)', learning: '🔄 建構中 (發展中記憶)', hard: '⚠️ 困難阻力 (低易用度)', unlearned: '🔒 尚未解鎖' };
             view.classList.remove('hidden');
             document.getElementById('detailTitle').innerText = `${titles[cat]} 字元清單：`;
-            list.innerHTML = currentCategorizedWords[cat].length === 0 ? `<span style="background:transparent; box-shadow:none; color:#adb5bd;">(空)</span>` : currentCategorizedWords[cat].map(w => `<span>${w}</span>`).join('');
+            
+            if (currentCategorizedWords[cat].length === 0) {
+                list.innerHTML = `<span style="color:#adb5bd; font-size:14px; margin-left:5px;">(此分類目前為空)</span>`;
+            } else {
+                // 將所有清單字元轉換為可點擊的萌典膠囊
+                list.innerHTML = currentCategorizedWords[cat].map(w => `<a href="https://www.moedict.tw/${encodeURIComponent(w)}" target="_blank" class="dict-pill">${w}</a>`).join('');
+            }
         }
 
         function toggleDashboard() {
@@ -402,7 +450,7 @@
         function exportData() {
             const blob = new Blob([JSON.stringify({db: srsDatabase, stats: stats})], {type: "application/json"});
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `srs_backup_v3.3.json`; a.click();
+            const a = document.createElement('a'); a.href = url; a.download = `srs_backup_v3.4.json`; a.click();
         }
 
         function importData(e) {
