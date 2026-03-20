@@ -361,17 +361,20 @@ const FULL_POOL = [...TIER_1_1000, ...TIER_1001_2000, ...TIER_2000_PLUS];
                 </div>`;
         }
 
-        // === 6. 處理結果 ===
-        const originalProcessReview = processReview;
-        processReview = function(word, q) {
+// === 6. 處理結果 ===
+        function processReview(word, q) {
             let r = srsDatabase[word] || { interval: 0, repetitions: 0, easeFactor: 2.5 };
+            
             if (q === 0) { r.repetitions = 0; r.interval = 0; } 
             else { r.interval = calculateNextInterval(word, q); r.repetitions++; }
+            
             if (q !== 0) { r.easeFactor = Math.max(1.3, r.easeFactor + (0.1 - (3 - q) * (0.08 + (3 - q) * 0.02))); } 
             else { r.easeFactor = Math.max(1.3, r.easeFactor - 0.2); }
+            
             r.nextReview = q === 0 ? Date.now() : Date.now() + (r.interval * 24 * 60 * 60 * 1000);
             srsDatabase[word] = r;
             localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
+            
             let card = document.getElementById(`card-${word}`);
             if (q === 0 || r.interval === 0) {
                 let deck = document.getElementById('deck');
@@ -386,7 +389,7 @@ const FULL_POOL = [...TIER_1_1000, ...TIER_1001_2000, ...TIER_2000_PLUS];
                 }, 300);
             } else { card.style.display = 'none'; }
             
-            // 觸發進度條更新
+            // 🚀 每次按鈕點擊後，即時觸發頂部 RPG 進度條更新！
             updateRPGRealm();
         }
 
