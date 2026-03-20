@@ -292,12 +292,13 @@ const FULL_POOL = [...TIER_1_1000, ...TIER_1001_2000, ...TIER_2000_PLUS];
             return nextInt;
         }
 
-        // === 4. 抽卡 ===
+// === 4. 抽卡引擎 (實裝 7:2:1 動態加權機率) ===
         document.getElementById('generateBtn').addEventListener('click', () => {
             updateStreak();
             document.getElementById('dashboard').classList.add('hidden');
             
             const now = Date.now();
+            // 1. 舊債優先處理
             let dueWords = Object.keys(srsDatabase).filter(w => srsDatabase[w].nextReview <= now && srsDatabase[w].interval < GRADUATION_INTERVAL);
             dueWords.sort((a, b) => srsDatabase[a].nextReview - srsDatabase[b].nextReview);
             
@@ -306,20 +307,42 @@ const FULL_POOL = [...TIER_1_1000, ...TIER_1001_2000, ...TIER_2000_PLUS];
             let reviewsToDraw = Math.min(dueWords.length, targetReviews);
             let newToDraw = maxDraw - reviewsToDraw; 
             
-            let unlearned = FULL_POOL.filter(w => !srsDatabase[w]);
-            if (newToDraw > unlearned.length) {
-                newToDraw = unlearned.length;
-                reviewsToDraw = Math.min(dueWords.length, maxDraw - newToDraw); 
+            let dailyDeck = dueWords.slice(0, reviewsToDraw).map(w => ({ word: w, type: 'review', tier: getWordTier(w) }));
+            
+            // 2. 🚀 新字擴張：70% 基礎 / 20% 進階 / 10% 挑戰
+            let unlearnedT1 = TIER_1_1000.filter(w => !srsDatabase[w]);
+            let unlearnedT2 = TIER_1001_2000.filter(w => !srsDatabase[w]);
+            let unlearnedT3 = TIER_2000_PLUS.filter(w => !srsDatabase[w]);
+
+            let totalUnlearned = unlearnedT1.length + unlearnedT2.length + unlearnedT3.length;
+            if (newToDraw > totalUnlearned) {
+                newToDraw = totalUnlearned;
             }
 
-            let dailyDeck = dueWords.slice(0, reviewsToDraw).map(w => ({ word: w, type: 'review', tier: getWordTier(w) }));
             for (let i = 0; i < newToDraw; i++) {
-                let chosenWord = unlearned[Math.floor(Math.random() * unlearned.length)];
-                if (chosenWord) {
+                let pool = [];
+                let roll = Math.random(); // 擲骰子：0.00 ~ 0.99
+
+                // 依照 7:2:1 機率分發，並加入「防呆降級機制」(若該池已抽乾，則往下一個池子找)
+                if (roll < 0.7 && unlearnedT1.length > 0) {
+                    pool = unlearnedT1;
+                } else if (roll < 0.9 && unlearnedT2.length > 0) {
+                    pool = unlearnedT2;
+                } else if (unlearnedT3.length > 0) {
+                    pool = unlearnedT3;
+                } else {
+                    // 若骰中的池子剛好空了，從剩下的池子隨機抓取
+                    pool = unlearnedT1.length > 0 ? unlearnedT1 : (unlearnedT2.length > 0 ? unlearnedT2 : unlearnedT3);
+                }
+
+                if (pool.length > 0) {
+                    let idx = Math.floor(Math.random() * pool.length);
+                    let chosenWord = pool[idx];
                     dailyDeck.push({ word: chosenWord, type: 'new', tier: getWordTier(chosenWord) });
-                    unlearned = unlearned.filter(w => w !== chosenWord);
+                    pool.splice(idx, 1); // 從暫存池中移除，避免當次抽出重複字
                 }
             }
+            
             if (dailyDeck.length === 0) { alert("今天沒有待複習的字，新字也學完囉！"); return; }
             renderDeck(dailyDeck);
         });
