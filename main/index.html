@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小學生 SRS 字卡系統</title>
+    <title>小學生 SRS 字卡系統 (雙軌加權版)</title>
     <style>
         body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f4f4f9; padding: 20px; max-width: 800px; margin: auto; line-height: 1.6; }
         .controls { margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -14,19 +14,22 @@
         .btn-warning { background-color: #ffc107; color: black; }
         .btn-success { background-color: #28a745; color: white; }
         .btn-info { background-color: #17a2b8; color: white; width: 100%; margin-top: 15px; }
-        .card { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
+        .card { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; border-left: 5px solid #ccc; }
+        .card.review { border-left-color: #e74c3c; } /* 複習卡片標示紅邊 */
+        .card.new { border-left-color: #2ecc71; }    /* 新卡片標示綠邊 */
         .char-title { font-size: 48px; margin: 10px 0; }
         .dict-link { display: inline-block; margin-bottom: 15px; color: #0056b3; text-decoration: none; font-size: 18px; font-weight: bold; }
         .anki-controls { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
         .hidden { display: none; }
+        .badge { font-size: 12px; padding: 3px 8px; border-radius: 12px; color: white; vertical-align: top; margin-left: 10px; }
+        .badge.review { background: #e74c3c; }
+        .badge.new { background: #2ecc71; }
         
-        /* 統計面板專用樣式 */
         #dashboard { background: #2c3e50; color: #ecf0f1; padding: 20px; border-radius: 8px; margin-top: 20px; }
         #dashboard h3 { border-bottom: 1px solid #7f8c8d; padding-bottom: 10px; color: #f1c40f; }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .stat-box { background: #34495e; padding: 15px; border-radius: 6px; }
         .stat-box ul { padding-left: 20px; margin: 0; }
-        .tutorial { background: #ecf0f1; color: #2c3e50; padding: 15px; border-radius: 6px; margin-top: 15px; font-size: 15px; }
         
         @media (max-width: 600px) {
             .stat-grid { grid-template-columns: 1fr; }
@@ -36,35 +39,23 @@
 <body>
 
     <div class="controls">
-        <h2>📚 字卡管理面板</h2>
+        <h2>📚 字卡管理面板 (7:2:1 演算法)</h2>
         <button class="btn-primary" id="generateBtn">抽取今日字卡 (上限 10 字)</button>
         <button class="btn-warning" onclick="exportData()">匯出紀錄 (Backup)</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
         <button class="btn-warning" onclick="document.getElementById('importFile').click()">匯入紀錄 (Restore)</button>
-        <button class="btn-info" onclick="toggleDashboard()">切換數據儀表板與教學說明 📊</button>
+        <button class="btn-info" onclick="toggleDashboard()">切換數據儀表板 📊</button>
+        <p id="drawStats" style="color: #555; font-size: 14px; margin-top: 10px;"></p>
     </div>
 
     <div id="dashboard" class="hidden">
-        <h3>📖 系統使用邏輯教學 (基於 SM-2 間隔重複演算法)</h3>
-        <div class="tutorial">
-            <p>本系統並非隨機抽字，而是會根據大腦的「遺忘曲線」精準計算下次出現的時機。當您點擊以下按鈕時，系統的反應邏輯為：</p>
-            <ul>
-                <li>🔴 <b>重來 (Again)：</b> 完全忘記或不認識。該字將被打回原形，<strong>明天</strong>會強制再次出現。系統內部權重 (難易度) 會大幅降低。</li>
-                <li>🟠 <b>困難 (Hard)：</b> 思考了很久才想起來。複習間隔會稍微延長，但系統會標記為需要注意。</li>
-                <li>🟢 <b>良好 (Good)：</b> 正常回憶起來。系統會根據該字過去的表現，將複習天數乘上一個倍數（通常是 2.5 倍天數後再出現）。</li>
-                <li>🔵 <b>簡單 (Easy)：</b> 秒答，完全刻在腦海。複習間隔會大幅度跳躍（例如直接排到 10 天或一個月後），避免浪費時間重複學習已掌握的字。</li>
-            </ul>
-        </div>
-
         <div class="stat-grid">
             <div class="stat-box">
                 <h3>⚠️ 困難字庫 (需介入指導)</h3>
-                <p style="font-size: 12px; color: #bdc3c7;">(系統難易度權重過低，或反覆忘記的字)</p>
                 <ul id="hardWordsList"></ul>
             </div>
             <div class="stat-box">
                 <h3>🗓️ 待複習佇列 (未來排程)</h3>
-                <p style="font-size: 12px; color: #bdc3c7;">(依預計出現時間排序)</p>
                 <ul id="upcomingWordsList"></ul>
             </div>
         </div>
@@ -73,41 +64,118 @@
     <div id="deck"></div>
 
     <script>
-        // 核心字庫 (可持續擴充)
-        const WORD_POOL = [
-            '天', '地', '人', '和', '日', '月', '星', '辰', '山', '川', 
-            '樹', '木', '花', '草', '鳥', '獸', '蟲', '魚', '春', '夏',
-            '秋', '冬', '風', '雨', '雷', '電', '金', '水', '火', '土'
+        // 1. 三層字庫建置 (請將您 CSV 的完整資料覆蓋至對應陣列中)
+        // 目前先放入部分字元作為系統運算測試範本
+        const TIER_1_1000 = [
+            '的','一','是','不','了','在','人','有','我','他','這','個','們','中','來',
+            '上','大','為','和','國','地','到','以','說','時','要','就','出','會','可',
+            '也','你','對','生','能','而','子','那','得','於','著','下','自','之','年'
+        ];
+        
+        const TIER_1001_2000 = [
+            '艦','疆','屢','齋','叢','覆','藉','鬱','龜','籲','鑿','豔','贏','竊','聽',
+            '臟','舊','藏','轉','雜','醫','雙','額','題','願','騎','驗','體','鬆','麵'
+        ];
+        
+        const TIER_2000_PLUS = [
+            '龘','齉','齾','爩','麤','龗','灪','龖','厵','靐','魑','魅','魍','魎','饕',
+            '餮','耄','耋','羸','贔','驫','猋','麤','毳','淼'
         ];
         
         let srsDatabase = JSON.parse(localStorage.getItem('srs_db')) || {};
 
-        // 抽卡邏輯
-        document.getElementById('generateBtn').addEventListener('click', () => {
-            document.getElementById('dashboard').classList.add('hidden'); // 抽卡時隱藏面板
-            const now = Date.now();
-            let availableWords = WORD_POOL.filter(word => {
-                if (!srsDatabase[word]) return true; // 從未學過的新字
-                return srsDatabase[word].nextReview <= now; // 已達複習時間的舊字
-            });
+        // 提取未學習過的字
+        function getUnlearnedWords(pool) {
+            return pool.filter(word => !srsDatabase[word]);
+        }
 
-            if (availableWords.length === 0) {
-                alert("太棒了！今日所有的任務都已清空，沒有需要複習或學習的新字！");
+        // 2. 雙軌抽卡引擎
+        document.getElementById('generateBtn').addEventListener('click', () => {
+            document.getElementById('dashboard').classList.add('hidden');
+            const now = Date.now();
+            
+            // [軌道一] 擷取今日必須複習的字
+            let dueWords = [];
+            for (const word in srsDatabase) {
+                if (srsDatabase[word].nextReview <= now) {
+                    dueWords.push(word);
+                }
+            }
+            // 依據時間緊急度排序
+            dueWords.sort((a, b) => srsDatabase[a].nextReview - srsDatabase[b].nextReview);
+            
+            let dailyDeck = dueWords.slice(0, 10).map(w => ({ word: w, type: 'review' }));
+            let newQuota = 10 - dailyDeck.length;
+            let newWordsStats = { t1: 0, t2: 0, t3: 0 };
+
+            // [軌道二] 輪盤加權抽取新字 (70%, 20%, 10%)
+            if (newQuota > 0) {
+                let unlearnedT1 = getUnlearnedWords(TIER_1_1000);
+                let unlearnedT2 = getUnlearnedWords(TIER_1001_2000);
+                let unlearnedT3 = getUnlearnedWords(TIER_2000_PLUS);
+
+for (let i = 0; i < newQuota; i++) {
+                    // 修正：產生 1 到 100 的絕對整數
+                    let rand = Math.floor(Math.random() * 100) + 1; 
+                    let chosenWord = null;
+
+                    if (rand <= 70 && unlearnedT1.length > 0) {
+                        let idx = Math.floor(Math.random() * unlearnedT1.length);
+                        chosenWord = unlearnedT1.splice(idx, 1)[0];
+                        newWordsStats.t1++;
+                    } else if (rand > 70 && rand <= 90 && unlearnedT2.length > 0) {
+                        let idx = Math.floor(Math.random() * unlearnedT2.length);
+                        chosenWord = unlearnedT2.splice(idx, 1)[0];
+                        newWordsStats.t2++;
+                    } else if (rand > 90 && unlearnedT3.length > 0) {
+                        let idx = Math.floor(Math.random() * unlearnedT3.length);
+                        chosenWord = unlearnedT3.splice(idx, 1)[0];
+                        newWordsStats.t3++;
+                    } else {
+                        // Fallback: 若該層級已空，向下兼容抽取
+                        if (unlearnedT1.length > 0) {
+                            chosenWord = unlearnedT1.splice(Math.floor(Math.random() * unlearnedT1.length), 1)[0];
+                            newWordsStats.t1++;
+                        } else if (unlearnedT2.length > 0) {
+                            chosenWord = unlearnedT2.splice(Math.floor(Math.random() * unlearnedT2.length), 1)[0];
+                            newWordsStats.t2++;
+                        } else if (unlearnedT3.length > 0) {
+                            chosenWord = unlearnedT3.splice(Math.floor(Math.random() * unlearnedT3.length), 1)[0];
+                            newWordsStats.t3++;
+                        }
+                    }
+
+                    if (chosenWord) {
+                        dailyDeck.push({ word: chosenWord, type: 'new' });
+                    }
+                }
+            }
+
+            if (dailyDeck.length === 0) {
+                alert("太棒了！今日所有的任務都已清空，且字庫已全部學完！");
                 return;
             }
 
-            availableWords = availableWords.sort(() => 0.5 - Math.random()).slice(0, 10);
-            renderDeck(availableWords);
+            // 更新統計提示
+            document.getElementById('drawStats').innerText = 
+                `今日狀態：複習舊字 ${10 - newQuota} 個 ｜ 探索新字 ${newQuota} 個 (前千頻: ${newWordsStats.t1}, 中頻: ${newWordsStats.t2}, 挑戰: ${newWordsStats.t3})`;
+
+            renderDeck(dailyDeck);
         });
 
-        function renderDeck(words) {
+        // 3. 渲染邏輯
+        function renderDeck(deckArray) {
             const deck = document.getElementById('deck');
             deck.innerHTML = '';
-            words.forEach(word => {
+            deckArray.forEach(item => {
+                const word = item.word;
+                const typeClass = item.type; // 'review' or 'new'
+                const badgeText = typeClass === 'review' ? '待複習' : '新字';
                 const moeduUrl = `https://www.moedict.tw/${encodeURIComponent(word)}`;
+                
                 const cardHtml = `
-                    <div class="card" id="card-${word}">
-                        <div class="char-title">${word}</div>
+                    <div class="card ${typeClass}" id="card-${word}">
+                        <div class="char-title">${word} <span class="badge ${typeClass}">${badgeText}</span></div>
                         <a class="dict-link" href="${moeduUrl}" target="_blank">📖 查詢萌典 (${word})</a>
                         <div class="anki-controls">
                             <button class="btn-danger" onclick="processReview('${word}', 0)">重來</button>
@@ -121,7 +189,7 @@
             });
         }
 
-        // SM-2 演算法核心
+        // 4. SM-2 演算法
         function processReview(word, quality) {
             let record = srsDatabase[word] || { interval: 0, repetitions: 0, easeFactor: 2.5 };
             
@@ -146,68 +214,43 @@
             document.getElementById(`card-${word}`).classList.add('hidden');
         }
 
-        // 儀表板渲染邏輯
+        // 儀表板與備份邏輯 (縮減顯示以保持程式碼簡潔，邏輯與前版相同)
         function toggleDashboard() {
             const dashboard = document.getElementById('dashboard');
             dashboard.classList.toggle('hidden');
-            if (!dashboard.classList.contains('hidden')) {
-                renderStatistics();
-            }
+            if (!dashboard.classList.contains('hidden')) renderStatistics();
         }
 
         function renderStatistics() {
             const hardList = document.getElementById('hardWordsList');
             const upcomingList = document.getElementById('upcomingWordsList');
-            hardList.innerHTML = ''; 
-            upcomingList.innerHTML = '';
+            hardList.innerHTML = ''; upcomingList.innerHTML = '';
             
             const db = JSON.parse(localStorage.getItem('srs_db')) || {};
-            let hardArr = [];
-            let upcomingArr = [];
+            let hardArr = [], upcomingArr = [];
 
             for (const [word, data] of Object.entries(db)) {
-                // 判定困難字：權重極低 (<= 2.1) 且已經不是第一次學習
-                if (data.easeFactor <= 2.1 && data.repetitions > 0) {
-                    hardArr.push({ word: word, ef: data.easeFactor.toFixed(2) });
-                }
-                // 判定未來佇列：有下次複習時間
-                if (data.nextReview) {
-                    upcomingArr.push({ word: word, time: data.nextReview, interval: data.interval });
-                }
+                if (data.easeFactor <= 2.1 && data.repetitions > 0) hardArr.push({ word, ef: data.easeFactor.toFixed(2) });
+                if (data.nextReview) upcomingArr.push({ word, time: data.nextReview, interval: data.interval });
             }
 
-            // 渲染困難字庫
-            if (hardArr.length === 0) {
-                hardList.innerHTML = '<li>目前無困難字元。</li>';
-            } else {
-                // 依權重由低到高排序 (越低越困難)
-                hardArr.sort((a, b) => a.ef - b.ef).forEach(item => {
-                    hardList.innerHTML += `<li><b>${item.word}</b> (系統難度係數: ${item.ef})</li>`;
-                });
-            }
+            if (hardArr.length === 0) hardList.innerHTML = '<li>目前無困難字元。</li>';
+            else hardArr.sort((a, b) => a.ef - b.ef).forEach(item => hardList.innerHTML += `<li><b>${item.word}</b> (系統難度係數: ${item.ef})</li>`);
 
-            // 渲染未來佇列
-            if (upcomingArr.length === 0) {
-                upcomingList.innerHTML = '<li>目前無排程中的字元。</li>';
-            } else {
-                // 依時間先後排序
-                upcomingArr.sort((a, b) => a.time - b.time).forEach(item => {
-                    const dateObj = new Date(item.time);
-                    const dateStr = `${dateObj.getMonth() + 1}/${dateObj.getDate()} ${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
-                    upcomingList.innerHTML += `<li><b>${item.word}</b> -> 預計 ${dateStr} (間隔: ${item.interval}天)</li>`;
-                });
-            }
+            if (upcomingArr.length === 0) upcomingList.innerHTML = '<li>目前無排程中的字元。</li>';
+            else upcomingArr.sort((a, b) => a.time - b.time).forEach(item => {
+                const dateObj = new Date(item.time);
+                const dateStr = `${dateObj.getMonth() + 1}/${dateObj.getDate()} ${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
+                upcomingList.innerHTML += `<li><b>${item.word}</b> -> 預計 ${dateStr} (間隔: ${item.interval}天)</li>`;
+            });
         }
 
-        // 備份與還原
         function exportData() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(srsDatabase));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
             downloadAnchorNode.setAttribute("download", "srs_backup.json");
-            document.body.appendChild(downloadAnchorNode);
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
+            document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove();
         }
 
         function importData(event) {
@@ -216,16 +259,11 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const importedData = JSON.parse(e.target.result);
-                    srsDatabase = importedData;
+                    srsDatabase = JSON.parse(e.target.result);
                     localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
                     alert("紀錄匯入成功！");
-                    if (!document.getElementById('dashboard').classList.contains('hidden')) {
-                        renderStatistics(); // 重新渲染儀表板
-                    }
-                } catch (err) {
-                    alert("檔案格式錯誤。");
-                }
+                    if (!document.getElementById('dashboard').classList.contains('hidden')) renderStatistics();
+                } catch (err) { alert("檔案格式錯誤。"); }
             };
             reader.readAsText(file);
         }
