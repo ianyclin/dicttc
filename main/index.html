@@ -26,25 +26,27 @@
         .streak-badge { font-size: 1.25rem; font-weight: bold; display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px; }
         .streak-badge span { font-size: 1.8rem; color: #fde047; font-weight: 900; }
 
-        /* 控制面板 */
+/* === 控制面板與按鈕網格化 === */
         .controls { margin-bottom: 24px; padding: 30px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
-        .controls h2 { margin-top: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; color: var(--text); }
+        .controls h2 { margin-top: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; color: var(--text); margin-bottom: 20px;}
         
-        button { padding: 12px 24px; margin: 6px 6px 6px 0; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .btn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 10px; }
+        .btn-full-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+
+        button { padding: 12px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: 100%; display: flex; justify-content: center; align-items: center; gap: 6px;}
         button:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); filter: brightness(1.05); }
         button:active { transform: translateY(1px); }
         
         .btn-primary { background-color: var(--primary); color: white; }
         .btn-warning { background-color: var(--warning); color: white; }
-        .btn-info { background-color: var(--secondary); color: white; width: 100%; margin-top: 15px; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn-info { background-color: var(--secondary); color: white; }
+        .btn-secondary { background-color: #64748b; color: white; }
 
-        /* 說明選單 (對齊設計稿) */
-        details.manual { background: #f1f5f9; border-radius: 8px; padding: 16px 20px; margin-bottom: 20px; font-size: 14.5px; border-left: 6px solid var(--primary); transition: all 0.3s ease; }
-        details.manual summary { font-weight: bold; cursor: pointer; color: var(--secondary); outline: none; font-size: 15px; display: flex; align-items: center; gap: 8px; }
-        details.manual summary::marker { color: var(--primary); }
-        details.manual .content-block { margin-top: 15px; color: #334155; line-height: 1.7; }
-        details.manual .content-block ul { padding-left: 20px; margin: 8px 0; }
-        details.manual .content-block li { margin-bottom: 6px; }
+        /* 隱藏式說明面板 */
+        .manual-panel { background: #f8fafc; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 20px; font-size: 14.5px; border-left: 6px solid #64748b; }
+        .manual-panel .content-block { color: #334155; line-height: 1.7; }
+        .manual-panel .content-block ul { padding-left: 20px; margin: 8px 0; }
+        .manual-panel .content-block li { margin-bottom: 6px; }
         
         /* 字卡區 */
         .card { background: var(--card-bg); border-radius: 16px; padding: 40px 30px; margin-bottom: 24px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); text-align: center; border-top: 8px solid #e2e8f0; transition: all 0.3s ease; }
@@ -116,35 +118,39 @@
         <div class="streak-badge">🔥 連續學習天數 <span id="streakDays">0</span> 天</div>
     </div>
 
-    <div class="controls">
-        <h2>📚 字卡管理面板</h2>
+<div class="controls">
+        <h2>📚 小學生 SRS 字卡系統</h2>
         
-        <details class="manual">
-            <summary>📘 家長專區：字庫與評估說明</summary>
+        <div id="manualPanel" class="manual-panel hidden">
             <div class="content-block">
-                <strong>1. 字庫配置 (總計 2867 字，資料來源為臺灣教育研究資訊網 108 年高頻字，約覆蓋 99% 語料)：</strong>
+                <strong>1. 字庫配置 (2867 字，覆蓋 99% 語料)：</strong>
                 <ul>
-                    <li><b>基礎區間</b> (第 1~1000 字)：約佔 <b>85%</b>，是識字核心。</li>
-                    <li><b>進階區間</b> (第 1001~2000 字)：約佔 <b>10%</b>，可提升閱讀流暢度與語意精確度。</li>
-                    <li><b>挑戰區間</b> (第 2001~2867 字)：約佔 <b>4%</b>，構築長尾防線，用以應付艱深文本。</li>
+                    <li><b>基礎區間</b> (第 1~1000 字)：佔 <b>85%</b>，識字核心。</li>
+                    <li><b>進階區間</b> (第 1001~2000 字)：佔 <b>10%</b>，提升流暢度。</li>
+                    <li><b>挑戰區間</b> (第 2001~2867 字)：佔 <b>4%</b>，長尾防線。</li>
                 </ul>
                 <hr style="border:0; border-top:1px dashed #cbd5e1; margin: 15px 0;">
-                <strong>2. 按鈕評估準則 (主動回想與 SRS 演算法)：</strong>
+                <strong>2. 按鈕評估準則 (主動回想與演算法)：</strong>
                 <ul>
-                    <li>🔴 <b>完全忘記</b>：一片空白，看萌典才想起。 <i>(系統：打回原形，1分鐘後重考)</i></li>
+                    <li>🔴 <b>完全忘記</b>：一片空白，看萌典才想起。 <i>(系統：重置連擊，1分鐘後重考)</i></li>
                     <li>🟠 <b>困難</b>：猶豫超過 3 秒，或差點認錯。 <i>(系統：間隔天數折半，加強監控)</i></li>
                     <li>🔵 <b>良好</b>：稍微想 1~2 秒，順利且正確答出。 <i>(系統：正常拉長複習間隔)</i></li>
                     <li>🟣 <b>簡單</b>：看到字瞬間 (0.5秒內) 知道讀音跟意思。 <i>(系統：大幅延後複習時間)</i></li>
-                    <li>🎓 <b>畢業機制</b>：當單字複習間隔大於 <b>180 天</b>，判定為「永久掌握」，系統將自動剔除以釋放記憶頻寬。</li>
+                    <li>🎓 <b>畢業機制</b>：複習間隔 > <b>180 天</b>，判定永久掌握並剔除。</li>
                 </ul>
             </div>
-        </details>
+        </div>
 
-        <button class="btn-primary" id="generateBtn">抽取今日挑戰字卡 (10 張)</button>
-        <button class="btn-warning" onclick="exportData()">儲存進度 (Export)</button>
-        <button class="btn-warning" onclick="document.getElementById('importFile').click()">讀取進度 (Import)</button>
-        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-        <button class="btn-info" onclick="toggleDashboard()">📊 學習數據看板</button>
+        <div class="btn-grid">
+            <button class="btn-primary" id="generateBtn">抽取每日字卡 (10 張)</button>
+            <button class="btn-warning" onclick="exportData()">儲存進度 (Export)</button>
+            <button class="btn-warning" onclick="document.getElementById('importFile').click()">讀取進度 (Import)</button>
+            <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+        </div>
+        <div class="btn-full-grid">
+            <button class="btn-secondary" onclick="document.getElementById('manualPanel').classList.toggle('hidden')">📘 系統操作指南</button>
+            <button class="btn-info" onclick="toggleDashboard()">📊 學習數據看板</button>
+        </div>
     </div>
 
     <div id="dashboard" class="hidden">
