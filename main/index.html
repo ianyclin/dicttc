@@ -23,7 +23,6 @@
         .anki-controls { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
         .hidden { display: none; }
         
-        /* 標籤視覺設計 */
         .badge { font-size: 13px; padding: 4px 10px; border-radius: 12px; color: white; vertical-align: middle; margin-left: 8px; font-weight: normal; }
         .badge.review { background: #e74c3c; }
         .badge.new { background: #2ecc71; }
@@ -31,29 +30,33 @@
         .badge.tier-進階 { background: #9b59b6; }
         .badge.tier-挑戰 { background: #2c3e50; color: #f1c40f; border: 1px solid #f1c40f; font-weight: bold; }
         
-        /* 儀表板設計 */
         #dashboard { background: #2c3e50; color: #ecf0f1; padding: 20px; border-radius: 8px; margin-top: 20px; }
         #dashboard h3 { border-bottom: 1px solid #7f8c8d; padding-bottom: 10px; color: #f1c40f; margin-top: 0; }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .stat-box { background: #34495e; padding: 15px; border-radius: 6px; }
         .stat-box ul { padding-left: 20px; margin: 0; font-size: 15px; }
         
-        /* 進度條設計 */
+        /* 進度條與細節區塊 */
         .progress-wrapper { background: #34495e; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
         .progress-bar { display: flex; height: 22px; border-radius: 11px; overflow: hidden; margin-top: 10px; background: #7f8c8d; }
-        .seg-mastered { background: #2ecc71; transition: width 0.5s; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: rgba(0,0,0,0.5); }
-        .seg-learning { background: #3498db; transition: width 0.5s; }
-        .seg-hard { background: #e74c3c; transition: width 0.5s; }
+        .seg { height: 100%; transition: width 0.5s; cursor: pointer; }
+        .seg-mastered { background: #2ecc71; }
+        .seg-learning { background: #3498db; }
+        .seg-hard { background: #e74c3c; }
+        
         .legend { display: flex; justify-content: space-between; flex-wrap: wrap; font-size: 13px; margin-top: 12px; color: #bdc3c7; }
+        .legend span { cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; }
+        .legend span:hover { background: rgba(255,255,255,0.1); color: #fff; }
         .legend span::before { content: ''; display: inline-block; width: 12px; height: 12px; margin-right: 6px; border-radius: 50%; vertical-align: -1px; }
         .leg-mastered::before { background: #2ecc71; }
         .leg-learning::before { background: #3498db; }
         .leg-hard::before { background: #e74c3c; }
         .leg-unlearned::before { background: #7f8c8d; }
+
+        .detail-view { background: rgba(0,0,0,0.2); border-radius: 6px; padding: 15px; margin-top: 15px; border: 1px dashed #7f8c8d; max-height: 200px; overflow-y: auto; word-break: break-all; }
+        .detail-view span { display: inline-block; padding: 2px 6px; margin: 2px; background: #2c3e50; border-radius: 3px; font-size: 14px; }
         
-        @media (max-width: 600px) {
-            .stat-grid { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 600px) { .stat-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -70,8 +73,12 @@
 
     <div id="dashboard" class="hidden">
         <div id="progressContainer" class="progress-wrapper"></div>
+        <div id="detailView" class="detail-view hidden">
+            <h4 id="detailTitle" style="margin-top:0; color:#f1c40f;">點擊上方標籤查看字元...</h4>
+            <div id="detailList"></div>
+        </div>
 
-        <div class="stat-grid">
+        <div class="stat-grid" style="margin-top:20px;">
             <div class="stat-box">
                 <h3>⚠️ 困難字庫 (需介入指導)</h3>
                 <ul id="hardWordsList"></ul>
@@ -90,10 +97,11 @@
         const TIER_1_1000 = "的一是在人不有了我他這個們中來上大為和國地到以說時要就出會可也你對生能而子那得於著下自之年過發後作裡用道行所然家種事成方多經麼去法學如都同日沒公實起看又但理些只機當無外文心前明本好天兩其三新水意動正開長點月回手十分把字己面物電高頭小見主此比期情問代最重相體更部從與或展現表化全老平做教打兒路原車女認知先通入度建想別四被走數話性幾管氣常真海間界少立指算特果書結信目聲計金空吃交白百向市加名色男馬光記神風變讓期活帶區力聽品死找許告近星樂定身音萬關千愛夜師直親題買太容客答室城思位決病完覺球往半難友院衣落笑機寫媽非候畫哥拿遠言樹飛火跑早王母姐弟父妹爸休玩步唱錢站".split('');
         const TIER_1001_2000 = "艦疆屢齋叢覆藉鬱龜籲鑿豔贏竊聽臟舊藏轉雜醫雙額題願騎驗體鬆麵魔鱗鼠齡鑑彎鑄鐵顧躍霸轟露響驅髓驗驚驛驟驢驥驪骨髒髓體高髦髮髯髻髭鬃鬆鬍鬚鬢鬥鬧鬨鬱鬼魁魂魅魄魏魔魘鬲魚魷魯鮑鮮鮫鮪鯊鯉鯽鯨鯧鰓鰍鰭鰥鱉鰱鰾鰻鱔鱗鱖鱷鱸鳥鳩鳴鳶鳳鴆鴉鴕鴣鴦鴨鴒鴛鴻鴿鵑鵝鵠鶉鵡鵲鵪鵬鶯鶴鷂鷓鷗鷥鷹鷺鸚鸞鹹鹼鹽鹿麂麋麒麗麓麝麟麥麩麴麵麻麼麾黃黍黎黏黑墨默黔點黜黝黛黠黨黯黴黷鼇鼎鼓鼕鼙鼠鼬鼴鼻鼾齊齋齒齟齣齡齜齦齬齪齷齲龍龔龜".split('');
         const TIER_2000_PLUS = "龘齉齾爩麤龗灪龖厵靐魑魅魍魎饕餮耄耋羸贔驫猋麤毳淼焱垚犇羴贔靐龘齉齾爩麤龗灪龖厵靐".split('');
+        const FULL_POOL = [...TIER_1_1000, ...TIER_1001_2000, ...TIER_2000_PLUS];
         
         let srsDatabase = JSON.parse(localStorage.getItem('srs_db')) || {};
+        let currentCategorizedWords = { mastered: [], learning: [], hard: [], unlearned: [] };
 
-        // === 2. 輔助函數 ===
         function getWordTier(word) {
             if (TIER_1_1000.includes(word)) return '基礎';
             if (TIER_1001_2000.includes(word)) return '進階';
@@ -101,224 +109,142 @@
             return '自訂';
         }
 
-        function getUnlearnedWords(pool) {
-            return pool.filter(word => !srsDatabase[word]);
-        }
-
-        // === 3. 核心抽卡引擎 ===
+        // === 抽卡與渲染 (與前版相同) ===
         document.getElementById('generateBtn').addEventListener('click', () => {
             document.getElementById('dashboard').classList.add('hidden');
             const now = Date.now();
-            
             let dueWords = [];
-            for (const word in srsDatabase) {
-                if (srsDatabase[word].nextReview <= now) dueWords.push(word);
-            }
+            for (const word in srsDatabase) { if (srsDatabase[word].nextReview <= now) dueWords.push(word); }
             dueWords.sort((a, b) => srsDatabase[a].nextReview - srsDatabase[b].nextReview);
-            
             let dailyDeck = dueWords.slice(0, 10).map(w => ({ word: w, type: 'review', tier: getWordTier(w) }));
             let newQuota = 10 - dailyDeck.length;
             let newWordsStats = { t1: 0, t2: 0, t3: 0 };
-
             if (newQuota > 0) {
-                let unlearnedT1 = getUnlearnedWords(TIER_1_1000);
-                let unlearnedT2 = getUnlearnedWords(TIER_1001_2000);
-                let unlearnedT3 = getUnlearnedWords(TIER_2000_PLUS);
-
+                let unlearnedT1 = TIER_1_1000.filter(word => !srsDatabase[word]);
+                let unlearnedT2 = TIER_1001_2000.filter(word => !srsDatabase[word]);
+                let unlearnedT3 = TIER_2000_PLUS.filter(word => !srsDatabase[word]);
                 for (let i = 0; i < newQuota; i++) {
-                    let rand = Math.floor(Math.random() * 100) + 1; 
+                    let rand = Math.floor(Math.random() * 100) + 1;
                     let chosenWord = null;
-
-                    if (rand <= 70 && unlearnedT1.length > 0) {
-                        chosenWord = unlearnedT1.splice(Math.floor(Math.random() * unlearnedT1.length), 1)[0];
-                        newWordsStats.t1++;
-                    } else if (rand > 70 && rand <= 90 && unlearnedT2.length > 0) {
-                        chosenWord = unlearnedT2.splice(Math.floor(Math.random() * unlearnedT2.length), 1)[0];
-                        newWordsStats.t2++;
-                    } else if (rand > 90 && unlearnedT3.length > 0) {
-                        chosenWord = unlearnedT3.splice(Math.floor(Math.random() * unlearnedT3.length), 1)[0];
-                        newWordsStats.t3++;
-                    } else {
-                        if (unlearnedT1.length > 0) {
-                            chosenWord = unlearnedT1.splice(Math.floor(Math.random() * unlearnedT1.length), 1)[0];
-                            newWordsStats.t1++;
-                        } else if (unlearnedT2.length > 0) {
-                            chosenWord = unlearnedT2.splice(Math.floor(Math.random() * unlearnedT2.length), 1)[0];
-                            newWordsStats.t2++;
-                        } else if (unlearnedT3.length > 0) {
-                            chosenWord = unlearnedT3.splice(Math.floor(Math.random() * unlearnedT3.length), 1)[0];
-                            newWordsStats.t3++;
-                        }
+                    if (rand <= 70 && unlearnedT1.length > 0) { chosenWord = unlearnedT1.splice(Math.floor(Math.random() * unlearnedT1.length), 1)[0]; newWordsStats.t1++; }
+                    else if (rand > 70 && rand <= 90 && unlearnedT2.length > 0) { chosenWord = unlearnedT2.splice(Math.floor(Math.random() * unlearnedT2.length), 1)[0]; newWordsStats.t2++; }
+                    else if (rand > 90 && unlearnedT3.length > 0) { chosenWord = unlearnedT3.splice(Math.floor(Math.random() * unlearnedT3.length), 1)[0]; newWordsStats.t3++; }
+                    else {
+                        if (unlearnedT1.length > 0) chosenWord = unlearnedT1.splice(Math.floor(Math.random() * unlearnedT1.length), 1)[0];
+                        else if (unlearnedT2.length > 0) chosenWord = unlearnedT2.splice(Math.floor(Math.random() * unlearnedT2.length), 1)[0];
+                        else if (unlearnedT3.length > 0) chosenWord = unlearnedT3.splice(Math.floor(Math.random() * unlearnedT3.length), 1)[0];
                     }
-
-                    if (chosenWord) {
-                        dailyDeck.push({ word: chosenWord, type: 'new', tier: getWordTier(chosenWord) });
-                    }
+                    if (chosenWord) dailyDeck.push({ word: chosenWord, type: 'new', tier: getWordTier(chosenWord) });
                 }
             }
-
-            if (dailyDeck.length === 0) {
-                alert("太棒了！今日所有的任務都已清空，且字庫已全部學完！");
-                return;
-            }
-
-            document.getElementById('drawStats').innerText = 
-                `今日狀態：複習舊字 ${10 - newQuota} 個 ｜ 探索新字 ${newQuota} 個 (基礎: ${newWordsStats.t1}, 進階: ${newWordsStats.t2}, 挑戰: ${newWordsStats.t3})`;
-
+            if (dailyDeck.length === 0) { alert("任務已清空！"); return; }
+            document.getElementById('drawStats').innerText = `今日：複習 ${10 - newQuota} ｜ 新字 ${newQuota} (基礎:${newWordsStats.t1}, 進階:${newWordsStats.t2}, 挑戰:${newWordsStats.t3})`;
             renderDeck(dailyDeck);
         });
 
-        // === 4. UI 渲染引擎 ===
         function renderDeck(deckArray) {
             const deck = document.getElementById('deck');
             deck.innerHTML = '';
             deckArray.forEach(item => {
-                const word = item.word;
-                const typeClass = item.type; 
-                const badgeText = typeClass === 'review' ? '待複習' : '新字';
-                const tierBadge = `<span class="badge tier-${item.tier}">${item.tier}</span>`;
-                const moeduUrl = `https://www.moedict.tw/${encodeURIComponent(word)}`;
-                
-                const cardHtml = `
-                    <div class="card ${typeClass}" id="card-${word}">
-                        <div class="char-title">
-                            ${word} 
-                            <span class="badge ${typeClass}">${badgeText}</span>
-                            ${tierBadge}
-                        </div>
-                        <a class="dict-link" href="${moeduUrl}" target="_blank">📖 查詢萌典 (${word})</a>
+                const moeduUrl = `https://www.moedict.tw/${encodeURIComponent(item.word)}`;
+                deck.innerHTML += `
+                    <div class="card ${item.type}" id="card-${item.word}">
+                        <div class="char-title">${item.word} <span class="badge ${item.type}">${item.type==='review'?'待複習':'新字'}</span><span class="badge tier-${item.tier}">${item.tier}</span></div>
+                        <a class="dict-link" href="${moeduUrl}" target="_blank">📖 查詢萌典</a>
                         <div class="anki-controls">
-                            <button class="btn-danger" onclick="processReview('${word}', 0)">重來</button>
-                            <button class="btn-warning" onclick="processReview('${word}', 1)">困難</button>
-                            <button class="btn-success" onclick="processReview('${word}', 2)">良好</button>
-                            <button class="btn-primary" onclick="processReview('${word}', 3)">簡單</button>
+                            <button class="btn-danger" onclick="processReview('${item.word}', 0)">重來</button>
+                            <button class="btn-warning" onclick="processReview('${item.word}', 1)">困難</button>
+                            <button class="btn-success" onclick="processReview('${item.word}', 2)">良好</button>
+                            <button class="btn-primary" onclick="processReview('${item.word}', 3)">簡單</button>
                         </div>
-                    </div>
-                `;
-                deck.innerHTML += cardHtml;
+                    </div>`;
             });
         }
 
-        // === 5. SM-2 記憶演算法 ===
-        function processReview(word, quality) {
-            let record = srsDatabase[word] || { interval: 0, repetitions: 0, easeFactor: 2.5 };
-            
-            if (quality === 0) {
-                record.repetitions = 0;
-                record.interval = 1;
-            } else {
-                record.repetitions += 1;
-                if (record.repetitions === 1) record.interval = 1;
-                else if (record.repetitions === 2) record.interval = 6;
-                else record.interval = Math.round(record.interval * record.easeFactor);
-            }
-            
-            record.easeFactor = record.easeFactor + (0.1 - (3 - quality) * (0.08 + (3 - quality) * 0.02));
-            if (record.easeFactor < 1.3) record.easeFactor = 1.3;
-
-            record.nextReview = Date.now() + (record.interval * 24 * 60 * 60 * 1000);
-            
-            srsDatabase[word] = record;
+        function processReview(word, q) {
+            let r = srsDatabase[word] || { interval: 0, repetitions: 0, easeFactor: 2.5 };
+            if (q === 0) { r.repetitions = 0; r.interval = 1; }
+            else { r.repetitions++; if (r.repetitions === 1) r.interval = 1; else if (r.repetitions === 2) r.interval = 6; else r.interval = Math.round(r.interval * r.easeFactor); }
+            r.easeFactor = r.easeFactor + (0.1 - (3 - q) * (0.08 + (3 - q) * 0.02));
+            if (r.easeFactor < 1.3) r.easeFactor = 1.3;
+            r.nextReview = Date.now() + (r.interval * 24 * 60 * 60 * 1000);
+            srsDatabase[word] = r;
             localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
-            
             document.getElementById(`card-${word}`).classList.add('hidden');
         }
 
-        // === 6. 數據儀表板與 I/O 備份 ===
+        // === 儀表板與詳細查看邏輯 ===
         function toggleDashboard() {
-            const dashboard = document.getElementById('dashboard');
-            dashboard.classList.toggle('hidden');
-            if (!dashboard.classList.contains('hidden')) renderStatistics();
+            const db = document.getElementById('dashboard');
+            db.classList.toggle('hidden');
+            if (!db.classList.contains('hidden')) renderStatistics();
         }
 
         function renderStatistics() {
-            const db = JSON.parse(localStorage.getItem('srs_db')) || {};
-            
-            // 處理清單列表
+            currentCategorizedWords = { mastered: [], learning: [], hard: [], unlearned: [] };
+            const db = srsDatabase;
             const hardList = document.getElementById('hardWordsList');
             const upcomingList = document.getElementById('upcomingWordsList');
             hardList.innerHTML = ''; upcomingList.innerHTML = '';
             
-            let hardArr = [], upcomingArr = [];
-            let stats = { mastered: 0, learning: 0, hard: 0 };
-            
-            // 處理進度條資料
-            const totalWords = TIER_1_1000.length + TIER_1001_2000.length + TIER_2000_PLUS.length;
-
+            let upcomingArr = [];
             for (const [word, data] of Object.entries(db)) {
-                // 清單邏輯
-                if (data.easeFactor <= 2.1 && data.repetitions > 0) hardArr.push({ word, ef: data.easeFactor.toFixed(2) });
-                if (data.nextReview) upcomingArr.push({ word, time: data.nextReview, interval: data.interval });
-                
-                // 進度條邏輯
                 if (data.easeFactor <= 2.1 && data.repetitions > 0) {
-                    stats.hard++;
-                } else if (data.interval >= 21) {
-                    stats.mastered++; // 間隔超過 3 週視為長期記憶
-                } else {
-                    stats.learning++;
-                }
+                    currentCategorizedWords.hard.push(word);
+                    hardList.innerHTML += `<li><b>${word}</b> (難度: ${data.easeFactor.toFixed(2)})</li>`;
+                } else if (data.interval >= 21) { currentCategorizedWords.mastered.push(word); }
+                else { currentCategorizedWords.learning.push(word); }
+                if (data.nextReview) upcomingArr.push({ word, time: data.nextReview });
             }
+            currentCategorizedWords.unlearned = FULL_POOL.filter(w => !db[w]);
 
-            const unlearned = totalWords - (stats.mastered + stats.learning + stats.hard);
-            
-            // 渲染進度條
-            const pctMastered = ((stats.mastered / totalWords) * 100).toFixed(1);
-            const pctLearning = ((stats.learning / totalWords) * 100).toFixed(1);
-            const pctHard = ((stats.hard / totalWords) * 100).toFixed(1);
-            
+            const total = FULL_POOL.length;
+            const pM = (currentCategorizedWords.mastered.length / total * 100).toFixed(1);
+            const pL = (currentCategorizedWords.learning.length / total * 100).toFixed(1);
+            const pH = (currentCategorizedWords.hard.length / total * 100).toFixed(1);
+
             document.getElementById('progressContainer').innerHTML = `
-                <h3>📈 學習進度光譜 (字庫總計: ${totalWords} 字)</h3>
+                <h3>📈 學習進度光譜 (總計: ${total} 字)</h3>
                 <div class="progress-bar">
-                    <div class="seg-mastered" style="width: ${pctMastered}%" title="長期記憶">${pctMastered > 5 ? pctMastered+'%' : ''}</div>
-                    <div class="seg-learning" style="width: ${pctLearning}%" title="建構中"></div>
-                    <div class="seg-hard" style="width: ${pctHard}%" title="困難阻力"></div>
+                    <div class="seg seg-mastered" style="width: ${pM}%" onclick="showDetail('mastered')"></div>
+                    <div class="seg seg-learning" style="width: ${pL}%" onclick="showDetail('learning')"></div>
+                    <div class="seg seg-hard" style="width: ${pH}%" onclick="showDetail('hard')"></div>
                 </div>
                 <div class="legend">
-                    <span class="leg-mastered">長期記憶 (${stats.mastered})</span>
-                    <span class="leg-learning">建構中 (${stats.learning})</span>
-                    <span class="leg-hard">困難阻力 (${stats.hard})</span>
-                    <span class="leg-unlearned">尚未解鎖 (${unlearned})</span>
-                </div>
-            `;
-
-            // 渲染清單
-            if (hardArr.length === 0) hardList.innerHTML = '<li>目前無困難字元。</li>';
-            else hardArr.sort((a, b) => a.ef - b.ef).forEach(item => hardList.innerHTML += `<li><b>${item.word}</b> (系統難度係數: ${item.ef})</li>`);
-
-            if (upcomingArr.length === 0) upcomingList.innerHTML = '<li>目前無排程中的字元。</li>';
-            else upcomingArr.sort((a, b) => a.time - b.time).forEach(item => {
-                const dateObj = new Date(item.time);
-                const dateStr = `${dateObj.getMonth() + 1}/${dateObj.getDate()} ${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
-                upcomingList.innerHTML += `<li><b>${item.word}</b> -> 預計 ${dateStr} (間隔: ${item.interval}天)</li>`;
+                    <span class="leg-mastered" onclick="showDetail('mastered')">長期記憶 (${currentCategorizedWords.mastered.length})</span>
+                    <span class="leg-learning" onclick="showDetail('learning')">建構中 (${currentCategorizedWords.learning.length})</span>
+                    <span class="leg-hard" onclick="showDetail('hard')">困難阻力 (${currentCategorizedWords.hard.length})</span>
+                    <span class="leg-unlearned" onclick="showDetail('unlearned')">尚未解鎖 (${currentCategorizedWords.unlearned.length})</span>
+                </div>`;
+            
+            upcomingArr.sort((a,b)=>a.time-b.time).slice(0,10).forEach(item => {
+                const d = new Date(item.time);
+                upcomingList.innerHTML += `<li><b>${item.word}</b> -> ${d.getMonth()+1}/${d.getDate()}</li>`;
             });
+        }
+
+        function showDetail(cat) {
+            const view = document.getElementById('detailView');
+            const list = document.getElementById('detailList');
+            const titles = { mastered: '長期記憶', learning: '建構中', hard: '困難阻力', unlearned: '尚未解鎖' };
+            
+            view.classList.remove('hidden');
+            document.getElementById('detailTitle').innerText = `${titles[cat]} 字元清單：`;
+            list.innerHTML = currentCategorizedWords[cat].map(w => `<span>${w}</span>`).join('');
+            view.scrollIntoView({ behavior: 'smooth' });
         }
 
         function exportData() {
             const d = new Date();
             const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
-            const fileName = `srs_backup_${dateStr}.json`;
-
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(srsDatabase));
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", fileName);
-            document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove();
+            const a = document.createElement('a'); a.href = dataStr; a.download = `srs_backup_${dateStr}.json`; a.click();
         }
 
         function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    srsDatabase = JSON.parse(e.target.result);
-                    localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
-                    alert("紀錄匯入成功！");
-                    if (!document.getElementById('dashboard').classList.contains('hidden')) renderStatistics();
-                } catch (err) { alert("檔案格式錯誤。"); }
-            };
-            reader.readAsText(file);
+            reader.onload = (e) => { srsDatabase = JSON.parse(e.target.result); localStorage.setItem('srs_db', JSON.stringify(srsDatabase)); alert("匯入成功！"); renderStatistics(); };
+            reader.readAsText(event.target.files[0]);
         }
     </script>
 </body>
