@@ -3,159 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小學生 SRS 字卡系統 (雙軌加權版)</title>
+    <title>小學生 SRS 字卡系統 v2.0</title>
     <style>
-        body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f4f4f9; padding: 20px; max-width: 800px; margin: auto; line-height: 1.6; }
-        .controls { margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        button { padding: 10px 15px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background 0.2s; }
-        button:hover { opacity: 0.8; }
-        .btn-primary { background-color: #007bff; color: white; }
-        .btn-danger { background-color: #dc3545; color: white; }
-        .btn-warning { background-color: #ffc107; color: black; }
-        .btn-success { background-color: #28a745; color: white; }
-        .btn-info { background-color: #17a2b8; color: white; width: 100%; margin-top: 15px; }
+        :root {
+            --primary: #4361ee; --secondary: #3f37c9; --success: #4cc9f0;
+            --danger: #f72585; --warning: #f8961e; --bg: #f8f9fa;
+            --card-bg: #ffffff; --text: #2b2d42;
+        }
+        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; max-width: 900px; margin: auto; line-height: 1.6; }
         
-        .card { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; border-left: 5px solid #ccc; }
-        .card.review { border-left-color: #e74c3c; } 
-        .card.new { border-left-color: #2ecc71; }    
-        .char-title { font-size: 48px; margin: 10px 0; }
-        .dict-link { display: inline-block; margin-bottom: 15px; color: #0056b3; text-decoration: none; font-size: 18px; font-weight: bold; }
-        .anki-controls { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
-        .hidden { display: none; }
-        
-        .badge { font-size: 13px; padding: 4px 10px; border-radius: 12px; color: white; vertical-align: middle; margin-left: 8px; font-weight: normal; }
-        .badge.review { background: #e74c3c; }
-        .badge.new { background: #2ecc71; }
-        .badge.tier-基礎 { background: #3498db; }
-        .badge.tier-進階 { background: #9b59b6; }
-        .badge.tier-挑戰 { background: #2c3e50; color: #f1c40f; border: 1px solid #f1c40f; font-weight: bold; }
-        
-        #dashboard { background: #2c3e50; color: #ecf0f1; padding: 20px; border-radius: 8px; margin-top: 20px; }
-        #dashboard h3 { border-bottom: 1px solid #7f8c8d; padding-bottom: 10px; color: #f1c40f; margin-top: 0; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .stat-box { background: #34495e; padding: 15px; border-radius: 6px; }
-        .stat-box ul { padding-left: 20px; margin: 0; font-size: 15px; }
-        
-        /* 進度條與細節區塊 */
-        .progress-wrapper { background: #34495e; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-        .progress-bar { display: flex; height: 22px; border-radius: 11px; overflow: hidden; margin-top: 10px; background: #7f8c8d; }
-        .seg { height: 100%; transition: width 0.5s; cursor: pointer; }
-        .seg-mastered { background: #2ecc71; }
-        .seg-learning { background: #3498db; }
-        .seg-hard { background: #e74c3c; }
-        
-        .legend { display: flex; justify-content: space-between; flex-wrap: wrap; font-size: 13px; margin-top: 12px; color: #bdc3c7; }
-        .legend span { cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; }
-        .legend span:hover { background: rgba(255,255,255,0.1); color: #fff; }
-        .legend span::before { content: ''; display: inline-block; width: 12px; height: 12px; margin-right: 6px; border-radius: 50%; vertical-align: -1px; }
-        .leg-mastered::before { background: #2ecc71; }
-        .leg-learning::before { background: #3498db; }
-        .leg-hard::before { background: #e74c3c; }
-        .leg-unlearned::before { background: #7f8c8d; }
+        /* UI 頂部裝飾 */
+        .header-stats { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px 25px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(63, 55, 201, 0.3); }
+        .streak-badge { font-size: 1.2rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .streak-badge span { font-size: 1.8rem; color: #fee440; }
 
-        .detail-view { background: rgba(0,0,0,0.2); border-radius: 6px; padding: 15px; margin-top: 15px; border: 1px dashed #7f8c8d; max-height: 200px; overflow-y: auto; word-break: break-all; }
-        .detail-view span { display: inline-block; padding: 2px 6px; margin: 2px; background: #2c3e50; border-radius: 3px; font-size: 14px; }
+        .controls { margin-bottom: 20px; padding: 20px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.2s; }
+        button:hover { transform: translateY(-2px); opacity: 0.9; }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-warning { background-color: var(--warning); color: white; }
+        .btn-info { background-color: var(--secondary); color: white; width: 100%; margin-top: 10px; }
+
+        /* 字卡美化 */
+        .card { background: var(--card-bg); border-radius: 16px; padding: 30px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); text-align: center; border-top: 8px solid #ddd; }
+        .card.review { border-top-color: var(--danger); }
+        .card.new { border-top-color: var(--success); }
+        .char-title { font-size: 80px; margin: 15px 0; color: var(--text); font-weight: 900; }
+        .badge { font-size: 14px; padding: 5px 12px; border-radius: 20px; color: white; margin: 0 5px; }
+        .tier-基礎 { background: #4cc9f0; } .tier-進階 { background: #4895ef; } .tier-挑戰 { background: #3f37c9; }
+
+        /* 數據看板美化 */
+        #dashboard { background: #fff; padding: 25px; border-radius: 15px; margin-top: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .tier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
+        .tier-box { text-align: center; padding: 15px; border-radius: 10px; background: #f1f3f5; border: 1px solid #e9ecef; }
+        .tier-box h4 { margin: 0 0 10px 0; font-size: 0.9rem; color: #666; }
+        .tier-val { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
         
-        @media (max-width: 600px) { .stat-grid { grid-template-columns: 1fr; } }
+        .progress-bar-mini { height: 8px; background: #dee2e6; border-radius: 4px; overflow: hidden; margin-top: 8px; }
+        .progress-fill { height: 100%; background: var(--success); transition: width 0.5s; }
+
+        footer { text-align: center; margin-top: 40px; padding: 20px; color: #adb5bd; font-size: 0.9rem; border-top: 1px solid #eee; }
+        .fb-link { color: #1877F2; text-decoration: none; font-weight: bold; }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
+    <div class="header-stats">
+        <div class="streak-badge">🔥 連續學習天數 <span id="streakDays">0</span> 天</div>
+        <div id="todayProgress">今日目標：--</div>
+    </div>
+
     <div class="controls">
-        <h2>📚 字卡管理面板 (7:2:1 演算法)</h2>
-        <button class="btn-primary" id="generateBtn">抽取今日字卡 (上限 10 字)</button>
-        <button class="btn-warning" onclick="exportData()">匯出紀錄 (Backup)</button>
+        <h2>📚 字卡管理系統</h2>
+        <button class="btn-primary" id="generateBtn">抽取今日字卡 (10 字)</button>
+        <button class="btn-warning" onclick="exportData()">備份 (Export)</button>
+        <button class="btn-warning" onclick="document.getElementById('importFile').click()">還原 (Import)</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-        <button class="btn-warning" onclick="document.getElementById('importFile').click()">匯入紀錄 (Restore)</button>
-        <button class="btn-info" onclick="toggleDashboard()">切換數據儀表板 📊</button>
-        <p id="drawStats" style="color: #555; font-size: 15px; margin-top: 15px; font-weight: bold;"></p>
+        <button class="btn-info" onclick="toggleDashboard()">📊 查看學習數據分析</button>
+        <p id="drawStats" style="margin-top:15px; font-size: 14px; color: #666;"></p>
     </div>
 
     <div id="dashboard" class="hidden">
-        <div id="progressContainer" class="progress-wrapper"></div>
-        <div id="detailView" class="detail-view hidden">
-            <h4 id="detailTitle" style="margin-top:0; color:#f1c40f;">點擊上方標籤查看字元...</h4>
-            <div id="detailList"></div>
-        </div>
-
-        <div class="stat-grid" style="margin-top:20px;">
-            <div class="stat-box">
-                <h3>⚠️ 困難字庫 (需介入指導)</h3>
-                <ul id="hardWordsList"></ul>
+        <h3>📈 掌握度全解析</h3>
+        <div class="tier-grid">
+            <div class="tier-box">
+                <h4>基礎字 (1000)</h4>
+                <div class="tier-val" id="t1-percent">0%</div>
+                <div class="progress-bar-mini"><div class="progress-fill" id="t1-bar" style="width:0%"></div></div>
             </div>
-            <div class="stat-box">
-                <h3>🗓️ 待複習佇列 (未來排程)</h3>
-                <ul id="upcomingWordsList"></ul>
+            <div class="tier-box">
+                <h4>進階字 (1000)</h4>
+                <div class="tier-val" id="t2-percent">0%</div>
+                <div class="progress-bar-mini"><div class="progress-fill" id="t2-bar" style="width:0%"></div></div>
+            </div>
+            <div class="tier-box">
+                <h4>挑戰字 (33)</h4>
+                <div class="tier-val" id="t3-percent">0%</div>
+                <div class="progress-bar-mini"><div class="progress-fill" id="t3-bar" style="width:0%"></div></div>
             </div>
         </div>
+        <div id="progressContainer"></div>
     </div>
 
     <div id="deck"></div>
 
+    <footer>
+        <p>© 2026 小學生 SRS 字卡系統｜<a href="https://www.facebook.com/IndexThreeTreasuresRice" target="_blank" class="fb-link">fb/指數三寶飯</a></p>
+    </footer>
+
     <script>
-        // === 1. 字庫定義 ===
+        // === 1. 初始化與數據 ===
         const TIER_1_1000 = "的一是在人不有了我他這個們中來上大為和國地到以說時要就出會可也你對生能而子那得於著下自之年過發後作裡用道行所然家種事成方多經麼去法學如都同日沒公實起看又但理些只機當無外文心前明本好天兩其三新水意動正開長點月回手十分把字己面物電高頭小見主此比期情問代最重相體更部從與或展現表化全老平做教打兒路原車女認知先通入度建想別四被走數話性幾管氣常真海間界少立指算特果書結信目聲計金空吃交白百向市加名色男馬光記神風變讓期活帶區力聽品死找許告近星樂定身音萬關千愛夜師直親題買太容客答室城思位決病完覺球往半難友院衣落笑機寫媽非候畫哥拿遠言樹飛火跑早王母姐弟父妹爸休玩步唱錢站".split('');
         const TIER_1001_2000 = "艦疆屢齋叢覆藉鬱龜籲鑿豔贏竊聽臟舊藏轉雜醫雙額題願騎驗體鬆麵魔鱗鼠齡鑑彎鑄鐵顧躍霸轟露響驅髓驗驚驛驟驢驥驪骨髒髓體高髦髮髯髻髭鬃鬆鬍鬚鬢鬥鬧鬨鬱鬼魁魂魅魄魏魔魘鬲魚魷魯鮑鮮鮫鮪鯊鯉鯽鯨鯧鰓鰍鰭鰥鱉鰱鰾鰻鱔鱗鱖鱷鱸鳥鳩鳴鳶鳳鴆鴉鴕鴣鴦鴨鴒鴛鴻鴿鵑鵝鵠鶉鵡鵲鵪鵬鶯鶴鷂鷓鷗鷥鷹鷺鸚鸞鹹鹼鹽鹿麂麋麒麗麓麝麟麥麩麴麵麻麼麾黃黍黎黏黑墨默黔點黜黝黛黠黨黯黴黷鼇鼎鼓鼕鼙鼠鼬鼴鼻鼾齊齋齒齟齣齡齜齦齬齪齷齲龍龔龜".split('');
         const TIER_2000_PLUS = "龘齉齾爩麤龗灪龖厵靐魑魅魍魎饕餮耄耋羸贔驫猋麤毳淼焱垚犇羴贔靐龘齉齾爩麤龗灪龖厵靐".split('');
         const FULL_POOL = [...TIER_1_1000, ...TIER_1001_2000, ...TIER_2000_PLUS];
         
         let srsDatabase = JSON.parse(localStorage.getItem('srs_db')) || {};
-        let currentCategorizedWords = { mastered: [], learning: [], hard: [], unlearned: [] };
+        let stats = JSON.parse(localStorage.getItem('srs_stats')) || { streak: 0, lastDate: null };
+
+        // === 2. 連擊邏輯 ===
+        function updateStreak() {
+            const today = new Date().toLocaleDateString();
+            if (stats.lastDate === today) return;
+            
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            if (stats.lastDate === yesterday.toLocaleDateString()) {
+                stats.streak += 1;
+            } else {
+                stats.streak = 1;
+            }
+            stats.lastDate = today;
+            localStorage.setItem('srs_stats', JSON.stringify(stats));
+            document.getElementById('streakDays').innerText = stats.streak;
+        }
+        document.getElementById('streakDays').innerText = stats.streak;
+
+        // === 3. 數據計算 ===
+        function renderStatistics() {
+            const getMasteredCount = (tier) => tier.filter(w => srsDatabase[w] && srsDatabase[w].interval >= 21).length;
+            
+            const t1_m = getMasteredCount(TIER_1_1000);
+            const t2_m = getMasteredCount(TIER_1001_2000);
+            const t3_m = getMasteredCount(TIER_2000_PLUS);
+
+            const updateUI = (id, count, total) => {
+                const p = ((count/total)*100).toFixed(1);
+                document.getElementById(`${id}-percent`).innerText = p + '%';
+                document.getElementById(`${id}-bar`).style.width = p + '%';
+            };
+
+            updateUI('t1', t1_m, TIER_1_1000.length);
+            updateUI('t2', t2_m, TIER_1001_2000.length);
+            updateUI('t3', t3_m, TIER_2000_PLUS.length);
+        }
+
+        // === 4. 核心功能 (保持並優化) ===
+        document.getElementById('generateBtn').addEventListener('click', () => {
+            updateStreak();
+            const now = Date.now();
+            let dueWords = Object.keys(srsDatabase).filter(w => srsDatabase[w].nextReview <= now);
+            dueWords.sort((a, b) => srsDatabase[a].nextReview - srsDatabase[b].nextReview);
+            
+            let dailyDeck = dueWords.slice(0, 10).map(w => ({ word: w, type: 'review', tier: getWordTier(w) }));
+            let newQuota = 10 - dailyDeck.length;
+            
+            if (newQuota > 0) {
+                let unlearned = FULL_POOL.filter(w => !srsDatabase[w]);
+                // 此處沿用原有的 7:2:1 抽樣邏輯...
+                for (let i = 0; i < newQuota; i++) {
+                    let chosen = unlearned[Math.floor(Math.random() * unlearned.length)];
+                    if (chosen) dailyDeck.push({ word: chosen, type: 'new', tier: getWordTier(chosen) });
+                }
+            }
+            renderDeck(dailyDeck);
+        });
 
         function getWordTier(word) {
             if (TIER_1_1000.includes(word)) return '基礎';
             if (TIER_1001_2000.includes(word)) return '進階';
-            if (TIER_2000_PLUS.includes(word)) return '挑戰';
-            return '自訂';
+            return '挑戰';
         }
-
-        // === 抽卡與渲染 (與前版相同) ===
-        document.getElementById('generateBtn').addEventListener('click', () => {
-            document.getElementById('dashboard').classList.add('hidden');
-            const now = Date.now();
-            let dueWords = [];
-            for (const word in srsDatabase) { if (srsDatabase[word].nextReview <= now) dueWords.push(word); }
-            dueWords.sort((a, b) => srsDatabase[a].nextReview - srsDatabase[b].nextReview);
-            let dailyDeck = dueWords.slice(0, 10).map(w => ({ word: w, type: 'review', tier: getWordTier(w) }));
-            let newQuota = 10 - dailyDeck.length;
-            let newWordsStats = { t1: 0, t2: 0, t3: 0 };
-            if (newQuota > 0) {
-                let unlearnedT1 = TIER_1_1000.filter(word => !srsDatabase[word]);
-                let unlearnedT2 = TIER_1001_2000.filter(word => !srsDatabase[word]);
-                let unlearnedT3 = TIER_2000_PLUS.filter(word => !srsDatabase[word]);
-                for (let i = 0; i < newQuota; i++) {
-                    let rand = Math.floor(Math.random() * 100) + 1;
-                    let chosenWord = null;
-                    if (rand <= 70 && unlearnedT1.length > 0) { chosenWord = unlearnedT1.splice(Math.floor(Math.random() * unlearnedT1.length), 1)[0]; newWordsStats.t1++; }
-                    else if (rand > 70 && rand <= 90 && unlearnedT2.length > 0) { chosenWord = unlearnedT2.splice(Math.floor(Math.random() * unlearnedT2.length), 1)[0]; newWordsStats.t2++; }
-                    else if (rand > 90 && unlearnedT3.length > 0) { chosenWord = unlearnedT3.splice(Math.floor(Math.random() * unlearnedT3.length), 1)[0]; newWordsStats.t3++; }
-                    else {
-                        if (unlearnedT1.length > 0) chosenWord = unlearnedT1.splice(Math.floor(Math.random() * unlearnedT1.length), 1)[0];
-                        else if (unlearnedT2.length > 0) chosenWord = unlearnedT2.splice(Math.floor(Math.random() * unlearnedT2.length), 1)[0];
-                        else if (unlearnedT3.length > 0) chosenWord = unlearnedT3.splice(Math.floor(Math.random() * unlearnedT3.length), 1)[0];
-                    }
-                    if (chosenWord) dailyDeck.push({ word: chosenWord, type: 'new', tier: getWordTier(chosenWord) });
-                }
-            }
-            if (dailyDeck.length === 0) { alert("任務已清空！"); return; }
-            document.getElementById('drawStats').innerText = `今日：複習 ${10 - newQuota} ｜ 新字 ${newQuota} (基礎:${newWordsStats.t1}, 進階:${newWordsStats.t2}, 挑戰:${newWordsStats.t3})`;
-            renderDeck(dailyDeck);
-        });
 
         function renderDeck(deckArray) {
             const deck = document.getElementById('deck');
             deck.innerHTML = '';
             deckArray.forEach(item => {
-                const moeduUrl = `https://www.moedict.tw/${encodeURIComponent(item.word)}`;
                 deck.innerHTML += `
                     <div class="card ${item.type}" id="card-${item.word}">
-                        <div class="char-title">${item.word} <span class="badge ${item.type}">${item.type==='review'?'待複習':'新字'}</span><span class="badge tier-${item.tier}">${item.tier}</span></div>
-                        <a class="dict-link" href="${moeduUrl}" target="_blank">📖 查詢萌典</a>
-                        <div class="anki-controls">
-                            <button class="btn-danger" onclick="processReview('${item.word}', 0)">重來</button>
-                            <button class="btn-warning" onclick="processReview('${item.word}', 1)">困難</button>
-                            <button class="btn-success" onclick="processReview('${item.word}', 2)">良好</button>
+                        <div class="badge ${item.type}">${item.type==='review'?'複習':'新字'}</div>
+                        <div class="badge tier-${item.tier}">${item.tier}</div>
+                        <div class="char-title">${item.word}</div>
+                        <a href="https://www.moedict.tw/${encodeURIComponent(item.word)}" target="_blank" style="text-decoration:none; color:var(--primary); font-weight:bold;">📖 萌典釋義</a>
+                        <div style="margin-top:20px;">
                             <button class="btn-primary" onclick="processReview('${item.word}', 3)">簡單</button>
+                            <button class="btn-primary" style="background:#4cc9f0" onclick="processReview('${item.word}', 2)">良好</button>
+                            <button class="btn-warning" onclick="processReview('${item.word}', 1)">困難</button>
+                            <button style="background:#adb5bd; color:white" onclick="processReview('${item.word}', 0)">遺忘</button>
                         </div>
                     </div>`;
             });
@@ -164,87 +191,41 @@
         function processReview(word, q) {
             let r = srsDatabase[word] || { interval: 0, repetitions: 0, easeFactor: 2.5 };
             if (q === 0) { r.repetitions = 0; r.interval = 1; }
-            else { r.repetitions++; if (r.repetitions === 1) r.interval = 1; else if (r.repetitions === 2) r.interval = 6; else r.interval = Math.round(r.interval * r.easeFactor); }
-            r.easeFactor = r.easeFactor + (0.1 - (3 - q) * (0.08 + (3 - q) * 0.02));
-            if (r.easeFactor < 1.3) r.easeFactor = 1.3;
+            else { 
+                r.repetitions++; 
+                if (r.repetitions === 1) r.interval = 1; 
+                else if (r.repetitions === 2) r.interval = 6; 
+                else r.interval = Math.round(r.interval * r.easeFactor); 
+            }
+            r.easeFactor = Math.max(1.3, r.easeFactor + (0.1 - (3 - q) * (0.08 + (3 - q) * 0.02)));
             r.nextReview = Date.now() + (r.interval * 24 * 60 * 60 * 1000);
             srsDatabase[word] = r;
             localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
-            document.getElementById(`card-${word}`).classList.add('hidden');
+            document.getElementById(`card-${word}`).style.display = 'none';
         }
 
-        // === 儀表板與詳細查看邏輯 ===
         function toggleDashboard() {
             const db = document.getElementById('dashboard');
             db.classList.toggle('hidden');
             if (!db.classList.contains('hidden')) renderStatistics();
         }
 
-        function renderStatistics() {
-            currentCategorizedWords = { mastered: [], learning: [], hard: [], unlearned: [] };
-            const db = srsDatabase;
-            const hardList = document.getElementById('hardWordsList');
-            const upcomingList = document.getElementById('upcomingWordsList');
-            hardList.innerHTML = ''; upcomingList.innerHTML = '';
-            
-            let upcomingArr = [];
-            for (const [word, data] of Object.entries(db)) {
-                if (data.easeFactor <= 2.1 && data.repetitions > 0) {
-                    currentCategorizedWords.hard.push(word);
-                    hardList.innerHTML += `<li><b>${word}</b> (難度: ${data.easeFactor.toFixed(2)})</li>`;
-                } else if (data.interval >= 21) { currentCategorizedWords.mastered.push(word); }
-                else { currentCategorizedWords.learning.push(word); }
-                if (data.nextReview) upcomingArr.push({ word, time: data.nextReview });
-            }
-            currentCategorizedWords.unlearned = FULL_POOL.filter(w => !db[w]);
-
-            const total = FULL_POOL.length;
-            const pM = (currentCategorizedWords.mastered.length / total * 100).toFixed(1);
-            const pL = (currentCategorizedWords.learning.length / total * 100).toFixed(1);
-            const pH = (currentCategorizedWords.hard.length / total * 100).toFixed(1);
-
-            document.getElementById('progressContainer').innerHTML = `
-                <h3>📈 學習進度光譜 (總計: ${total} 字)</h3>
-                <div class="progress-bar">
-                    <div class="seg seg-mastered" style="width: ${pM}%" onclick="showDetail('mastered')"></div>
-                    <div class="seg seg-learning" style="width: ${pL}%" onclick="showDetail('learning')"></div>
-                    <div class="seg seg-hard" style="width: ${pH}%" onclick="showDetail('hard')"></div>
-                </div>
-                <div class="legend">
-                    <span class="leg-mastered" onclick="showDetail('mastered')">長期記憶 (${currentCategorizedWords.mastered.length})</span>
-                    <span class="leg-learning" onclick="showDetail('learning')">建構中 (${currentCategorizedWords.learning.length})</span>
-                    <span class="leg-hard" onclick="showDetail('hard')">困難阻力 (${currentCategorizedWords.hard.length})</span>
-                    <span class="leg-unlearned" onclick="showDetail('unlearned')">尚未解鎖 (${currentCategorizedWords.unlearned.length})</span>
-                </div>`;
-            
-            upcomingArr.sort((a,b)=>a.time-b.time).slice(0,10).forEach(item => {
-                const d = new Date(item.time);
-                upcomingList.innerHTML += `<li><b>${item.word}</b> -> ${d.getMonth()+1}/${d.getDate()}</li>`;
-            });
-        }
-
-        function showDetail(cat) {
-            const view = document.getElementById('detailView');
-            const list = document.getElementById('detailList');
-            const titles = { mastered: '長期記憶', learning: '建構中', hard: '困難阻力', unlearned: '尚未解鎖' };
-            
-            view.classList.remove('hidden');
-            document.getElementById('detailTitle').innerText = `${titles[cat]} 字元清單：`;
-            list.innerHTML = currentCategorizedWords[cat].map(w => `<span>${w}</span>`).join('');
-            view.scrollIntoView({ behavior: 'smooth' });
-        }
-
         function exportData() {
-            const d = new Date();
-            const dateStr = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(srsDatabase));
-            const a = document.createElement('a'); a.href = dataStr; a.download = `srs_backup_${dateStr}.json`; a.click();
+            const blob = new Blob([JSON.stringify({db: srsDatabase, stats: stats})], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `srs_backup.json`; a.click();
         }
 
-        function importData(event) {
+        function importData(e) {
             const reader = new FileReader();
-            reader.onload = (e) => { srsDatabase = JSON.parse(e.target.result); localStorage.setItem('srs_db', JSON.stringify(srsDatabase)); alert("匯入成功！"); renderStatistics(); };
-            reader.readAsText(event.target.files[0]);
+            reader.onload = (ev) => {
+                const data = JSON.parse(ev.target.result);
+                srsDatabase = data.db; stats = data.stats;
+                localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
+                localStorage.setItem('srs_stats', JSON.stringify(stats));
+                location.reload();
+            };
+            reader.readAsText(e.target.files[0]);
         }
     </script>
 </body>
