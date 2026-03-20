@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小學生 SRS 字卡系統 v3.7 (RPG 史詩進度條版)</title>
+    <title>小學生 SRS 字卡系統 v3.8 (史詩進度條與視覺修復版)</title>
     <style>
         :root {
             --primary: #4f46e5;      /* Indigo 600 */
@@ -11,7 +11,7 @@
             --warning: #f59e0b;      /* Amber 500 */
             --success: #0ea5e9;      /* Sky 500 */
             --danger: #ef4444;       /* Red 500 */
-            --bg: #f1f5f9;           /* 優化：Slate 100，凸顯刻度 */
+            --bg: #f1f5f9;           /* Slate 100 */
             --card-bg: #ffffff; 
             --text: #1e293b;
             --text-light: #64748b;
@@ -19,38 +19,31 @@
         
         body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; max-width: 960px; margin: auto; line-height: 1.6; padding-bottom: 60px;}
         
-        /* 頂部橫幅：加大高度以容納長條圖 */
+        /* 頂部橫幅 */
         .header-stats { display: flex; flex-direction: column; gap: 15px; margin-bottom: 24px; padding: 20px 30px 25px 30px; background: var(--primary); color: white; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.2); }
         .top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .streak-badge { font-size: 1.25rem; font-weight: bold; display: flex; align-items: center; gap: 8px; }
         .streak-badge span { font-size: 1.8rem; color: #fde047; font-weight: 900; }
 
-/* === 🚀 史詩級進度條 CSS (新版扁平化) === */
+        /* === 🚀 史詩級進度條 CSS === */
         #realmJourneyContainer { width: 100%; margin-top: 15px; }
-        
         .journey-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; padding: 0 4px; }
         .journey-title { font-size: 1.05rem; color: rgba(255,255,255,0.85); font-weight: bold; }
         .journey-title span { font-size: 1.4rem; color: #fde047; margin-left: 6px; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
         .journey-count { font-size: 0.9rem; color: rgba(255,255,255,0.8); }
         .journey-count span { font-size: 1.15rem; font-weight: bold; color: #ffffff; font-family: monospace; }
 
-        /* 進度條本體 */
         .journey-bar { height: 16px; background: rgba(0,0,0,0.25); border-radius: 8px; position: relative; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.15); }
-        
-        /* 已累積的進度 + 🚀 閃爍動畫 */
         .journey-fill { height: 100%; background-color: var(--success); background-image: linear-gradient( 45deg, rgba(255, 255, 255, 0.3) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0.3) 75%, transparent 75%, transparent ); background-size: 40px 40px; border-radius: 8px; width: 0%; transition: width 0.5s ease; position: relative; animation: journey-stripes 2s linear infinite, journey-glow 3s ease-in-out infinite; }
 
         @keyframes journey-stripes { from { background-position: 40px 0; } to { background-position: 0 0; } }
         @keyframes journey-glow { 0%, 100% { box-shadow: 0 0 5px rgba(14, 165, 233, 0.5); filter: brightness(1); } 50% { box-shadow: 0 0 20px rgba(14, 165, 233, 0.9), 0 0 30px rgba(255, 255, 255, 0.4); filter: brightness(1.2); } }
 
-        /* 字數刻度 */
         .journey-ticks { display: flex; justify-content: space-between; margin-top: 6px; position: relative; padding: 0 2px; }
         .tick { font-size: 11px; color: rgba(255,255,255,0.6); font-family: monospace; position: relative; font-weight: normal;}
         .tick::before { content: ''; position: absolute; top: -8px; left: 50%; transform: translateX(-50%); width: 2px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 1px; }
 
-        /* (補上標楷體設定) */
-        .char-title { font-size: 100px; margin: 20px 0; color: var(--text); font-weight: normal; font-family: "BiauKai", "DFKai-SB", "Kaiti TC", "KaiTi", serif; line-height: 1; text-shadow: 2px 2px 0px rgba(0,0,0,0.02); }
-        /* === 其他 UI 樣式恢復原本檔案 === */
+        /* === 控制面板 === */
         .controls { margin-bottom: 24px; padding: 30px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
         .controls h2 { margin-top: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; color: var(--text); margin-bottom: 20px;}
         .btn-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
@@ -62,12 +55,28 @@
         .btn-info { background-color: var(--secondary); color: white; }
         .btn-secondary { background-color: #64748b; color: white; }
         .manual-panel { background: #f8fafc; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 20px; font-size: 14.5px; border-left: 6px solid #64748b; }
+
+        /* === 字卡與評估按鈕 (修復處) === */
         .card { background: var(--card-bg); border-radius: 16px; padding: 40px 30px; margin-bottom: 24px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); text-align: center; border-top: 8px solid #e2e8f0; transition: all 0.3s ease; }
         .card.review { border-top-color: var(--danger); }
         .card.new { border-top-color: var(--success); }
         .card.penalty { border-top-color: #334155; background: #f8fafc; } 
-.char-title { font-size: 100px; margin: 20px 0; color: var(--text); font-weight: normal; font-family: "BiauKai", "DFKai-SB", "Kaiti TC", "KaiTi", serif; line-height: 1; text-shadow: 2px 2px 0px rgba(0,0,0,0.02); }        .badge { font-size: 13px; padding: 6px 14px; border-radius: 20px; color: white; margin: 0 6px; display: inline-block; font-weight: bold; letter-spacing: 0.5px; }
+        
+        /* 標楷體設定 */
+        .char-title { font-size: 100px; margin: 20px 0; color: var(--text); font-weight: normal; font-family: "BiauKai", "DFKai-SB", "Kaiti TC", "KaiTi", serif; line-height: 1; text-shadow: 2px 2px 0px rgba(0,0,0,0.02); }
+        
+        .badge { font-size: 13px; padding: 6px 14px; border-radius: 20px; color: white; margin: 0 6px; display: inline-block; font-weight: bold; letter-spacing: 0.5px; }
         .tier-基礎 { background: var(--success); } .tier-進階 { background: #8b5cf6; } .tier-挑戰 { background: #6366f1; }
+
+        /* 恢復遺失的四顆評估按鈕 CSS */
+        .eval-buttons { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 35px; }
+        .btn-eval { flex: 1; min-width: 120px; max-width: 160px; padding: 14px 0; font-size: 16px; border-radius: 12px; }
+        .btn-eval-forget { background-color: #e2e8f0; color: #475569; }
+        .btn-eval-hard { background-color: var(--warning); color: white; }
+        .btn-eval-good { background-color: var(--success); color: white; }
+        .btn-eval-easy { background-color: var(--primary); color: white; }
+
+        /* === 數據儀表板 === */
         #dashboard { background: #ffffff; padding: 30px; border-radius: 16px; margin-top: 24px; box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); }
         .tier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
         .tier-box { text-align: center; padding: 18px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; }
@@ -80,7 +89,7 @@
         .seg-mastered { background: #38bdf8; }
         .seg-learning { background: var(--primary); }
         .seg-hard { background: var(--danger); }
-        .seg-graduated { background: var(--graduated); }
+        .seg-graduated { background: #fbbf24; }
         .legend { display: flex; justify-content: space-between; flex-wrap: wrap; font-size: 13px; margin-top: 15px; color: var(--text-light); font-weight: bold; }
         .legend span { cursor: pointer; padding: 6px 10px; border-radius: 6px; display: flex; align-items: center;}
         .legend span::before { content: ''; display: inline-block; width: 12px; height: 12px; margin-right: 8px; border-radius: 50%; }
@@ -93,11 +102,17 @@
         .reset-link { color: #94a3b8; text-decoration: none; cursor: pointer; font-size: 0.85rem; padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc;}
         .reset-link:hover { background: #e2e8f0; color: #475569; }
         .hidden { display: none; }
+
         @media (max-width: 600px) { 
             .header-stats { padding: 15px; }
             .btn-grid-3, .btn-grid-2 { grid-template-columns: 1fr; }
             .realm-title { font-size: 1.1rem; }
-            .tick:nth-child(even) { display: none; } /* 手機版隱藏偶數刻度 */
+            .tick:nth-child(even) { display: none; } 
+            .stat-grid { grid-template-columns: 1fr; } 
+            .legend { flex-direction: column; gap: 8px; } 
+            /* 手機版評估按鈕變 2x2 陣列 */
+            .eval-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } 
+            .btn-eval { max-width: 100%; }
         }
     </style>
 </head>
@@ -108,7 +123,7 @@
             <div class="streak-badge">🔥 連續學習天數 <span id="streakDays">0</span> 天</div>
         </div>
         
-<div id="realmJourneyContainer">
+        <div id="realmJourneyContainer">
             <div class="journey-header">
                 <div class="journey-title">🎖️ 冒險者軍階：<span id="currentRealmName">新手村民</span></div>
                 <div class="journey-count">已掌握：<span id="currentRealmCount">0</span> / 2867</div>
@@ -168,7 +183,7 @@
     </div>
 
     <div id="dashboard" class="hidden">
-        <h3>📍 維度一：各字庫解鎖達成率 (橫向)</h3>
+        <h3 style="color:var(--text); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">📍 維度一：各字庫解鎖達成率 (橫向)</h3>
         <div class="tier-grid">
             <div class="tier-box">
                 <h4>基礎字 (1000)</h4>
@@ -187,7 +202,7 @@
             </div>
         </div>
 
-        <h3>🧠 維度二：記憶留存光譜 (縱向)</h3>
+        <h3 style="color:var(--text); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top:30px;">🧠 維度二：記憶留存光譜 (縱向)</h3>
         <div id="progressContainer" class="progress-wrapper"></div>
         <div id="detailView" class="detail-view hidden">
             <h4 id="detailTitle" style="margin-top:0; color:var(--primary);">點擊上方標籤查看字元...</h4>
@@ -200,7 +215,7 @@
                 <div id="hardWordsList" class="pill-container"></div>
             </div>
             <div class="stat-box">
-                <h4 style="color:var(--primary)">🗓️ 待複習佇列 (未來排程)</h4>
+                <h4 style="color:var(--primary); margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 15px;">🗓️ 待複習佇列 (未來排程)</h4>
                 <div id="upcomingWordsList" class="pill-container"></div>
             </div>
         </div>
@@ -225,8 +240,8 @@
             }
         };
 
-        // === 1. 初始化與數據 (經清洗與降維壓縮) ===
-        const TIER_1_1000 = "的是一不有人在國年中大會為台出上到以時也民來要他對與生成日長後了家能可前市發這行多說就過公我表高地動政新學自下法個分選都開美現場主但方業月於和作天及全最經進用心將外小示文力工等因灣機事得子定同當元者好區部之加合還重黨員提本而車讓北名理總金關手去更立面間度如體起沒資至所內其已入萬們次期無她統意第化明路點此府品被實今議道應打很兩並電三看回相共情計調產安建局報保只由持受教水然從通果任林再正位著案未交院性展球近數身平活導指影設感目二接代或韓比女處特運想戰利港商投強問務認昨海南程物每辦少參眾造東常師團才量題社老氣結陳十推則達華委口式約隊基舉原園演做管先包助各向香光制連單續費醫己反觀求治風價空友客頭解賽專山網花首望陸完照蔡警張英知放書見縣帶色創除種規司直變線傳清畫營世聯周收樣界信使支查樂流取改科預權協王視門校該請麼別太四非許服愛決軍給義親透布育系整遊五農言件轉曾供易百兒歲片論何節料記際馬卻組雄住難又告即些勢消術黃質率環男真需超獲走店引希增標士把那檢防型西滿往房若德格濟站據送且食仍爭李失技官票話集步像境考證你護裡容領備較雙跟熱例配億初另條僅排旅必瑜藝聲職落段獎補斯低具稱響確白級幾施病神驗研修否季維半輕列深火升依星媽快款始態源六紅覺福底優習離擔吃音孩亞戶席景顯攝致號限雖項養製形邊算裝準牌里早擊效精策善登評健普宣便買歷九功購拉圖智綠執吳拍訪克柯獨象角況城拿晚千免鄉龍談採味廠餐停積阿傷母卡速興假佳狀企值廣勝置越括極隨須息班紀八岸眼識館候察郭青史謝斷足航壓待害居桃命退減威訊甚顧類層戲根留媒念署午破鐵土川終遭志衛試歌益判療銷找險什嚴酒副喜責幫究蘭貿劇歡搭疑適嘉屬控群黑止負座洲承死換注稅聽訴七樓爾字審遠復油願練錢派賴榮語粉係讀課錄器股吸歐財降模寶笑藍溫享富思銀唱石賣休婚競露室屋售均呼父康故禮令討族額勞央羅飛臉秀監絕宜核童針差繼存春波測切寫延突藥蘇構菜盟移肉京域律批申緊哲幣庭抗素追聞圍講血惠竹米違印夜爆邀攻街陽板永貨輪刻劃救估材恐衝左巴典夠雲姓密朋古董融互奇守臨博楊玩訂納絲鄭穿細爸夫挑版魚彈啟暴盡燈雨麗冠穩劉付充洋跑島急慧擇痛皮盤幕績背餘似right犯短範舞乎彩順銘罪避敗微播慶草錯鎮堅橋泰缺亮蘋竟江私翻豪曲久招棒簡般豬徵鐘潮症簽苦野倒嗎障哥蛋飯屆殺湖茶訓釋罰迷階貼危宮良迎刑含異豐靠懷村衣遇陣尚租舊詢驚尼木飲毒瑞困略筆腳駕廳怎幸倫坪逐搶樹架仁葉套授畢脫剛田籍武鼓怕擁禁築努宗激屏患腦圈州彰捷隆宅愈擴昌編跨".split('');
+        // === 1. 初始化與數據 (字庫) ===
+        const TIER_1_1000 = "的是一不有人在國年中大會為台出上到以時也民來要他對與生成日長後了家能可前市發這行多說就過公我表高地動政新學自下法個分選都開美現場主但方業月於和作天及全最經進用心將外小示文力工等因灣機事得子定同當元者好區部之加合還重黨員提本而車讓北名理總金關手去更立面間度如體起沒資至所內其已入萬們次期無她統意第化明路點此府品被實今議道應打很兩並電三看回相共情計調產安建局報保只由持受教水然從通果任林再正位著案未交院性展球近數身平活導指影設感目二接代或韓比女處特運想戰利港商投強問務認昨海南程物每辦少參眾造東常師團才量題社老氣結陳十推則達華委口式約隊基舉原園演做管先包助各向香光制連單續費醫己反觀求治風價空友客頭解賽專山網花首望陸完照蔡警張英知放書見縣帶色創除種規司直變線傳清畫營世聯周收樣界信使支查樂流取改科預權協王視門校該請麼別太四非許服愛決軍給義親透布育系整遊五農言件轉曾供易百兒歲片論何節料記際馬卻組雄住難又告即些勢消術黃質率環男真需超獲走店引希增標士把那檢防型西滿往房若德格濟站據送且食仍爭李失技官票話集步像境考證你護裡容領備較雙跟熱例配億初另條僅排旅必瑜藝聲職落段獎補斯低具稱響確白級幾施病神驗研修否季維半輕列深火升依星媽快款始態源六紅覺福底優習離擔吃音孩亞戶席景顯攝致號限雖項養製形邊算裝準牌里早擊效精策善登評健普宣便買歷九功購拉圖智綠執吳拍訪克柯獨象角況城拿晚千免鄉龍談採味廠餐停積阿傷母卡速興假佳狀企值廣勝置越括極隨須息班紀八岸眼識館候察郭青史謝斷足航壓待害居桃命退減威訊甚顧類層戲根留媒念署午破鐵土川終遭志衛試歌益判療銷找險什嚴酒副喜責幫究蘭貿劇歡搭疑適嘉屬控群黑止負座洲承死換注稅聽訴七樓爾字審遠復油願練錢派賴榮語粉係讀課錄器股吸歐財降模寶笑藍溫享富思銀唱石賣休婚競露室屋售均呼父康故禮令討族額勞央羅飛臉秀監絕宜核童針差繼存春波測切寫延突藥蘇構菜盟移肉京域律批申緊哲幣庭抗素追聞圍講血惠竹米違印夜爆邀攻街陽板永貨輪刻劃救估材恐衝左巴典夠雲姓密朋古董融互奇守臨博楊玩訂納絲鄭穿細爸夫挑版魚彈啟暴盡燈雨麗冠穩劉付充洋跑島急慧擇痛皮盤幕績背餘似右犯短範舞乎彩順銘罪避敗微播慶草錯鎮堅橋泰缺亮蘋竟江私翻豪曲久招棒簡般豬徵鐘潮症簽苦野倒嗎障哥蛋飯屆殺湖茶訓釋罰迷階貼危宮良迎刑含異豐靠懷村衣遇陣尚租舊詢驚尼木飲毒瑞困略筆腳駕廳怎幸倫坪逐搶樹架仁葉套授畢脫剛田籍武鼓怕擁禁築努宗激屏患腦圈州彰捷隆宅愈擴昌編跨".split('');
         const TIER_1001_2000 = "介弟織附召慢河涉份勵夢牛輸它聚鮮盛距冷勇染省趣醒幅序棄旗紛頂齡忙掉澳戴朝妻析薪返拜損朱烈偏慮散端伴巨裁冰尤尺疫累診零夏幼玉癌索藉跳坐惡揮災雅沙乾森浪苗貴培尋操蓮述隔洗漸碼震偉堂峰籲船章束賞掌援漲諾載雞革促捐輔靈靜伊弱恩亂圓誤壞妹廚秋緩廿旁映熟燒符臺藏鬆亡射庫植輛鍵占吉楚洪邦喊折抽漁贏飾咖探替頻婦挺聖遺鏡陪嫌歸珍蓋哪誰坦皆答封湯綜觸呈徐叫唯奧尊抱暫雜予憲握檔罷骨麻乘奪宏溪牙甜寬軟駐兵隻倍漫駛麵按敏汙紙趕巧廢塊揚敢祖迫雷鴻抵縮雪亦刺哈憶捕溝滑巡勤暖糖詞誠賓槍珠複傑喝宇柏硬逾籃純肯儀固忘忠措汽獻菸姊孫憂莊覽俊兼冬宿晨欣睡逃閱啡婆梅毛豆頓奶淡仔既辛塞帳敦松游盼漢騎壇拒邱尾概甲胡輩週麥振耳袋阻凌刀床撞某焦箱鄰債扣鞋擬朗淨赴趨券吧旦池礙緣佛凱塑牆賠鳥匯桌掛擺虎貓贈輯剩壘拚讚侵摩斤濃顏髮句慣攤敬潛詩貞跌霸齊侯廟伯徒泡疾祝莫隱鳳氛混紐舒覆途酸陷鬥儘厚君坡塔寧幹怪托烏鋼閒偵狗瓜礎鎖默繳併偶壽末祕裂丁洛盧託貝轟惜潔玲緒肌谷顆借呢嘗忍截擾晶燕祭謂賺慈梁芳償宋敵沉沿潘皇籌胞鍋串伸拆暗涯督繁艦艾貸側圾垃毫狂淚遷契妳彭役抓櫃澤蕭邁掃撤旺栗絡繪翔腸芬軌閉仲后殊煮膠萊衡兄喬姐涵炎稿虛販賢嚇奈廖杯添輝秘搞淑秒脅腿鋒丹啊孟戀戒洞窗荷迪俄刷勒干揭搖獅耀遍埔帝彼循扮杜熊莉誌趙閃炸燃瓦蜜詹辣鹿乏刊恢攜泉爐碰辭逆錦鏈餅鬧魯津煙祥郵頒騙魔唐嘴懂拖棟紹膚菲蟲鑑闆哭妝尖悉撐敲聊肥舍遲凡冒卅呂乳佩卓寒扁扶梯穎跡迴佔偷姿怡燦胎臟譽薦饋宴悲拓琴襲誕踏傾准劑曼噸怒怨慎搜橫牽盒睛逼鑽黎丟兆奮寄廷徑毀沈繫蹤醬騰夥尿拼曉瓶箭罵肝蒙辯閣壯浮液烤翁逢飽伍壁妙嬰幻恰搬榜歉殖滅炒罹耐仰余堆孕慘暑柔滲裕貌墨砲俗噴址堪夕忽抹柱浩渡潭綁螢鬼凍募泥滾澎潤糕胸茲錶鍾奏孔押洽瑪甘耗聘肺貢躍遞駁鹽吹暨泛漏爺牠綱腹衰雕啦夾姆孝巷拔插撥欲灰番疏碩篇紋肩胃脈荒菌諸頃颱擠擦曝椅殘漂稍膽蔣詐謀賭采韻濕勁姻弄紫蝦詳陰頗鼻傅允暢繞羽蔬賀霧儲帥描斥晉涼滋盃禍腐腰袖註軸闖頁龜割娃拋枝櫻泳濱獄眠縱耕腫虧趁酬瑋乃吊恆憑曆氏汁盈腕鋪催剪吞娜寮峽帽彥挖旋欠毅稻耶范薩褲陶驅仙佐悠昭桶梨犬盜羊芒貫贊馨飆嘆妥彎懲扭浴猶疼碳磨脂膜菊薄諮謹鍊井冊勸嗆埋堡寵龐捨杰沖煩爬猛碎薇蜂辨逮蹟函勘奉妮娘廉憾懸捲擋湧澄琳脆鳴吐喪坑孤桿爛玻璃肚銅倉兌坊塵廈徹慰敘斑旭框械汗爽碗籤糾罩魏昇填崩廁您懼掩栽煤疊瘋瘦祈胖茂誘貪迅遵釀鈴丈凝寺崇抬摸斗昆欄淺葛虐迄鄧飼倆墊妨娛屍悅披旬椒欺殼汰淋疲窮緻艇艱訟頸俱厲奔廊".split('');
         const TIER_2000_PLUS = "彷忌怖憤拘檻歧氧灘炮盾瞬碧稀縫聰舟蒸蒐誼貧蹈錫嬤屢挫攀朵濫灌玫瘤禦粗締腔蒂誇轄鴨鷹鼠捍伏咬彿欽獸竊籠肇蔥謙譜遙釐佑僚凸喚奕婷岡摘滴瑩篩紗罕翰莎菁賈逛遣郎鬱魂洩仇仿僑劍吵堵幽拳撒昏瓊甄礦秉糊腎臣譯踐逸酷鈞麟鼎傲卸塗嫁宛履掀沛牧磚臭蕾衍豔趴踩躲逝遮隧雇曬亭儒勿卷厭垂撲撫擅晴桑柴棚珊琪瑰盪砂筋糧纖蛇蝶諷銳霖飄魅侶坤屈岩桂淹淪甫痕癒穆翠肢芝葡蚊賦趟邏污刪喻蔚帆弘棲潑眷碑繩臥裸諜辰銜于剝婉寸彬扎抑撿橘溢灑烘獵疆粒膩舌蓄賄赫踢郁酥傘勾吋吻啤墜寓嶼廂恨悔慕撼擎斜柳淘滯焚牲矚砍臂艘茄萄藤虹謠辱醉菇俠偽傻凶卿叔喘嘲囊嫩岳征拾漆犧癮盆砸秩粹綿羞膝蒜蘆螺詮赤躺轎酵韋黏齒紓丘劣哀庸彌悶摔昂棋溼煎煌熬眉矛翼蓬蘿衫裙襪襯闊騷夯勳倡傍僵刮勉卵喔巾弊悍扯拌昔棉殷殿淵煉煞爵狼罐謊阪饒驟檯乖乙峻巢帕悟惟扛攔攬杉毯汪沾淇潰猜粽腺莓葬薛衷貶輿釣闢雀餵鵝勃匙吾咪塌墓奢姑嬌崛嶺惑慌捉撕烹燙玄琉瓷睞肅肖膏芭蠻裔訝誓諒諧辜遂醜鹹斌唇削噪尬庇恭捧椎樺泊溜漠漿狠盲礁纏芋萌蕉虞遜鑲陌霍伐叉喉姚悄惱惹抄拱摺撰晃枚株歇浸渴牢睹磁磯秦筍糟繽醇顛髒崗仕俐卑叛哩嘛坎崎愉挨旨溯熙狹猴畏瞭紮艙薑賜霜馮滷丸匹埃墾宵尷崔慨扇抨掘撈敷濾畜窄肪脊臘逗驕町仗咽塢壤宙御捏掏擲攏暈橡澡燥癱穀穴窩膀芙芽蔔蕩蝕邪餓餡鮑伶兇划剖叢宰寂屁弦挽挪搏枕槓槽檸浦碌竄筒緬翅聆肆蝴袍裹豹陵韌舖潢鉅匿叮呀姜姨慾戈抖掙斬梭棵樁樸檬泌炫甸盯禽窘竭羈耍脹覓豚鞏佈樑偕劫呆夷恤懶戚楓榕渣炭煥狄瑟畔綴繃脾蒼蔓諱醋釘鈔鑼馳亨俏倘冤卦咳哨壺奠彙挾揪攪杏枯歹沸湊燉甩癢矽稚穫絨綻纜羨膨萃萎薯訣詭豫躁酌酪攸兔勻匆匠匪吟垮峙嶄愁擱敞斐昧晰梗樞渾濤瑚瑕瓣禪竿紡缸蘊謬賊跪蹲郊醃鈕鉤鞭頌頰鴉郝伺呵嚼寡寨崑弗恥愧懇撇摧札椰歪汀溶澱澀睜矮矯碟粥茫蔽蛙謎輒鋁阱餃髓倖凹哇嘯囚姬悼憐揣梵泣溺澈瀏燭犀狐疵瞄禱簿糞腥蛛蠟輻遼鉛鑰隙痠伙倦倚冥凳吼咒喇嘔奎奴妄寞寢崖帖拐拭梳棕橙沫漬焰甦皺眶眺磅窺綽脖鍛隸艷裏琦乍侮俯剔吶喀嗅嘻噓囉屑怠惶懈揉暇炙爪瞞矩笨笛簾肋臀蠢譬豎躬轍鈣鋸靴顫鬍齣丙劈噹嚨愚拯掠櫥氫瑯疤瞎翹肘陋飢鹼叭哄唸嚐弧恍憊沮瞧筷糙絞聳莖誦贖軀鎂靡噁癡".split('');
         const FULL_POOL = [...TIER_1_1000, ...TIER_1001_2000, ...TIER_2000_PLUS];
@@ -347,7 +362,8 @@
         }
 
         // === 6. 處理結果 ===
-        function processReview(word, q) {
+        const originalProcessReview = processReview;
+        processReview = function(word, q) {
             let r = srsDatabase[word] || { interval: 0, repetitions: 0, easeFactor: 2.5 };
             if (q === 0) { r.repetitions = 0; r.interval = 0; } 
             else { r.interval = calculateNextInterval(word, q); r.repetitions++; }
@@ -369,6 +385,9 @@
                     card.outerHTML = createCardHTML(word, 'penalty', getWordTier(word)); 
                 }, 300);
             } else { card.style.display = 'none'; }
+            
+            // 觸發進度條更新
+            updateRPGRealm();
         }
 
         // === 7. 數據面板 ===
@@ -394,7 +413,7 @@
             const total = FULL_POOL.length;
             const masteredCount = currentCategorizedWords.mastered.length;
             const graduatedCount = currentCategorizedWords.graduated.length;
-            const totalKnown = masteredCount + graduatedCount; // 用於稱號計算
+            const totalKnown = masteredCount + graduatedCount; 
             
             const pG = (graduatedCount / total * 100).toFixed(1);
             const pM = (masteredCount / total * 100).toFixed(1);
@@ -432,14 +451,12 @@
                 upcomingList.innerHTML += `<a href="https://www.moedict.tw/${encodeURIComponent(item.word)}" target="_blank" class="dict-pill upcoming-pill">${item.word} <span class="pill-sub">${d.getMonth()+1}/${d.getDate()}</span></a>`;
             });
             if(upcomingList.innerHTML === '') upcomingList.innerHTML = '<span style="color:var(--text-light); font-size:14px;">(目前無排程)</span>';
-
-            // === 🚀 史詩級 RPG 稱號更新引擎 ===
-            updateRPGRealm(totalKnown);
+            
+            updateRPGRealm();
         }
 
-// 🚀 獨立的稱號更新引擎 (支援全域呼叫，不依賴 dashboard)
+        // 🚀 獨立的稱號更新引擎
         function updateRPGRealm() {
-            // 自動結算當前已知字數 (間隔 >= 21 天)
             let knownCount = 0;
             for (const word in srsDatabase) {
                 if (srsDatabase[word].interval >= 21) knownCount++;
@@ -450,7 +467,6 @@
             const fillEl = document.getElementById('journeyFill');
             const maxVocab = 2867;
 
-            // RPG 稱號陣列
             const realms = [
                 { threshold: 2867, name: "識字之神" },
                 { threshold: 2700, name: "救世勇者" },
@@ -465,7 +481,6 @@
                 { threshold: 0,    name: "新手村民" }
             ];
 
-            // 判定當前頭銜
             let currentRealm = realms[realms.length - 1]; 
             for (let i = 0; i < realms.length; i++) {
                 if (knownCount >= realms[i].threshold) {
@@ -474,27 +489,51 @@
                 }
             }
 
-            // 更新 UI 介面
             if (nameEl) nameEl.innerText = currentRealm.name;
             if (countEl) countEl.innerText = knownCount;
             
-            // 更新進度條寬度
             const percentage = Math.min(100, (knownCount / maxVocab) * 100);
             if (fillEl) fillEl.style.width = `${percentage}%`;
         }
 
-        // ==========================================
-        // ⚡ 系統初始化綁定 (確保首頁載入及點擊按鈕時立刻更新)
-        // ==========================================
-        updateRPGRealm(); // 網頁載入時立刻結算一次
+        // === 8. 細節檢視 ===
+        function showDetail(cat) {
+            const view = document.getElementById('detailView');
+            const list = document.getElementById('detailList');
+            const titles = { graduated: '畢業 (Mastered)', mastered: '長期記憶 (>21d)', learning: '建構中 (Learning)', hard: '困難 (Hard)', unlearned: '尚未解鎖' };
+            view.classList.remove('hidden');
+            document.getElementById('detailTitle').innerText = `${titles[cat]}：`;
+            if (currentCategorizedWords[cat].length === 0) { list.innerHTML = `<span style="color:var(--text-light); font-size:14px;">(空)</span>`; } 
+            else { list.innerHTML = currentCategorizedWords[cat].map(w => `<a href="https://www.moedict.tw/${encodeURIComponent(w)}" target="_blank" class="dict-pill">${w}</a>`).join(''); }
+        }
 
-        // 在 processReview 函數原本的邏輯中，我們用一個小技巧監聽點擊，
-        // 確保只要卡片狀態改變，稱號與進度條就即時推進：
-        const originalProcessReview = processReview;
-        processReview = function(word, q) {
-            originalProcessReview(word, q);
-            updateRPGRealm(); // 按下按鈕後即時更新進度條！
-        };
+        function toggleDashboard() {
+            const db = document.getElementById('dashboard');
+            db.classList.toggle('hidden');
+            if (!db.classList.contains('hidden')) renderStatistics();
+        }
+
+        function exportData() {
+            const blob = new Blob([JSON.stringify({db: srsDatabase, stats: stats})], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `srs_backup.json`; a.click();
+        }
+
+        function importData(e) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const data = JSON.parse(ev.target.result);
+                if(data.db) { srsDatabase = data.db; stats = data.stats || { streak: 0, lastDate: null }; } 
+                else { srsDatabase = data; }
+                localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
+                localStorage.setItem('srs_stats', JSON.stringify(stats));
+                location.reload();
+            };
+            reader.readAsText(e.target.files[0]);
+        }
+        
+        // 初始化載入
+        updateRPGRealm();
     </script>
 </body>
 </html>
