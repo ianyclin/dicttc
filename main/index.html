@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小學生 SRS 字卡系統 v3.8 (史詩進度條與視覺修復版)</title>
+    <title>小學生 SRS 字卡系統 v4.0 (萊特納認知優化版)</title>
     <style>
         :root {
             --primary: #4f46e5;      /* Indigo 600 */
@@ -19,565 +19,336 @@
         
         body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; max-width: 960px; margin: auto; line-height: 1.6; padding-bottom: 60px;}
         
-        /* 頂部橫幅 */
-        .header-stats { display: flex; flex-direction: column; gap: 15px; margin-bottom: 24px; padding: 20px 30px 25px 30px; background: var(--primary); color: white; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.2); }
-        .top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-        .streak-badge { font-size: 1.25rem; font-weight: bold; display: flex; align-items: center; gap: 8px; }
-        .streak-badge span { font-size: 1.8rem; color: #fde047; font-weight: 900; }
-
-        /* === 🚀 史詩級進度條 CSS === */
-        #realmJourneyContainer { width: 100%; margin-top: 15px; }
-        .journey-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; padding: 0 4px; }
-        .journey-title { font-size: 1.05rem; color: rgba(255,255,255,0.85); font-weight: bold; }
-        .journey-title span { font-size: 1.4rem; color: #fde047; margin-left: 6px; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-        .journey-count { font-size: 0.9rem; color: rgba(255,255,255,0.8); }
-        .journey-count span { font-size: 1.15rem; font-weight: bold; color: #ffffff; font-family: monospace; }
-
-        .journey-bar { height: 16px; background: rgba(0,0,0,0.25); border-radius: 8px; position: relative; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.15); }
-        .journey-fill { height: 100%; background-color: var(--success); background-image: linear-gradient( 45deg, rgba(255, 255, 255, 0.3) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0.3) 75%, transparent 75%, transparent ); background-size: 40px 40px; border-radius: 8px; width: 0%; transition: width 0.5s ease; position: relative; animation: journey-stripes 2s linear infinite, journey-glow 3s ease-in-out infinite; }
-
-        @keyframes journey-stripes { from { background-position: 40px 0; } to { background-position: 0 0; } }
-        @keyframes journey-glow { 0%, 100% { box-shadow: 0 0 5px rgba(14, 165, 233, 0.5); filter: brightness(1); } 50% { box-shadow: 0 0 20px rgba(14, 165, 233, 0.9), 0 0 30px rgba(255, 255, 255, 0.4); filter: brightness(1.2); } }
-
-        .journey-ticks { display: flex; justify-content: space-between; margin-top: 6px; position: relative; padding: 0 2px; }
-        .tick { font-size: 11px; color: rgba(255,255,255,0.6); font-family: monospace; position: relative; font-weight: normal;}
-        .tick::before { content: ''; position: absolute; top: -8px; left: 50%; transform: translateX(-50%); width: 2px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 1px; }
-
-        /* === 控制面板 === */
-        .controls { margin-bottom: 24px; padding: 30px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
-        .controls h2 { margin-top: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; color: var(--text); margin-bottom: 20px;}
-        .btn-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
-        .btn-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        button { padding: 12px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 8px;}
-        button:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); filter: brightness(1.05); }
-        button:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .btn-primary { background-color: var(--primary); color: white; }
-        .btn-info { background-color: var(--secondary); color: white; }
-        .btn-secondary { background-color: #64748b; color: white; }
-        .manual-panel { background: #f8fafc; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 20px; font-size: 14.5px; border-left: 6px solid #64748b; }
-
-        /* === 字卡與評估按鈕 (修復處) === */
-        .card { background: var(--card-bg); border-radius: 16px; padding: 40px 30px; margin-bottom: 24px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); text-align: center; border-top: 8px solid #e2e8f0; transition: all 0.3s ease; }
-        .card.review { border-top-color: var(--danger); }
+        .header-stats { display: flex; flex-direction: column; gap: 15px; margin-bottom: 24px; padding: 20px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .flex-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
+        .btn-primary { background: var(--primary); }
+        .btn-primary:hover { background: var(--secondary); }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        
+        /* 儀表板 */
+        #dashboard { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .hidden { display: none !important; }
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-top: 15px; }
+        .stat-box { background: var(--bg); padding: 15px; border-radius: 8px; text-align: center; }
+        .stat-num { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+        
+        /* 抽卡區塊 */
+        #deck { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 40px; }
+        .card { background: var(--card-bg); width: 280px; padding: 20px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 6px solid var(--primary); transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); }
+        .card.review { border-top-color: var(--warning); }
         .card.new { border-top-color: var(--success); }
-        .card.penalty { border-top-color: #334155; background: #f8fafc; } 
+        .card.penalty { border-top-color: var(--danger); background: #fef2f2; }
         
-        /* 標楷體設定 */
-        .char-title { font-size: 100px; margin: 20px 0; color: var(--text); font-weight: normal; font-family: "BiauKai", "DFKai-SB", "Kaiti TC", "KaiTi", serif; line-height: 1; text-shadow: 2px 2px 0px rgba(0,0,0,0.02); }
+        .char-title { font-size: 3.5rem; font-weight: bold; margin: 10px 0; color: var(--text); }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .badge.review { background: #fef3c7; color: #b45309; }
+        .badge.new { background: #e0f2fe; color: #0369a1; }
         
-        .badge { font-size: 13px; padding: 6px 14px; border-radius: 20px; color: white; margin: 0 6px; display: inline-block; font-weight: bold; letter-spacing: 0.5px; }
-        .tier-基礎 { background: var(--success); } .tier-進階 { background: #8b5cf6; } .tier-挑戰 { background: #6366f1; }
-
-        /* 恢復遺失的四顆評估按鈕 CSS */
-        .eval-buttons { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 35px; }
-        .btn-eval { flex: 1; min-width: 120px; max-width: 160px; padding: 14px 0; font-size: 16px; border-radius: 12px; }
-        .btn-eval-forget { background-color: #e2e8f0; color: #475569; }
-        .btn-eval-hard { background-color: var(--warning); color: white; }
-        .btn-eval-good { background-color: var(--success); color: white; }
-        .btn-eval-easy { background-color: var(--primary); color: white; }
-
-        /* === 數據儀表板 === */
-        #dashboard { background: #ffffff; padding: 30px; border-radius: 16px; margin-top: 24px; box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); }
-        .tier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
-        .tier-box { text-align: center; padding: 18px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; }
-        .tier-val { font-size: 1.75rem; font-weight: 900; color: var(--primary); }
-        .progress-bar-mini { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 10px; }
-        .progress-fill { height: 100%; background: var(--success); transition: width 0.5s ease-out; }
-        .progress-wrapper { background: #f8fafc; padding: 25px; border-radius: 12px; margin-bottom: 24px; border: 1px solid #e2e8f0; }
-        .progress-bar { display: flex; height: 24px; border-radius: 12px; overflow: hidden; margin-top: 15px; background: #e2e8f0; }
-        .seg { height: 100%; transition: width 0.5s ease-out; cursor: pointer; }
-        .seg-mastered { background: #38bdf8; }
-        .seg-learning { background: var(--primary); }
-.seg-hard { background: var(--danger); }
-        .seg-graduated { background: #fbbf24; }
+        /* 按鈕區 */
+        .eval-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 10px; }
+        .btn-eval { padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: 0.2s; color: white;}
+        .btn-eval-forget { background: var(--danger); }
+        .btn-eval-hard { background: var(--warning); }
+        .btn-eval-good { background: var(--primary); }
+        .btn-eval-easy { background: var(--success); }
+        .btn-eval:hover { filter: brightness(1.1); }
         
-        .legend { display: flex; justify-content: space-between; flex-wrap: wrap; font-size: 13px; margin-top: 15px; color: var(--text-light); font-weight: bold; }
-        .legend span { cursor: pointer; padding: 6px 10px; border-radius: 6px; display: flex; align-items: center;}
-        .legend span::before { content: ''; display: inline-block; width: 12px; height: 12px; margin-right: 8px; border-radius: 50%; }
-        /* 修正 3：補回光譜圖例圓點顏色 */
-        .leg-graduated::before { background: #fbbf24; }
-        .leg-mastered::before { background: #38bdf8; }
-        .leg-learning::before { background: var(--primary); }
-        .leg-hard::before { background: var(--danger); }
-        .leg-unlearned::before { background: #cbd5e1; }
+        /* 說明面板 */
+        .manual-panel { background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 0.9rem; }
+        .manual-panel h3 { margin-top: 0; color: var(--primary); }
+        .dict-pill { display: inline-block; padding: 4px 10px; background: #e2e8f0; border-radius: 15px; margin: 4px; text-decoration: none; color: var(--text); font-size: 0.9rem; }
+        .dict-pill:hover { background: var(--primary); color: white; }
 
-        .pill-container { display: flex; flex-wrap: wrap; gap: 8px; }
-        .dict-pill { display: inline-flex; align-items: center; padding: 6px 14px; background: #ffffff; border-radius: 20px; font-size: 16px; font-weight: bold; color: var(--secondary); text-decoration: none; border: 1px solid #e2e8f0; transition: all 0.2s; }
-        .dict-pill:hover { transform: translateY(-2px); background: var(--secondary); color: white; }
-        
-        /* 修正 1：補回細節選單的 UI 與獨立滾動軸 (清單限高 240px) */
-        .detail-view { background: #f8fafc; border-radius: 10px; padding: 20px; margin-top: 15px; border: 1px dashed #cbd5e1; }
-        .detail-list-scroll { max-height: 240px; overflow-y: auto; padding-right: 10px; margin-top: 10px; }
-
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
-        .stat-box { background: #f8fafc; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; }
-        
-        /* 修正 2：統一困難字庫與待複習的標題樣式 (加入底線) */
-        .stat-box h4 { margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 15px; }
-        .stat-box-hard h4 { color: var(--warning); }
-        .stat-box-upcoming h4 { color: var(--primary); }
-
-        footer { text-align: center; margin-top: 40px; padding: 24px; color: var(--text-light); font-size: 0.9rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: center; align-items: center; gap: 15px; }.reset-link { color: #94a3b8; text-decoration: none; cursor: pointer; font-size: 0.85rem; padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc;}
-        .reset-link:hover { background: #e2e8f0; color: #475569; }
-        .hidden { display: none; }
-
-        @media (max-width: 600px) { 
-            .header-stats { padding: 15px; }
-            .btn-grid-3, .btn-grid-2 { grid-template-columns: 1fr; }
-            .realm-title { font-size: 1.1rem; }
-            .tick:nth-child(even) { display: none; } 
-            .stat-grid { grid-template-columns: 1fr; } 
-            .legend { flex-direction: column; gap: 8px; } 
-            /* 手機版評估按鈕變 2x2 陣列 */
-            .eval-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } 
-            .btn-eval { max-width: 100%; }
-        }
+        /* RPG 進度條 */
+        .rpg-container { background: #e2e8f0; height: 20px; border-radius: 10px; overflow: hidden; margin-top: 10px; }
+        .rpg-bar { background: linear-gradient(90deg, var(--warning), var(--danger)); height: 100%; width: 0%; transition: width 0.5s ease; }
     </style>
 </head>
 <body>
 
     <div class="header-stats">
-        <div class="top-row">
-            <div class="streak-badge">🔥 連續學習天數 <span id="streakDays">0</span> 天</div>
-        </div>
-        
-        <div id="realmJourneyContainer">
-            <div class="journey-header">
-                <div class="journey-title">🎖️ 冒險者軍階：<span id="currentRealmName">新手村民</span></div>
-                <div class="journey-count">已掌握：<span id="currentRealmCount">0</span> / 2867</div>
-            </div>
-            <div class="journey-bar">
-                <div class="journey-fill" id="journeyFill" style="width: 0%"></div>
-            </div>
-            <div class="journey-ticks">
-                <span class="tick">0</span>
-                <span class="tick">300</span>
-                <span class="tick">600</span>
-                <span class="tick">900</span>
-                <span class="tick">1200</span>
-                <span class="tick">1500</span>
-                <span class="tick">1800</span>
-                <span class="tick">2100</span>
-                <span class="tick">2400</span>
-                <span class="tick">2700</span>
-                <span class="tick">2867</span>
+        <div class="flex-row">
+            <h2>🧠 兒童 SRS 學習系統 (萊特納核心)</h2>
+            <div>
+                <button class="btn btn-outline" onclick="toggleDashboard()">📊 數據看板</button>
             </div>
         </div>
-    </div>
-
-    <div class="controls">
-        <h2>📚 小學生 SRS 字卡系統</h2>
-        
-        <div id="manualPanel" class="manual-panel hidden">
-            <div class="content-block">
-<strong>1. 字庫配置（總計 2867 字，資料來源為臺灣教育研究資訊網 108 年高頻字，約覆蓋 99% 語料）：</strong>
-                <ul>
-                    <li><b>基礎區間</b> （第 1~1000 字）：約佔 <b>85%</b>，是識字核心。</li>
-                    <li><b>進階區間</b> （第 1001~2000 字）：約佔 <b>10%</b>，可提升閱讀流暢度與語意精確度。</li>
-                    <li><b>挑戰區間</b> （第 2001~2867 字）：約佔 <b>4%</b>，構築長尾防線，用以應付艱深文本。</li>
-                </ul>
-                <hr style="border:0; border-top:1px dashed #cbd5e1; margin: 15px 0;">
-                <strong>2. 按鈕評估準則：</strong>
-                <ul>
-<li><b>完全忘記</b>：一片空白，看萌典才想起（打回原形，1分鐘後重考）。</li>
-                    <li><b>困難</b>：猶豫超過 3 秒，或差點認錯（間隔天數折半，加強監控）。</li>
-                    <li><b>良好</b>：稍微想 1~2 秒，順利且正確答出（正常拉長複習間隔）。</li>
-                    <li><b>簡單</b>：看到字瞬間 (0.5秒內) 知道讀音跟意思（大幅延後複習時間）。</li>
-                    <li><b>畢業機制</b>：當單字複習間隔大於 180 天將判定為「永久掌握」。</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="btn-grid-3">
-            <button class="btn-secondary" onclick="document.getElementById('manualPanel').classList.toggle('hidden')">📘 系統操作指南</button>
-            <button class="btn-secondary" onclick="exportData()">💾 儲存進度</button>
-            <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📂 讀取進度</button>
-            <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-        </div>
-        <div class="btn-grid-2">
-            <button class="btn-primary" id="generateBtn">🃏 抽取每日字卡 (10 張)</button>
-            <button class="btn-info" onclick="toggleDashboard()">📊 學習數據看板</button>
+        <div class="rpg-status">
+            <strong>⚔️ 學習經驗值 (畢業卡片進度)</strong>
+            <div class="rpg-container"><div class="rpg-bar" id="rpg-bar"></div></div>
+            <div style="text-align: right; font-size: 0.8rem; color: var(--text-light);" id="rpg-text">0 / 0 畢業</div>
         </div>
     </div>
 
     <div id="dashboard" class="hidden">
-        <h3 style="color:var(--text); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">📍 維度一：各字庫解鎖達成率 (橫向)</h3>
-        <div class="tier-grid">
-            <div class="tier-box">
-                <h4>基礎字 (1000)</h4>
-                <div class="tier-val" id="t1-percent">0%</div>
-                <div class="progress-bar-mini"><div class="progress-fill" id="t1-bar" style="width:0%"></div></div>
-            </div>
-            <div class="tier-box">
-                <h4>進階字 (1000)</h4>
-                <div class="tier-val" id="t2-percent">0%</div>
-                <div class="progress-bar-mini"><div class="progress-fill" id="t2-bar" style="width:0%"></div></div>
-            </div>
-            <div class="tier-box">
-                <h4>挑戰字 (867)</h4>
-                <div class="tier-val" id="t3-percent">0%</div>
-                <div class="progress-bar-mini"><div class="progress-fill" id="t3-bar" style="width:0%"></div></div>
-            </div>
-        </div>
-
-        <h3 style="color:var(--text); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top:30px;">🧠 維度二：記憶留存光譜 (縱向)</h3>
-        <div id="progressContainer" class="progress-wrapper"></div>
-<div id="detailView" class="detail-view hidden">
-            <h4 id="detailTitle" style="margin-top:0; color:var(--primary);">點擊上方標籤查看字元...</h4>
-            <div id="detailList" class="pill-container detail-list-scroll"></div>
-        </div>
-
+        <h3>📈 學習統計與資料管理</h3>
         <div class="stat-grid">
-            <div class="stat-box stat-box-hard">
-                <h4>⚠️ 困難字庫 (需介入指導)</h4>
-                <div id="hardWordsList" class="pill-container"></div>
-            </div>
-            <div class="stat-box stat-box-upcoming">
-                <h4>🗓️ 待複習佇列 (未來排程)</h4>
-                <div id="upcomingWordsList" class="pill-container"></div>
+            <div class="stat-box"><div class="stat-num" id="stat-total">0</div>總收錄字數</div>
+            <div class="stat-box"><div class="stat-num" id="stat-learning">0</div>學習中</div>
+            <div class="stat-box"><div class="stat-num" id="stat-grad">0</div>已畢業 (長期記憶)</div>
+            <div class="stat-box"><div class="stat-num" id="stat-streak">0</div>連續登入天數</div>
+        </div>
+        <div class="flex-row" style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+            <button class="btn btn-primary" onclick="exportData()">💾 備份匯出 (JSON)</button>
+            <input type="file" id="import-file" style="display:none;" onchange="importData(event)">
+            <button class="btn btn-outline" onclick="document.getElementById('import-file').click()">📂 還原匯入 (JSON)</button>
+        </div>
+        <div style="margin-top: 20px;">
+            <h4>➕ 新增字彙 (以逗號分隔)</h4>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="new-words-input" placeholder="例如：蘋,果,貓,狗" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                <button class="btn btn-primary" onclick="addWords()">新增</button>
             </div>
         </div>
     </div>
 
-    <div id="deck"></div>
+    <div id="deck">
+        </div>
 
-    <footer>
-        <span>© 2026 小學生 SRS 字卡系統</span>
-        <a class="reset-link" onclick="resetAllData()">清空所有紀錄</a>
-    </footer>
+    <div class="manual-panel">
+        <h3>⚙️ 演算法說明：萊特納 2357 系統</h3>
+        <p>本系統針對兒童認知發展設計，廢除成人用的連續倍數乘法，採用固定天數陣列的階段晉升制，降低「完全忘記」時的心理挫折，並嚴格控管每日新卡數量（上限 5 張）。</p>
+        <table style="width: 100%; border-collapse: collapse; text-align: left; margin-top: 10px;">
+            <tr style="border-bottom: 2px solid #cbd5e1;"><th>評估按鈕</th><th>階段流轉邏輯</th><th>天數間隔變化</th></tr>
+            <tr style="border-bottom: 1px solid #e2e8f0;"><td><strong style="color:var(--danger)">完全忘記</strong></td><td>退兩階 (最低退至 0)</td><td>避免歸零挫折。當下重測一次。</td></tr>
+            <tr style="border-bottom: 1px solid #e2e8f0;"><td><strong style="color:var(--warning)">困難</strong></td><td>退一階 (最低退至 1)</td><td>增加近期出現頻率。</td></tr>
+            <tr style="border-bottom: 1px solid #e2e8f0;"><td><strong style="color:var(--primary)">良好</strong></td><td>晉升一階</td><td>1天 → 3天 → 5天 → 7天...</td></tr>
+            <tr><td><strong style="color:var(--success)">簡單</strong></td><td>跳級晉升兩階</td><td>快速通關，釋放工作記憶。</td></tr>
+        </table>
+        <p style="font-size: 0.8rem; color: var(--text-light); margin-top: 10px;">階段陣列：[0天, 1天, 3天, 5天, 7天, 14天, 21天, 60天, 180天(畢業)]</p>
+    </div>
 
-    <script>
-        // === 0. 星期五備份提醒 ===
-        window.onload = function() {
-            const todayStr = new Date().toLocaleDateString();
-            if (new Date().getDay() === 5 && localStorage.getItem('last_backup_reminder') !== todayStr) {
-                setTimeout(() => {
-                    alert("💡今天是星期五！為避免資料遺失，請記得在複習完畢後，點擊「儲存進度」。");
-                    localStorage.setItem('last_backup_reminder', todayStr);
-                }, 1000);
-            }
-        };
+<script>
+    // === 1. 資料庫與全域設定 ===
+    let srsDatabase = JSON.parse(localStorage.getItem('srs_db')) || {};
+    let stats = JSON.parse(localStorage.getItem('srs_stats')) || { streak: 0, lastDate: null };
+    
+    // 認知負荷控制：每日新卡片上限
+    const LIMIT_NEW_CARDS_PER_DAY = 5; 
+    
+    // 萊特納 2357 階段陣列
+    const STAGE_INTERVALS = [0, 1, 3, 5, 7, 14, 21, 60, 180];
+    const MAX_STAGE = STAGE_INTERVALS.length - 1;
+    const GRADUATION_INTERVAL = 180;
 
-        // === 1. 初始化與數據 (字庫) ===
-const TIER_1_1000 = "的是一不有人在國年中大會為台出上到以時也民來要他對與生成日長後了家能可前市發這行多說就過公我表高地動政新學自下法個分選都開美現場主但方業月於和作天及全最經進用心將外小示文力工等因灣機事得子定同當元者好區部之加合還重黨員提本而車讓北名理總金關手去更立面間度如體起沒資至所內其已入萬們次期無她統意第化明路點此府品被實今議道應打很兩並電三看回相共情計調產安建局報保只由持受教水然從通果任林再正位著案未交院性展球近數身平活導指影設感目二接代或韓比女處特運想戰利港商投強問務認昨海南程物每辦少參眾造東常師團才量題社老氣結陳十推則達華委口式約隊基舉原園演做管先包助各向香光制連單續費醫己反觀求治風價空友客頭解賽專山網花首望陸完照蔡警張英知放書見縣帶色創除種規司直變線傳清畫營世聯周收樣界信使支查樂流取改科預權協王視門校該請麼別太四非許服愛決軍給義親透布育系整遊五農言件轉曾供易百兒歲片論何節料記際馬卻組雄住難又告即些勢消術黃質率環男真需超獲走店引希增標士把那檢防型西滿往房若德格濟站據送且食仍爭李失技官票話集步像境考證你護裡容領備較雙跟熱例配億初另條僅排旅必瑜藝聲職落段獎補斯低具稱響確白級幾施病神驗研修否季維半輕列深火升依星媽快款始態源六紅覺福底優習離擔吃音孩亞戶席景顯攝致號限雖項養製形邊算裝準牌里早擊效精策善登評健普宣便買歷九功購拉圖智綠執吳拍訪克柯獨象角況城拿晚千免鄉龍談採味廠餐停積阿傷母卡速興假佳狀企值廣勝置越括極隨須息班紀八岸眼識館候察郭青史謝斷足航壓待害居桃命退減威訊甚顧類層戲根留媒念署午破鐵土川終遭志衛試歌益判療銷找險什嚴酒副喜責幫究蘭貿劇歡搭疑適嘉屬控群黑止負座洲承死換注稅聽訴七樓爾字審遠復油願練錢派賴榮語粉係讀課錄器股吸歐財降模寶笑藍溫享富思銀唱石賣休婚競露室屋售均呼父康故禮令討族額勞央羅飛臉秀監絕宜核童針差繼存春波測切寫延突藥蘇構菜盟移肉京域律批申緊哲幣庭抗素追聞圍講血惠竹米違印夜爆邀攻街陽板永貨輪刻劃救估材恐衝左巴典夠雲姓密朋古董融互奇守臨博楊玩訂納絲鄭穿細爸夫挑版魚彈啟暴盡燈雨麗冠穩劉付充洋跑島急慧擇痛皮盤幕績背餘似右犯短範舞乎彩順銘罪避敗微播慶草錯鎮堅橋泰缺亮蘋竟江私翻豪曲久招棒簡般豬徵鐘潮症簽苦野倒嗎障哥蛋飯屆殺湖茶訓釋罰迷階貼危宮良迎刑含異豐靠懷村衣遇陣尚租舊詢驚尼木飲毒瑞困略筆腳駕廳怎幸倫坪逐搶樹架仁葉套授畢脫剛田籍武鼓怕擁禁築努宗激屏患腦圈州彰捷隆宅愈擴昌編跨".split('');
-const TIER_1001_2000 = "介弟織附召慢河涉份勵夢牛輸它聚鮮盛距冷勇染省趣醒幅序棄旗紛頂齡忙掉澳戴朝妻析薪返拜損朱烈偏慮散端伴巨裁冰尤尺疫累診零夏幼玉癌索藉跳坐惡揮災雅沙乾森浪苗貴培尋操蓮述隔洗漸碼震偉堂峰籲船章束賞掌援漲諾載雞革促捐輔靈靜伊弱恩亂圓誤壞妹廚秋緩廿旁映熟燒符臺藏鬆亡射庫植輛鍵占吉楚洪邦喊折抽漁贏飾咖探替頻婦挺聖遺鏡陪嫌歸珍蓋哪誰坦皆答封湯綜觸呈徐叫唯奧尊抱暫雜予憲握檔罷骨麻乘奪宏溪牙甜寬軟駐兵隻倍漫駛麵按敏汙紙趕巧廢塊揚敢祖迫雷鴻抵縮雪亦刺哈憶捕溝滑巡勤暖糖詞誠賓槍珠複傑喝宇柏硬逾籃純肯儀固忘忠措汽獻菸姊孫憂莊覽俊兼冬宿晨欣睡逃閱啡婆梅毛豆頓奶淡仔既辛塞帳敦松游盼漢騎壇拒邱尾概甲胡輩週麥振耳袋阻凌刀床撞某焦箱鄰債扣鞋擬朗淨赴趨券吧旦池礙緣佛凱塑牆賠鳥匯桌掛擺虎貓贈輯剩壘拚讚侵摩斤濃顏髮句慣攤敬潛詩貞跌霸齊侯廟伯徒泡疾祝莫隱鳳氛混紐舒覆途酸陷鬥儘厚君坡塔寧幹怪托烏鋼閒偵狗瓜礎鎖默繳併偶壽末祕裂丁洛盧託貝轟惜潔玲緒肌谷顆借呢嘗忍截擾晶燕祭謂賺慈梁芳償宋敵沉沿潘皇籌胞鍋串伸拆暗涯督繁艦艾貸側圾垃毫狂淚遷契妳彭役抓櫃澤蕭邁掃撤旺栗絡繪翔腸芬軌閉仲后殊煮膠萊衡兄喬姐涵炎稿虛販賢嚇奈廖杯添輝秘搞淑秒脅腿鋒丹啊孟戀戒洞窗荷迪俄刷勒干揭搖獅耀遍埔帝彼循扮杜熊莉誌趙閃炸燃瓦蜜詹辣鹿乏刊恢攜泉爐碰辭逆錦鏈餅鬧魯津煙祥郵頒騙魔唐嘴懂拖棟紹膚菲蟲鑑闆哭妝尖悉撐敲聊肥舍遲凡冒卅呂乳佩卓寒扁扶梯穎跡迴佔偷姿怡燦胎臟譽薦饋宴悲拓琴襲誕踏傾准劑曼噸怒怨慎搜橫牽盒睛逼鑽黎丟兆奮寄廷徑毀沈繫蹤醬騰夥尿拼曉瓶箭罵肝蒙辯閣壯浮液烤翁逢飽伍壁妙嬰幻恰搬榜歉殖滅炒罹耐仰余堆孕慘暑柔滲裕貌墨砲俗噴址堪夕忽抹柱浩渡潭綁螢鬼凍募泥滾澎潤糕胸茲錶鍾奏孔押洽瑪甘耗聘肺貢躍遞駁鹽吹暨泛漏爺牠綱腹衰雕啦夾姆孝巷拔插撥欲灰番疏碩篇紋肩胃脈荒菌諸頃颱擠擦曝椅殘漂稍膽蔣詐謀賭采韻濕勁姻弄紫蝦詳陰頗鼻傅允暢繞羽蔬賀霧儲帥描斥晉涼滋盃禍腐腰袖註軸闖頁龜割娃拋枝櫻泳濱獄眠縱耕腫虧趁酬瑋乃吊恆憑曆氏汁盈腕鋪催剪吞娜寮峽帽彥挖旋欠毅稻耶范薩褲陶驅仙佐悠昭桶梨犬盜羊芒貫贊馨飆嘆妥彎懲扭浴猶疼碳磨脂膜菊薄諮謹鍊井冊勸嗆埋堡寵龐捨杰沖煩爬猛碎薇蜂辨逮蹟函勘奉妮娘廉憾懸捲擋湧澄琳脆鳴吐喪坑孤桿爛玻璃肚銅倉兌坊塵廈徹慰敘斑旭框械汗爽碗籤糾罩魏昇填崩廁您懼掩栽煤疊瘋瘦祈胖茂誘貪迅遵釀鈴丈凝寺崇抬摸斗昆欄淺葛虐迄鄧飼倆墊妨娛屍悅披旬椒欺殼汰淋疲窮緻艇艱訟頸俱厲奔廊".split('');
-const TIER_2000_PLUS = "彷忌怖憤拘檻歧氧灘炮盾瞬碧稀縫聰舟蒸蒐誼貧蹈錫嬤屢挫攀朵濫灌玫瘤禦粗締腔蒂誇轄鴨鷹鼠捍伏咬彿欽獸竊籠肇蔥謙譜遙釐佑僚凸喚奕婷岡摘滴瑩篩紗罕翰莎菁賈逛遣郎鬱魂洩仇仿僑劍吵堵幽拳撒昏瓊甄礦秉糊腎臣譯踐逸酷鈞麟鼎傲卸塗嫁宛履掀沛牧磚臭蕾衍豔趴踩躲逝遮隧雇曬亭儒勿卷厭垂撲撫擅晴桑柴棚珊琪瑰盪砂筋糧纖蛇蝶諷銳霖飄魅侶坤屈岩桂淹淪甫痕癒穆翠肢芝葡蚊賦趟邏污刪喻帆弘棲潑眷碑繩臥裸諜辰銜于剝婉寸彬扎抑撿橘溢灑烘獵疆粒膩舌蓄賄赫踢郁酥傘勾吋吻啤墜寓嶼廂恨悔慕撼擎斜柳淘滯焚牲矚砍臂艘茄萄藤虹謠辱醉菇俠偽傻凶卿叔喘嘲囊嫩岳征拾漆犧癮盆砸秩粹綿羞膝蒜蘆螺詮赤躺轎酵韋黏齒紓丘劣哀庸彌悶摔昂棋溼煎煌熬眉矛翼蓬蘿衫裙襪襯闊騷夯勳倡傍僵刮勉卵喔巾弊悍扯拌昔棉殷殿淵煉煞爵狼罐謊阪饒驟檯乖乙峻巢帕悟惟扛攔攬杉毯汪沾淇潰猜粽腺莓葬薛衷貶輿釣闢雀餵鵝勃匙吾咪塌墓奢姑嬌崛嶺惑慌捉撕烹燙玄琉瓷睞肅肖膏芭蠻裔訝誓諒諧辜遂醜鹹斌唇削噪尬庇恭捧椎樺泊溜漠漿狠盲礁纏芋萌蕉虞遜鑲陌霍伐叉喉姚悄惱惹抄拱摺撰晃枚株歇浸渴牢睹磁磯秦筍糟繽醇顛髒崗仕俐卑叛哩嘛坎崎愉挨旨溯熙狹猴畏瞭紮艙薑賜霜馮滷丸匹埃墾宵尷崔慨扇抨掘撈敷濾畜窄肪脊臘逗驕町仗咽塢壤宙御捏掏擲攏暈橡澡燥癱穀穴窩膀芙芽蔔蕩蝕邪餓餡鮑伶兇划剖叢宰寂屁弦挽挪搏枕槓槽檸浦碌竄筒緬翅聆肆蝴袍裹豹陵韌舖潢鉅匿叮呀姜姨慾戈抖掙斬梭棵樁樸檬泌炫甸盯禽窘竭羈耍脹覓豚鞏佈樑偕劫呆夷恤懶戚楓榕渣炭煥狄瑟畔綴繃脾蒼蔓諱醋釘鈔鑼馳亨俏倘冤卦咳哨壺奠彙挾揪攪杏枯歹沸湊燉甩癢矽稚穫絨綻纜羨膨萃萎薯訣詭豫躁酌酪攸兔勻匆匠匪吟垮峙嶄愁擱敞斐昧晰梗樞渾濤瑚瑕瓣禪竿紡缸蘊謬賊跪蹲郊醃鈕鉤鞭頌頰鴉郝伺呵嚼寡寨崑弗恥愧懇撇摧札椰歪汀溶澱澀睜矮矯碟粥茫蔽蛙謎輒鋁阱餃髓倖凹哇嘯囚姬悼憐揣梵泣溺澈瀏燭犀狐疵瞄禱簿糞腥蛛蠟輻遼鉛鑰隙痠伙倦倚冥凳吼咒喇嘔奎奴妄寞寢崖帖拐拭梳棕橙沫漬焰甦皺眶眺磅窺綽脖鍛隸艷裏琦乍侮俯剔吶喀嗅嘻噓囉屑怠惶懈揉暇炙爪瞞矩笨笛簾肋臀蠢譬豎躬轍鈣鋸靴顫鬍齣丙劈噹嚨愚拯掠櫥氫瑯疤瞎翹肘陋飢鹼叭哄唸嚐弧恍憊沮瞧筷糙絞聳莖誦贖軀鎂靡噁癡".split('');
-const FULL_POOL = [...TIER_1_1000, ...TIER_1001_2000, ...TIER_2000_PLUS];
-        const GRADUATION_INTERVAL = 180;
+    // 處理連擊天數
+    const todayStr = new Date().toDateString();
+    if (stats.lastDate !== todayStr) {
+        if (stats.lastDate === new Date(Date.now() - 86400000).toDateString()) { stats.streak++; } 
+        else if (stats.lastDate !== null) { stats.streak = 1; }
+        else { stats.streak = 1; }
+        stats.lastDate = todayStr;
+        localStorage.setItem('srs_stats', JSON.stringify(stats));
+    }
+
+    // === 2. 核心演算法 (萊特納狀態機) ===
+    function migrateToStage(r) {
+        if (r.stage !== undefined) return r.stage;
+        if (r.interval >= 180) return 8;
+        if (r.interval >= 60) return 7;
+        if (r.interval >= 21) return 6;
+        if (r.interval >= 14) return 5;
+        if (r.interval >= 7) return 4;
+        if (r.interval >= 5) return 3;
+        if (r.interval >= 3) return 2;
+        if (r.interval >= 1) return 1;
+        return 0;
+    }
+
+    function getNextStage(currentStage, q) {
+        if (q === 0) return Math.max(0, currentStage - 2); // 完全忘記：退兩階
+        if (q === 1) return Math.max(1, currentStage - 1); // 困難：退一階
+        if (q === 2) return Math.min(MAX_STAGE, currentStage + 1); // 良好：升一階
+        if (q === 3) return Math.min(MAX_STAGE, currentStage + 2); // 簡單：升兩階
+        return currentStage;
+    }
+
+    function calculateNextIntervalByStage(stage) {
+        return STAGE_INTERVALS[stage];
+    }
+
+    // === 3. UI 渲染邏輯 ===
+    function toggleDashboard() {
+        const db = document.getElementById('dashboard');
+        db.classList.toggle('hidden');
+        if (!db.classList.contains('hidden')) updateDashboard();
+    }
+
+    function updateDashboard() {
+        let total = Object.keys(srsDatabase).length;
+        let grad = 0;
+        let learning = 0;
         
-        let srsDatabase = JSON.parse(localStorage.getItem('srs_db')) || {};
-        let stats = JSON.parse(localStorage.getItem('srs_stats')) || { streak: 0, lastDate: null };
-        let currentCategorizedWords = { mastered: [], learning: [], hard: [], unlearned: [], graduated: [] };
-
-        function updateStreak() {
-            const today = new Date().toLocaleDateString();
-            if (stats.lastDate === today) return;
-            const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-            if (stats.lastDate === yesterday.toLocaleDateString()) stats.streak += 1;
-            else stats.streak = 1;
-            stats.lastDate = today;
-            localStorage.setItem('srs_stats', JSON.stringify(stats));
-            document.getElementById('streakDays').innerText = stats.streak;
-        }
-        document.getElementById('streakDays').innerText = stats.streak;
-
-        // === 2. 清空功能 ===
-        function resetAllData() {
-            if(confirm("⚠️ 警告：這將會清空所有的學習紀錄！如果您沒有備份，資料將無法找回。")) {
-                if(confirm("🔴 這是最後確認：真的要清空所有紀錄重來嗎？")) {
-                    localStorage.removeItem('srs_db');
-                    localStorage.removeItem('srs_stats');
-                    location.reload();
-                }
-            }
+        for (let w in srsDatabase) {
+            let stg = migrateToStage(srsDatabase[w]);
+            if (stg >= MAX_STAGE) grad++;
+            else learning++;
         }
 
-        // === 3. 演算法 core ===
-        function calculateNextInterval(word, q) {
-            let r = srsDatabase[word] || { interval: 0, repetitions: 0, easeFactor: 2.5 };
-            if (q === 0) return 0;
-            
-            let nextInt = 0;
-            if (r.repetitions === 0) {
-                if (q === 1) return 0; 
-                if (q === 2) nextInt = 1; 
-                if (q === 3) nextInt = 4; 
-            } else {
-                if (q === 1) nextInt = Math.max(1, Math.round(r.interval * 0.5));
-                else if (q === 2) nextInt = Math.max(1, Math.round(r.interval * r.easeFactor));
-                else if (q === 3) nextInt = Math.max(1, Math.round(r.interval * r.easeFactor * 1.3));
+        document.getElementById('stat-total').innerText = total;
+        document.getElementById('stat-learning').innerText = learning;
+        document.getElementById('stat-grad').innerText = grad;
+        document.getElementById('stat-streak').innerText = stats.streak;
+
+        // 更新 RPG 進度條
+        let pct = total === 0 ? 0 : Math.round((grad / total) * 100);
+        document.getElementById('rpg-bar').style.width = pct + '%';
+        document.getElementById('rpg-text').innerText = `${grad} / ${total} 畢業 (${pct}%)`;
+    }
+
+    function createCardHTML(word, type) {
+        let r = srsDatabase[word] || { stage: 0 };
+        r.stage = migrateToStage(r); 
+        
+        let int1 = calculateNextIntervalByStage(getNextStage(r.stage, 1));
+        let int2 = calculateNextIntervalByStage(getNextStage(r.stage, 2));
+        let int3 = calculateNextIntervalByStage(getNextStage(r.stage, 3));
+        
+        let str1 = int1 >= GRADUATION_INTERVAL ? '畢業' : int1 + 'd';
+        let str2 = int2 >= GRADUATION_INTERVAL ? '畢業' : int2 + 'd';
+        let str3 = int3 >= GRADUATION_INTERVAL ? '畢業' : int3 + 'd';
+
+        if (int1 === 0) str1 = '1m';
+        
+        return `
+            <div class="card ${type}" id="card-${word}">
+                <div class="badge ${type}">${type==='review'?'待複習':(type==='penalty'?'重新記憶':'新解鎖')}</div>
+                <div class="char-title">${word}</div>
+                <a href="https://www.moedict.tw/${encodeURIComponent(word)}" target="_blank" style="text-decoration:none; color:var(--primary); font-weight:bold; font-size:1.1rem;">📖 萌典釋義</a>
+                <div class="eval-buttons">
+                    <button class="btn-eval btn-eval-forget" onclick="processReview('${word}', 0)">完全忘記 (1m)</button>
+                    <button class="btn-eval btn-eval-hard" onclick="processReview('${word}', 1)">困難 (${str1})</button>
+                    <button class="btn-eval btn-eval-good" onclick="processReview('${word}', 2)">良好 (${str2})</button>
+                    <button class="btn-eval btn-eval-easy" onclick="processReview('${word}', 3)">簡單 (${str3})</button>
+                </div>
+            </div>`;
+    }
+
+    function generateDailyDeck() {
+        let now = Date.now();
+        let deckDiv = document.getElementById('deck');
+        deckDiv.innerHTML = '';
+        
+        let reviewQueue = [];
+        let newQueue = [];
+
+        for (let word in srsDatabase) {
+            let data = srsDatabase[word];
+            data.stage = migrateToStage(data); // 強制相容
+
+            if (data.repetitions === 0) {
+                newQueue.push(word);
+            } else if (now >= data.nextReview && data.stage < MAX_STAGE) {
+                reviewQueue.push(word);
             }
-            return nextInt;
         }
 
-// === 4. 抽卡引擎 (實裝 7:2:1 動態加權機率) ===
-        document.getElementById('generateBtn').addEventListener('click', () => {
-            updateStreak();
-            document.getElementById('dashboard').classList.add('hidden');
-            
-            const now = Date.now();
-            // 1. 舊債優先處理
-            let dueWords = Object.keys(srsDatabase).filter(w => srsDatabase[w].nextReview <= now && srsDatabase[w].interval < GRADUATION_INTERVAL);
-            dueWords.sort((a, b) => srsDatabase[a].nextReview - srsDatabase[b].nextReview);
-            
-            let maxDraw = 10;
-            let targetReviews = 7; 
-            let reviewsToDraw = Math.min(dueWords.length, targetReviews);
-            let newToDraw = maxDraw - reviewsToDraw; 
-            
-            let dailyDeck = dueWords.slice(0, reviewsToDraw).map(w => ({ word: w, type: 'review', tier: getWordTier(w) }));
-            
-            // 2. 🚀 新字擴張：70% 基礎 / 20% 進階 / 10% 挑戰
-            let unlearnedT1 = TIER_1_1000.filter(w => !srsDatabase[w]);
-            let unlearnedT2 = TIER_1001_2000.filter(w => !srsDatabase[w]);
-            let unlearnedT3 = TIER_2000_PLUS.filter(w => !srsDatabase[w]);
-
-            let totalUnlearned = unlearnedT1.length + unlearnedT2.length + unlearnedT3.length;
-            if (newToDraw > totalUnlearned) {
-                newToDraw = totalUnlearned;
-            }
-
-            for (let i = 0; i < newToDraw; i++) {
-                let pool = [];
-                let roll = Math.random(); // 擲骰子：0.00 ~ 0.99
-
-                // 依照 7:2:1 機率分發，並加入「防呆降級機制」(若該池已抽乾，則往下一個池子找)
-                if (roll < 0.7 && unlearnedT1.length > 0) {
-                    pool = unlearnedT1;
-                } else if (roll < 0.9 && unlearnedT2.length > 0) {
-                    pool = unlearnedT2;
-                } else if (unlearnedT3.length > 0) {
-                    pool = unlearnedT3;
-                } else {
-                    // 若骰中的池子剛好空了，從剩下的池子隨機抓取
-                    pool = unlearnedT1.length > 0 ? unlearnedT1 : (unlearnedT2.length > 0 ? unlearnedT2 : unlearnedT3);
-                }
-
-                if (pool.length > 0) {
-                    let idx = Math.floor(Math.random() * pool.length);
-                    let chosenWord = pool[idx];
-                    dailyDeck.push({ word: chosenWord, type: 'new', tier: getWordTier(chosenWord) });
-                    pool.splice(idx, 1); // 從暫存池中移除，避免當次抽出重複字
-                }
-            }
-            
-            if (dailyDeck.length === 0) { alert("今天沒有待複習的字，新字也學完囉！"); return; }
-            renderDeck(dailyDeck);
+        // 渲染待複習卡片
+        reviewQueue.forEach(w => {
+            deckDiv.innerHTML += createCardHTML(w, 'review');
         });
 
-        function getWordTier(word) {
-            if (TIER_1_1000.includes(word)) return '基礎';
-            if (TIER_1001_2000.includes(word)) return '進階';
-            return '挑戰';
+        // 渲染新卡片 (嚴格控制上限)
+        let addedNew = 0;
+        for (let i = 0; i < newQueue.length; i++) {
+            if (addedNew >= LIMIT_NEW_CARDS_PER_DAY) break;
+            deckDiv.innerHTML += createCardHTML(newQueue[i], 'new');
+            addedNew++;
         }
 
-        // === 5. 渲染字卡 ===
-        function renderDeck(deckArray) {
-            const deck = document.getElementById('deck');
-            deck.innerHTML = '';
-            deckArray.forEach(item => {
-                deck.innerHTML += createCardHTML(item.word, item.type, item.tier);
-            });
-        }
-
-        function createCardHTML(word, type, tier) {
-            let int1 = calculateNextInterval(word, 1);
-            let int2 = calculateNextInterval(word, 2);
-            let int3 = calculateNextInterval(word, 3);
-            let str1 = int1 === 0 ? '1m' : (int1 >= GRADUATION_INTERVAL ? '畢業' : int1 + 'd');
-            let str2 = int2 >= GRADUATION_INTERVAL ? '畢業' : int2 + 'd';
-            let str3 = int3 >= GRADUATION_INTERVAL ? '畢業' : int3 + 'd';
-            return `
-                <div class="card ${type}" id="card-${word}">
-                    <div class="badge ${type}">${type==='review'?'待複習':'新解鎖'}</div>
-                    <div class="badge tier-${tier}">${tier}</div>
-                    <div class="char-title">${word}</div>
-                    <a href="https://www.moedict.tw/${encodeURIComponent(word)}" target="_blank" style="text-decoration:none; color:var(--primary); font-weight:bold; font-size:1.1rem;">📖 萌典釋義</a>
-                    <div class="eval-buttons">
-                        <button class="btn-eval btn-eval-forget" onclick="processReview('${word}', 0)">完全忘記 (1m)</button>
-                        <button class="btn-eval btn-eval-hard" onclick="processReview('${word}', 1)">困難 (${str1})</button>
-                        <button class="btn-eval btn-eval-good" onclick="processReview('${word}', 2)">良好 (${str2})</button>
-                        <button class="btn-eval btn-eval-easy" onclick="processReview('${word}', 3)">簡單 (${str3})</button>
-                    </div>
-                </div>`;
-        }
-
-// === 6. 處理結果 ===
-        function processReview(word, q) {
-            let r = srsDatabase[word] || { interval: 0, repetitions: 0, easeFactor: 2.5 };
-            
-            if (q === 0) { r.repetitions = 0; r.interval = 0; } 
-            else { r.interval = calculateNextInterval(word, q); r.repetitions++; }
-            
-            if (q !== 0) { r.easeFactor = Math.max(1.3, r.easeFactor + (0.1 - (3 - q) * (0.08 + (3 - q) * 0.02))); } 
-            else { r.easeFactor = Math.max(1.3, r.easeFactor - 0.2); }
-            
-            r.nextReview = q === 0 ? Date.now() : Date.now() + (r.interval * 24 * 60 * 60 * 1000);
-            srsDatabase[word] = r;
-            localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
-            
-            let card = document.getElementById(`card-${word}`);
-            if (q === 0 || r.interval === 0) {
-                let deck = document.getElementById('deck');
-                card.style.opacity = '0.3';
-                setTimeout(() => {
-                    deck.appendChild(card);
-                    card.style.opacity = '1';
-                    card.classList.remove('review', 'new');
-                    card.classList.add('penalty');
-                    card.querySelector('.badge').innerText = '重新記憶';
-                    card.outerHTML = createCardHTML(word, 'penalty', getWordTier(word)); 
-                }, 300);
-            } else { card.style.display = 'none'; }
-            
-            // 🚀 每次按鈕點擊後，即時觸發頂部 RPG 進度條更新！
-            updateRPGRealm();
-        }
-
-        // === 7. 數據面板 ===
-        function renderStatistics() {
-            currentCategorizedWords = { mastered: [], learning: [], hard: [], unlearned: [], graduated: [] };
-            const hardList = document.getElementById('hardWordsList');
-            const upcomingList = document.getElementById('upcomingWordsList');
-            hardList.innerHTML = ''; upcomingList.innerHTML = '';
-            let upcomingArr = [];
-
-            for (const [word, data] of Object.entries(srsDatabase)) {
-                if (data.interval >= GRADUATION_INTERVAL) { currentCategorizedWords.graduated.push(word); } 
-                else if (data.easeFactor <= 2.1 && data.repetitions > 0) {
-                    currentCategorizedWords.hard.push(word);
-                    hardList.innerHTML += `<a href="https://www.moedict.tw/${encodeURIComponent(word)}" target="_blank" class="dict-pill hard-pill">${word} <span class="pill-sub">阻力 ${data.easeFactor.toFixed(2)}</span></a>`;
-                } else if (data.interval >= 21) { currentCategorizedWords.mastered.push(word); } 
-                else { currentCategorizedWords.learning.push(word); }
-                if (data.nextReview && data.interval < GRADUATION_INTERVAL) { upcomingArr.push({ word, time: data.nextReview }); }
-            }
-            currentCategorizedWords.unlearned = FULL_POOL.filter(w => !srsDatabase[w]);
-            if (hardList.innerHTML === '') hardList.innerHTML = '<span style="color:var(--text-light); font-size:14px;">(無困難字元)</span>';
-
-            const total = FULL_POOL.length;
-            const masteredCount = currentCategorizedWords.mastered.length;
-            const graduatedCount = currentCategorizedWords.graduated.length;
-            const totalKnown = masteredCount + graduatedCount; 
-            
-            const pG = (graduatedCount / total * 100).toFixed(1);
-            const pM = (masteredCount / total * 100).toFixed(1);
-            const pL = (currentCategorizedWords.learning.length / total * 100).toFixed(1);
-            const pH = (currentCategorizedWords.hard.length / total * 100).toFixed(1);
-
-            document.getElementById('progressContainer').innerHTML = `
-                <div style="font-size:14px; margin-bottom:10px; color:var(--text-light); font-weight:bold;">總字元池：${total} 字</div>
-                <div class="progress-bar">
-                    <div class="seg seg-graduated" style="width: ${pG}%" onclick="showDetail('graduated')"></div>
-                    <div class="seg seg-mastered" style="width: ${pM}%" onclick="showDetail('mastered')"></div>
-                    <div class="seg seg-learning" style="width: ${pL}%" onclick="showDetail('learning')"></div>
-                    <div class="seg seg-hard" style="width: ${pH}%" onclick="showDetail('hard')"></div>
-                </div>
-                <div class="legend">
-                    <span class="leg-graduated" onclick="showDetail('graduated')">已畢業 (${graduatedCount})</span>
-                    <span class="leg-mastered" onclick="showDetail('mastered')">長期記憶 (${masteredCount})</span>
-                    <span class="leg-learning" onclick="showDetail('learning')">建構中 (${currentCategorizedWords.learning.length})</span>
-                    <span class="leg-hard" onclick="showDetail('hard')">困難 (${currentCategorizedWords.hard.length})</span>
-                    <span class="leg-unlearned" onclick="showDetail('unlearned')">尚未解鎖 (${currentCategorizedWords.unlearned.length})</span>
-                </div>`;
-
-            const getMasteredCount = (tier) => tier.filter(w => srsDatabase[w] && srsDatabase[w].interval >= 21).length;
-            const updateUI = (id, count, t_len) => {
-                const p = ((count/t_len)*100).toFixed(1);
-                document.getElementById(`${id}-percent`).innerText = p + '%';
-                document.getElementById(`${id}-bar`).style.width = p + '%';
-            };
-            updateUI('t1', getMasteredCount(TIER_1_1000), TIER_1_1000.length);
-            updateUI('t2', getMasteredCount(TIER_1001_2000), TIER_1001_2000.length);
-            updateUI('t3', getMasteredCount(TIER_2000_PLUS), TIER_2000_PLUS.length);
-
-            upcomingArr.sort((a,b)=>a.time-b.time).filter(item => item.time > Date.now()).slice(0,10).forEach(item => {
-                const d = new Date(item.time);
-                upcomingList.innerHTML += `<a href="https://www.moedict.tw/${encodeURIComponent(item.word)}" target="_blank" class="dict-pill upcoming-pill">${item.word} <span class="pill-sub">${d.getMonth()+1}/${d.getDate()}</span></a>`;
-            });
-            if(upcomingList.innerHTML === '') upcomingList.innerHTML = '<span style="color:var(--text-light); font-size:14px;">(目前無排程)</span>';
-            
-            updateRPGRealm();
-        }
-
-        // 🚀 獨立的稱號更新引擎
-        function updateRPGRealm() {
-            let knownCount = 0;
-            for (const word in srsDatabase) {
-                if (srsDatabase[word].interval >= 21) knownCount++;
-            }
-
-            const nameEl = document.getElementById('currentRealmName');
-            const countEl = document.getElementById('currentRealmCount');
-            const fillEl = document.getElementById('journeyFill');
-            const maxVocab = 2867;
-
-            const realms = [
-                { threshold: 2867, name: "識字之神" },
-                { threshold: 2700, name: "救世勇者" },
-                { threshold: 2400, name: "屠龍大師" },
-                { threshold: 2100, name: "傳說英雄" },
-                { threshold: 1800, name: "王牌指揮官" },
-                { threshold: 1500, name: "菁英魔劍士" },
-                { threshold: 1200, name: "高級騎士" },
-                { threshold: 900,  name: "中級戰士" },
-                { threshold: 600,  name: "初級劍士" },
-                { threshold: 300,  name: "見習冒險者" },
-                { threshold: 0,    name: "新手村民" }
-            ];
-
-            let currentRealm = realms[realms.length - 1]; 
-            for (let i = 0; i < realms.length; i++) {
-                if (knownCount >= realms[i].threshold) {
-                    currentRealm = realms[i];
-                    break;
-                }
-            }
-
-            if (nameEl) nameEl.innerText = currentRealm.name;
-            if (countEl) countEl.innerText = knownCount;
-            
-            const percentage = Math.min(100, (knownCount / maxVocab) * 100);
-            if (fillEl) fillEl.style.width = `${percentage}%`;
-        }
-
-        // === 8. 細節檢視 ===
-        function showDetail(cat) {
-            const view = document.getElementById('detailView');
-            const list = document.getElementById('detailList');
-            const titles = { graduated: '畢業 (Mastered)', mastered: '長期記憶 (>21d)', learning: '建構中 (Learning)', hard: '困難 (Hard)', unlearned: '尚未解鎖' };
-            view.classList.remove('hidden');
-            document.getElementById('detailTitle').innerText = `${titles[cat]}：`;
-            if (currentCategorizedWords[cat].length === 0) { list.innerHTML = `<span style="color:var(--text-light); font-size:14px;">(空)</span>`; } 
-            else { list.innerHTML = currentCategorizedWords[cat].map(w => `<a href="https://www.moedict.tw/${encodeURIComponent(w)}" target="_blank" class="dict-pill">${w}</a>`).join(''); }
-        }
-
-        function toggleDashboard() {
-            const db = document.getElementById('dashboard');
-            db.classList.toggle('hidden');
-            if (!db.classList.contains('hidden')) renderStatistics();
-        }
-
-        function exportData() {
-            const blob = new Blob([JSON.stringify({db: srsDatabase, stats: stats})], {type: "application/json"});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `srs_backup.json`; a.click();
-        }
-
-        function importData(e) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const data = JSON.parse(ev.target.result);
-                if(data.db) { srsDatabase = data.db; stats = data.stats || { streak: 0, lastDate: null }; } 
-                else { srsDatabase = data; }
-                localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
-                localStorage.setItem('srs_stats', JSON.stringify(stats));
-                location.reload();
-            };
-            reader.readAsText(e.target.files[0]);
+        if (deckDiv.innerHTML === '') {
+            deckDiv.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--success); font-weight:bold; font-size: 1.2rem;">🎉 恭喜！今天的任務都完成了！</div>`;
         }
         
-        // 初始化載入
-        updateRPGRealm();
-    </script>
+        updateDashboard();
+    }
+
+    // === 4. 資料處理 ===
+    function processReview(word, q) {
+        let r = srsDatabase[word] || { interval: 0, repetitions: 0, stage: 0, nextReview: 0 };
+        r.stage = migrateToStage(r);
+        
+        let nextStage = getNextStage(r.stage, q);
+        r.stage = nextStage;
+        r.interval = calculateNextIntervalByStage(nextStage);
+        r.repetitions++;
+        
+        // 0 天代表當日重排，非 0 則依據天數計算毫秒
+        r.nextReview = q === 0 ? Date.now() : Date.now() + (r.interval * 24 * 60 * 60 * 1000);
+        srsDatabase[word] = r;
+        localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
+        
+        let card = document.getElementById(`card-${word}`);
+        
+        // 處理重試邏輯 (Penalty Queue)
+        if (q === 0) {
+            let deck = document.getElementById('deck');
+            card.style.opacity = '0.3';
+            setTimeout(() => {
+                deck.appendChild(card); // 移至隊列尾端
+                card.style.opacity = '1';
+                card.outerHTML = createCardHTML(word, 'penalty'); 
+            }, 300);
+        } else { 
+            card.style.display = 'none'; 
+        }
+        
+        updateDashboard();
+    }
+
+    function addWords() {
+        let input = document.getElementById('new-words-input').value;
+        if (!input) return;
+        let words = input.split(',').map(w => w.trim()).filter(w => w.length > 0);
+        
+        let addedCount = 0;
+        words.forEach(w => {
+            if (!srsDatabase[w]) {
+                srsDatabase[w] = { interval: 0, repetitions: 0, stage: 0, nextReview: 0 };
+                addedCount++;
+            }
+        });
+        
+        if (addedCount > 0) {
+            localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
+            document.getElementById('new-words-input').value = '';
+            alert(`成功新增 ${addedCount} 個字彙！`);
+            generateDailyDeck();
+        } else {
+            alert('字彙已存在或輸入無效。');
+        }
+    }
+
+    // === 5. 匯出與匯入 ===
+    function exportData() {
+        const blob = new Blob([JSON.stringify({db: srsDatabase, stats: stats})], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `srs_kids_backup.json`; a.click();
+    }
+
+    function importData(e) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const data = JSON.parse(ev.target.result);
+                if(data.db) { srsDatabase = data.db; stats = data.stats || { streak: 0, lastDate: null }; } 
+                else { srsDatabase = data; } // 兼容極早期版本
+                localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
+                localStorage.setItem('srs_stats', JSON.stringify(stats));
+                alert('資料還原成功！');
+                location.reload();
+            } catch (err) {
+                alert('檔案格式錯誤。');
+            }
+        };
+        reader.readAsText(e.target.files[0]);
+    }
+
+    // === 6. 初始化執行 ===
+    generateDailyDeck();
+
+</script>
 </body>
 </html>
