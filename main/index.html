@@ -306,7 +306,10 @@
 
         let rpgHtml = "";
         if (currentRealmIdx === RPG_REALMS.length - 1) {
-            rpgHtml = `<div style="font-size: 1.3rem; font-weight: bold; color: var(--danger); margin-bottom: 5px;">${RPG_REALMS[currentRealmIdx].emoji} ${RPG_REALMS[currentRealmIdx].name} (滿級封頂)</div>`;
+            rpgHtml = `
+                <div style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 4px;">🧬 當前型態：</div>
+                <div style="font-size: 1.4rem; font-weight: bold; color: var(--danger); margin-bottom: 5px;">${RPG_REALMS[currentRealmIdx].emoji} ${RPG_REALMS[currentRealmIdx].name} (滿級封頂)</div>
+            `;
         } else {
             let currentRealm = RPG_REALMS[currentRealmIdx];
             let realmProgress = mastered - currentRealm.threshold;
@@ -326,17 +329,26 @@
             let wordsToNextStar = nextStarThreshold - mastered;
             let wordsToNextRealm = RPG_REALMS[currentRealmIdx + 1].threshold - mastered;
 
+            // 📱 手機排版優化：Flexbox 與區塊分離
             rpgHtml = `
-                <div style="font-size: 1.2rem; font-weight: bold; color: var(--text); margin-bottom: 5px;">
-                    🧬 守護神獸：${currentRealm.emoji} ${currentRealm.name} <span style="color: var(--warning); text-shadow: 0 0 2px rgba(245, 158, 11, 0.3);">${starStr}</span>
-                </div>
-                <div style="font-size: 0.85rem; color: var(--text-light);">
-                    距離下一星等還需 <b>${wordsToNextStar}</b> 字 | 距離【❓ 未知型態】還需 <b>${wordsToNextRealm}</b> 字
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 5px;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 4px;">🧬 守護神獸：</div>
+                        <div style="font-size: 1.3rem; font-weight: bold; color: var(--text); display: flex; flex-direction: column; gap: 4px;">
+                            <span>${currentRealm.emoji} ${currentRealm.name}</span>
+                            <span style="color: var(--warning); text-shadow: 0 0 2px rgba(245, 158, 11, 0.3); font-size: 1.1rem;">${starStr}</span>
+                        </div>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-light); display: flex; flex-direction: column; gap: 6px; background: rgba(255,255,255,0.6); padding: 10px 12px; border-radius: 8px;">
+                        <div>⭐ 距離下一星等還需 <b style="color: var(--text);">${wordsToNextStar}</b> 字</div>
+                        <div>🚀 距離【❓ 未知型態】還需 <b style="color: var(--text);">${wordsToNextRealm}</b> 字</div>
+                    </div>
                 </div>
             `;
         }
         
         document.getElementById('rpg-content').innerHTML = rpgHtml;
+
         let pct = total === 0 ? 0 : Math.round((mastered / 2865) * 100); 
         document.getElementById('rpg-bar').style.width = pct + '%';
         document.getElementById('rpg-total-pct').innerText = pct;
