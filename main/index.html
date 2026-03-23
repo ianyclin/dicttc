@@ -338,11 +338,18 @@
     }
 
     // === 4. 資料處理 ===
-    function processReview(word, q) {
+function processReview(word, q) {
         let r = srsDatabase[word];
         r.stage = migrateToStage(r);
         
         let nextStage = getNextStage(r.stage, q);
+        
+        // 🚀 先備知識跨級跳躍 (Prior Knowledge Fast-Track)
+        // 條件：這是一張全新卡片 (repetitions === 0) 且孩子按下「簡單」 (q === 3)
+        if (r.repetitions === 0 && q === 3) {
+            nextStage = 6; // 直接保送至 Stage 6 (21 天)
+        }
+        
         r.stage = nextStage;
         r.interval = STAGE_INTERVALS[nextStage];
         r.repetitions++;
@@ -350,8 +357,8 @@
         
         saveData();
         
+        // ... (維持原有的 UI 消失動畫與 Dashboard 更新)
         let card = document.getElementById(`card-${word}`);
-        
         if (q === 0) {
             let deck = document.getElementById('deck');
             card.style.opacity = '0.3';
