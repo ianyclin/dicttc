@@ -397,60 +397,104 @@
             </div>`;
     }
 
-    function generateDailyDeck() {
-        let nowMidnight = getMidnightTimestamp(Date.now()), deckDiv = document.getElementById('deck');
-        deckDiv.innerHTML = '';
-        let reviewQueue = [], newQueue = [], unlockedTiers = getUnlockedTiers();
-        
-        for (let word in srsDatabase) {
-            let data = srsDatabase[word]; data.stage = migrateToStage(data);
-            if (data.repetitions === 0) { if (unlockedTiers.includes(data.tier || 1)) newQueue.push(word); }
-            else if (nowMidnight >= getMidnightTimestamp(data.nextReview) && data.stage < MAX_STAGE) reviewQueue.push(word);
+// [START] generateDailyDeck Patch
+function generateDailyDeck() {
+    let nowMidnight = getMidnightTimestamp(Date.now()), deckDiv = document.getElementById('deck');
+    deckDiv.innerHTML = '';
+    let reviewQueue = [], newQueue = [], unlockedTiers = getUnlockedTiers();
+    
+    // 1. 篩選待複習與新字
+    for (let word in srsDatabase) {
+        let data = srsDatabase[word]; 
+        data.stage = migrateToStage(data);
+        if (data.repetitions === 0) { 
+            if (unlockedTiers.includes(data.tier || 1)) newQueue.push(word); 
+        } else {
+            // 關鍵修正：必須是複習時間已到，且今天還沒處理過 (防止 refresh 抓回)
+            if (nowMidnight >= getMidnightTimestamp(data.nextReview) && data.stage < MAX_STAGE) {
+                reviewQueue.push(word);
+            }
         }
-        
-        newQueue.sort((a, b) => (srsDatabase[a].tier || 1) - (srsDatabase[b].tier || 1));
-        
-        // 防禦機制：如果今天已經刷過卡，且數量大於 MAX_DAILY_LOAD，就不該再給新卡
-        // 這裡維持您目前的動態負載設計：只看「當下還在 reviewQueue 裡的數量」來決定能補多少新卡
-        let reviewCount = reviewQueue.length;
-        let allowedNewCards = Math.min(Math.max(0, MAX_DAILY_LOAD - reviewCount), ABSOLUTE_NEW_LIMIT);
-        
-        reviewQueue.forEach(w => deckDiv.innerHTML += createCardHTML(w, 'review'));
-        
-        let addedNew = 0;
-        for (let i = 0; i < newQueue.length; i++) { 
-            if (addedNew >= allowedNewCards) break; 
-            deckDiv.innerHTML += createCardHTML(newQueue[i], 'new'); 
-            addedNew++; 
+    }
+    
+    // 2. 計算剩餘配額：總上限 - (今日已複習 + 今日已學習)
+    let doneToday = (stats.daily.reviewed || 0) + (stats.daily.learned || 0);
+    let totalRemainingQuota = Math.max(0, MAX_DAILY_LOAD - doneToday);
+    
+    // 3. 分配複習卡 (優先佔用配額)
+    let addedCount = 0;
+    reviewQueue.forEach(w => {
+        if (addedCount < totalRemainingQuota) {
+            deckDiv.innerHTML += createCardHTML(w, 'review');
+            addedCount++;
         }
-        
-        if (deckDiv.innerHTML === '') {
-            let extraAvailable = 0;
-            for (let w in srsDatabase) if (srsDatabase[w].repetitions === 0 && unlockedTiers.includes(srsDatabase[w].tier || 1)) extraAvailable++;
-            deckDiv.innerHTML = `
-                <div style="text-align:center; padding: 40px; width: 100%;">
-                    <div style="color: var(--success); font-weight:bold; font-size: 1.5rem; margin-bottom: 20px;">🎉 今天的核心任務都完成了！</div>
-                    <p style="color: var(--text-light); margin-bottom: 20px;">當前解鎖階層剩餘新字：<b>${extraAvailable}</b> 張</p>
-                    ${extraAvailable > 0 ? `<button class="btn btn-outline" onclick="drawExtraCards()" style="border-color: var(--danger); color: var(--danger);">🔥 我還想挑戰！(加碼 5 張)</button>` : `<p style="color: var(--warning);">🛑 該階層已無新字。請等待舊字成熟以解鎖下一層！</p>`}
-                </div>`;
-        }
-        updateDashboard(false);
+    });
+    
+    // 4. 分配新卡 (填補剩餘配額，且受每日新卡上限限制)
+    let currentNewLearned = stats.daily.learned || 0;
+    let allowedNewCards = Math.min(totalRemainingQuota - addedCount, ABSOLUTE_NEW_LIMIT - currentNewLearned);
+    
+    newQueue.sort((a, b) => (srsDatabase[a].tier || 1) - (srsDatabase[b].tier || 1));
+    for (let i = 0; i < newQueue.length && i < allowedNewCards; i++) {
+        deckDiv.innerHTML += createCardHTML(newQueue[i], 'new');
+    }
+    
+    // 5. 空狀態處理
+    if (deckDiv.innerHTML === '') {
+        let extraAvailable = 0;
+        for (let w in srsDatabase) if (srsDatabase[w].repetitions === 0 && unlockedTiers.includes(srsDatabase[w].tier || 1)) extraAvailable++;
+        deckDiv.innerHTML = `<div style="text-align:center; padding: 40px; width: 100%;">
+            <div style="color: var(--success); font-weight:bold; font-size: 1.5rem; margin-bottom: 20px;">🎉 今日任務已達成！(已完成 ${doneToday} 張)</div>
+            ${extraAvailable > 0 ? `<button class="btn btn-outline" onclick="drawExtraCards()">🔥 加碼挑戰新字</button>` : ''}
+        </div>`;
+    }
+    updateDashboard(false);
+}
+// [END] generateDailyDeck Patch
+
+// [START] processReview Patch
+function processReview(word, q) {
+    let r = srsDatabase[word]; 
+    r.stage = migrateToStage(r);
+    let isNewCard = (r.repetitions === 0);
+    let nextStage = getNextStage(r.stage, q);
+    
+    if (isNewCard && q === 3) nextStage = 6; // Easy Pass
+    
+    r.stage = nextStage; 
+    r.interval = STAGE_INTERVALS[nextStage]; 
+    r.repetitions++;
+
+    // 關鍵修正：答對後將 nextReview 推至未來，確保重新整理不出現
+    if (q > 0) {
+        let cooldownDays = Math.max(1, r.interval);
+        r.nextReview = Date.now() + (cooldownDays * 24 * 60 * 60 * 1000);
+        // 累計今日統計
+        if (isNewCard) stats.daily.learned = (stats.daily.learned || 0) + 1;
+        else stats.daily.reviewed = (stats.daily.reviewed || 0) + 1;
+    } else {
+        r.nextReview = Date.now(); // 忘記則留在當前佇列
     }
 
-    function processReview(word, q) {
-        let r = srsDatabase[word]; r.stage = migrateToStage(r);
-        let nextStage = getNextStage(r.stage, q);
-        if (r.repetitions === 0 && q === 3) nextStage = 6;
-        r.stage = nextStage; r.interval = STAGE_INTERVALS[nextStage]; r.repetitions++;
-        r.nextReview = q === 0 ? Date.now() : Date.now() + (r.interval * 24 * 60 * 60 * 1000);
-        saveData();
-        let card = document.getElementById(`card-${word}`);
-        if (q === 0) {
-            card.style.opacity = '0.3';
-            setTimeout(() => { document.getElementById('deck').appendChild(card); card.style.opacity = '1'; card.outerHTML = createCardHTML(word, 'penalty'); }, 300);
-        } else { card.style.display = 'none'; }
-        updateDashboard(false);
+    saveData();
+    let card = document.getElementById(`card-${word}`);
+    if (q === 0) {
+        card.style.opacity = '0.3';
+        setTimeout(() => { 
+            document.getElementById('deck').appendChild(card); 
+            card.style.opacity = '1'; 
+            card.outerHTML = createCardHTML(word, 'penalty'); 
+        }, 300);
+    } else { 
+        card.style.display = 'none'; 
+        // 檢查是否需刷新 Deck 狀態
+        if (document.querySelectorAll('#deck .card:not([style*="display: none"])').length === 0) {
+            generateDailyDeck();
+        }
     }
+    updateDashboard(false);
+}
+// [END] processReview Patch
 
     function drawExtraCards() {
         let deckDiv = document.getElementById('deck'), newQueue = [], unlockedTiers = getUnlockedTiers();
