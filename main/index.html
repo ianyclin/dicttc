@@ -496,15 +496,47 @@ function processReview(word, q) {
 }
 // [END] processReview Patch
 
-    function drawExtraCards() {
-        let deckDiv = document.getElementById('deck'), newQueue = [], unlockedTiers = getUnlockedTiers();
-        for (let word in srsDatabase) if (srsDatabase[word].repetitions === 0 && unlockedTiers.includes(srsDatabase[word].tier || 1)) newQueue.push(word);
-        newQueue.sort((a, b) => (srsDatabase[a].tier || 1) - (srsDatabase[b].tier || 1));
-        if (newQueue.length === 0) return alert('沒有更多新字可加碼！');
-        deckDiv.innerHTML = '';
-        let added = 0;
-        for (let i = 0; i < newQueue.length; i++) { if (added >= 5) break; deckDiv.innerHTML += createCardHTML(newQueue[i], 'new'); added++; }
+// [PATCH] 受控的加碼邏輯
+function drawExtraCards() {
+    // 1. 初始化或讀取今日加碼次數
+    if (stats.daily.extraClicks === undefined) stats.daily.extraClicks = 0;
+
+    // 2. 設定硬上限：每天最多加碼 2 次 (共 10 字)
+    if (stats.daily.extraClicks >= 2) {
+        showToast("大腦休息時間！", "今日加碼次數已達上限，明天再努力。", "🚫", "toast-unlock");
+        return;
     }
+
+    let deckDiv = document.getElementById('deck'), newQueue = [], unlockedTiers = getUnlockedTiers();
+    for (let word in srsDatabase) {
+        if (srsDatabase[word].repetitions === 0 && unlockedTiers.includes(srsDatabase[word].tier || 1)) {
+            newQueue.push(word);
+        }
+    }
+
+    if (newQueue.length === 0) {
+        showToast("階層已清空", "當前解鎖的 Tier 已無新字。", "🏁");
+        return;
+    }
+
+    newQueue.sort((a, b) => (srsDatabase[a].tier || 1) - (srsDatabase[b].tier || 1));
+    
+    // 3. 執行加碼
+    stats.daily.extraClicks++;
+    saveData();
+
+    // 這裡我們不清空現有 deck，而是直接 append 新卡片
+    let added = 0;
+    for (let i = 0; i < newQueue.length && added < 5; i++) {
+        const cardHTML = createCardHTML(newQueue[i], 'new');
+        // 如果目前畫面上是「今日達成」的訊息，清空它再加
+        if (deckDiv.innerHTML.includes("今日任務已達成")) deckDiv.innerHTML = '';
+        deckDiv.innerHTML += cardHTML;
+        added++;
+    }
+
+    showToast("挑戰開始！", `額外領取了 ${added} 張新字卡`, "🔥", "toast-star");
+}
 
     function exportData() {
         const blob = new Blob([JSON.stringify({db: srsDatabase, stats: stats})], {type: "application/json"});
