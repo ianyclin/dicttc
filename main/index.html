@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRS 字卡系統 v5.1</title>
+    <title>兒童 SRS 字卡學習系統</title>
     <style>
         :root { --primary: #4f46e5; --secondary: #4338ca; --warning: #f59e0b; --success: #0ea5e9; --danger: #ef4444; --bg: #f1f5f9; --card-bg: #ffffff; --text: #1e293b; --text-light: #64748b; }
         body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; max-width: 960px; margin: auto; line-height: 1.6; padding-bottom: 60px;}
@@ -81,6 +81,7 @@
     <div class="manual">
         <h4>📖 使用說明</h4>
         <ul>
+            <li><strong>字庫分級</strong>：依照字頻高低分層，前六層佔字庫總字頻約 85%。</li>
             <li><strong>每日任務</strong>：系統每天會自動分配新卡與舊複習卡。</li>
             <li><strong>精熟度 85%</strong>：目前階層有 85% 的字進入長期記憶（複習間隔 > 21天）才會解鎖下一層。</li>
             <li><strong>動態負載</strong>：每天複習卡 + 新卡總量限制在 25 張，保護小孩大腦不疲勞。</li>
@@ -91,10 +92,13 @@
 <footer style="text-align: center; padding: 20px; color: var(--text-light); font-size: 0.85rem; margin-top: 40px; border-top: 1px solid #e2e8f0;">
         <p>&copy; 2026 SRS Learning System. All Rights Reserved.</p>
         <p style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 5px;">Powered by Spaced Repetition Algorithm v5.1 | 十層微型閘門架構</p>
-        <p style="font-size: 0.75rem; opacity: 0.7; font-weight: bold;">Author: fb/指數三寶飯</p>
-        <div style="margin-top: 25px;">
-            <button onclick="clearCurrentProfile()" style="background: transparent; border: none; color: var(--danger); opacity: 0.3; font-size: 0.7rem; cursor: pointer; text-decoration: underline; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.3'">
-                一鍵清空當前設定檔
+        <p style="font-size: 0.75rem; font-weight: bold;">
+            Author: <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: none; opacity: 0.9; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.9'">fb/指數三寶飯</a>
+        </p>
+        
+        <div style="margin-top: 40px;">
+            <button onclick="clearCurrentProfile()" style="background: transparent; border: none; color: #cbd5e1; font-size: 0.65rem; cursor: pointer; transition: color 0.3s ease; padding: 5px;" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='#cbd5e1'">
+                清除設定檔
             </button>
         </div>
     </footer>
