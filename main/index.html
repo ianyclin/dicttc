@@ -218,19 +218,27 @@
         if (!db.classList.contains('hidden')) updateDashboard();
     }
 
-function updateDashboard() {
-        let total = Object.keys(srsDatabase).length, grad = 0, learning = 0;
-        for (let w in srsDatabase) { if (migrateToStage(srsDatabase[w]) >= MAX_STAGE) grad++; else learning++; }
+    function updateDashboard() {
+        let total = Object.keys(srsDatabase).length, grad = 0, mastered = 0, learning = 0;
+        
+        // 📊 重新校準數據分類
+        for (let w in srsDatabase) { 
+            let r = srsDatabase[w];
+            let stage = migrateToStage(r);
+            if (stage >= MAX_STAGE) grad++; // 真正 180 天畢業的字
+            if (stage >= LONG_TERM_STAGE) mastered++; // 21 天以上精熟的字 (RPG 新燃料 🔥)
+            if (r.repetitions > 0 && stage < LONG_TERM_STAGE) learning++; // 正在痛苦記憶中的字
+        }
         
         document.getElementById('stat-total').innerText = total;
-        document.getElementById('stat-learning').innerText = learning;
-        document.getElementById('stat-grad').innerText = grad;
+        document.getElementById('stat-learning').innerText = learning; // 修正：只顯示真正學習中的字
+        document.getElementById('stat-grad').innerText = mastered; // 面板上的「已畢業」實質改為顯示「已精熟」
         document.getElementById('stat-streak').innerText = stats.streak;
 
-        // 🌟 神獸進化演算法 (RPG Progression)
+        // 🌟 神獸進化演算法 (改用 mastered 作為燃料)
         let currentRealmIdx = 0;
         for (let i = 0; i < RPG_REALMS.length; i++) {
-            if (grad >= RPG_REALMS[i].threshold) { currentRealmIdx = i; } 
+            if (mastered >= RPG_REALMS[i].threshold) { currentRealmIdx = i; } 
             else { break; }
         }
 
@@ -240,17 +248,16 @@ function updateDashboard() {
         } else {
             let currentRealm = RPG_REALMS[currentRealmIdx];
             let nextRealm = RPG_REALMS[currentRealmIdx + 1];
-            let realmProgress = grad - currentRealm.threshold;
+            let realmProgress = mastered - currentRealm.threshold;
             let realmTotal = nextRealm.threshold - currentRealm.threshold;
             
-            // 計算 1~5 星等
             let stars = Math.floor((realmProgress / realmTotal) * 5);
-            if (stars === 5 && realmProgress < realmTotal) stars = 4; // 鎖死防止提早滿星
+            if (stars === 5 && realmProgress < realmTotal) stars = 4; 
             let starStr = '★'.repeat(stars) + '☆'.repeat(5 - stars);
             
             let nextStarThreshold = Math.ceil((stars + 1) * (realmTotal / 5)) + currentRealm.threshold;
-            let wordsToNextStar = nextStarThreshold - grad;
-            let wordsToNextRealm = nextRealm.threshold - grad;
+            let wordsToNextStar = nextStarThreshold - mastered;
+            let wordsToNextRealm = nextRealm.threshold - mastered;
 
             rpgHtml = `
                 <div style="font-size: 1.2rem; font-weight: bold; color: var(--text); margin-bottom: 5px;">
@@ -263,10 +270,10 @@ function updateDashboard() {
         }
         
         document.getElementById('rpg-content').innerHTML = rpgHtml;
-        let pct = total === 0 ? 0 : Math.round((grad / 2867) * 100);
+        let pct = total === 0 ? 0 : Math.round((mastered / 2865) * 100);
         document.getElementById('rpg-bar').style.width = pct + '%';
         document.getElementById('rpg-total-pct').innerText = pct;
-        document.getElementById('rpg-total-grad').innerText = grad;
+        document.getElementById('rpg-total-grad').innerText = mastered;
 
         // 🔒 認知負荷閘門 (保持原邏輯)
         let unlocked = getUnlockedTiers();
@@ -277,6 +284,7 @@ function updateDashboard() {
         html += `<div class="gate-bar-bg"><div class="gate-bar-fill" style="width:${Math.min(100, tStats.rate*100)}%"></div></div>`;
         document.getElementById('gate-status-panel').innerHTML = html;
     }
+
 
 function createCardHTML(word, type) {
         let r = srsDatabase[word];
