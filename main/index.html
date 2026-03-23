@@ -218,6 +218,7 @@
         if (!db.classList.contains('hidden')) updateDashboard();
     }
 
+    
     function updateDashboard() {
         let total = Object.keys(srsDatabase).length, grad = 0, mastered = 0, learning = 0;
         
@@ -231,11 +232,11 @@
         }
         
         document.getElementById('stat-total').innerText = total;
-        document.getElementById('stat-learning').innerText = learning; // 修正：只顯示真正學習中的字
-        document.getElementById('stat-grad').innerText = mastered; // 面板上的「已畢業」實質改為顯示「已精熟」
+        document.getElementById('stat-learning').innerText = learning; 
+        document.getElementById('stat-grad').innerText = mastered; 
         document.getElementById('stat-streak').innerText = stats.streak;
 
-        // 🌟 神獸進化演算法 (改用 mastered 作為燃料)
+        // 🌟 神獸進化演算法
         let currentRealmIdx = 0;
         for (let i = 0; i < RPG_REALMS.length; i++) {
             if (mastered >= RPG_REALMS[i].threshold) { currentRealmIdx = i; } 
@@ -259,23 +260,24 @@
             let wordsToNextStar = nextStarThreshold - mastered;
             let wordsToNextRealm = nextRealm.threshold - mastered;
 
+            // 🛑 核心修正：將 nextRealm 的名字遮蔽為「❓ 未知型態」
             rpgHtml = `
                 <div style="font-size: 1.2rem; font-weight: bold; color: var(--text); margin-bottom: 5px;">
                     🧬 守護神獸：${currentRealm.emoji} ${currentRealm.name} <span style="color: var(--warning); text-shadow: 0 0 2px rgba(245, 158, 11, 0.3);">${starStr}</span>
                 </div>
                 <div style="font-size: 0.85rem; color: var(--text-light);">
-                    距離下一星等還需 <b>${wordsToNextStar}</b> 字 | 距離進化【${nextRealm.emoji}${nextRealm.name}】還需 <b>${wordsToNextRealm}</b> 字
+                    距離下一星等還需 <b>${wordsToNextStar}</b> 字 | 距離【❓ 未知型態】還需 <b>${wordsToNextRealm}</b> 字
                 </div>
             `;
         }
         
         document.getElementById('rpg-content').innerHTML = rpgHtml;
-        let pct = total === 0 ? 0 : Math.round((mastered / 2865) * 100);
+        let pct = total === 0 ? 0 : Math.round((mastered / 2867) * 100); // 對齊您的 2867 總量
         document.getElementById('rpg-bar').style.width = pct + '%';
         document.getElementById('rpg-total-pct').innerText = pct;
         document.getElementById('rpg-total-grad').innerText = mastered;
 
-        // 🔒 認知負荷閘門 (保持原邏輯)
+        // 🔒 認知負荷閘門
         let unlocked = getUnlockedTiers();
         let currentFocusTier = unlocked[unlocked.length - 1]; 
         let tStats = getTierMastery(currentFocusTier);
