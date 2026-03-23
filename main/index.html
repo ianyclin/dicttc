@@ -61,7 +61,7 @@
                 <div class="rpg-bar" id="rpg-bar"></div>
             </div>
             <div style="text-align: right; font-size: 0.75rem; color: var(--text-light); margin-top: 4px;">
-                總進化進度: <span id="rpg-total-pct">0</span>% (<span id="rpg-total-grad">0</span> / 2865 字)
+                總進化進度: <span id="rpg-total-pct">0</span>% (<span id="rpg-total-grad">0</span> / 2867 字)
             </div>
         </div>
     </div>
@@ -124,7 +124,7 @@
         { threshold: 1400, emoji: '🦄', name: '聖光裁決獨角獸' },
         { threshold: 1800, emoji: '🐋', name: '北冥吞天巨鯤' },
         { threshold: 2300, emoji: '🐉', name: '宇宙洪荒祖龍' },
-        { threshold: 2865, emoji: '👑', name: '萬界識字道祖' }
+        { threshold: 2867, emoji: '👑', name: '萬界識字道祖' }
     ];
     let currentProfile = 1;
     let srsDatabase = {};
@@ -263,7 +263,7 @@ function updateDashboard() {
         }
         
         document.getElementById('rpg-content').innerHTML = rpgHtml;
-        let pct = total === 0 ? 0 : Math.round((grad / 2865) * 100);
+        let pct = total === 0 ? 0 : Math.round((grad / 2867) * 100);
         document.getElementById('rpg-bar').style.width = pct + '%';
         document.getElementById('rpg-total-pct').innerText = pct;
         document.getElementById('rpg-total-grad').innerText = grad;
