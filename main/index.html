@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小學生 SRS 字卡系統 v4.0 (萊特納認知優化版)</title>
+    <title>小學生 SRS 字卡系統 v4.5 (多帳號與認知閘門版)</title>
     <style>
         :root {
-            --primary: #4f46e5;      /* Indigo 600 */
-            --secondary: #4338ca;    /* Indigo 700 */
-            --warning: #f59e0b;      /* Amber 500 */
-            --success: #0ea5e9;      /* Sky 500 */
-            --danger: #ef4444;       /* Red 500 */
-            --bg: #f1f5f9;           /* Slate 100 */
+            --primary: #4f46e5;      
+            --secondary: #4338ca;    
+            --warning: #f59e0b;      
+            --success: #0ea5e9;      
+            --danger: #ef4444;       
+            --bg: #f1f5f9;           
             --card-bg: #ffffff; 
             --text: #1e293b;
             --text-light: #64748b;
@@ -19,6 +19,11 @@
         
         body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; max-width: 960px; margin: auto; line-height: 1.6; padding-bottom: 60px;}
         
+        /* 頂部控制列與多帳號切換 */
+        .profile-switcher { display: flex; gap: 10px; margin-bottom: 15px; background: #e2e8f0; padding: 6px; border-radius: 12px; }
+        .tab-btn { flex: 1; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; color: var(--text-light); border: none; background: transparent; }
+        .tab-btn.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
         .header-stats { display: flex; flex-direction: column; gap: 15px; margin-bottom: 24px; padding: 20px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .flex-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
@@ -26,13 +31,18 @@
         .btn-primary:hover { background: var(--secondary); }
         .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
         
-        /* 儀表板 */
+        /* 儀表板與閘門狀態 */
         #dashboard { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .hidden { display: none !important; }
         .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-top: 15px; }
         .stat-box { background: var(--bg); padding: 15px; border-radius: 8px; text-align: center; }
         .stat-num { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
         
+        .gate-status { margin-top: 15px; padding: 15px; background: #f8fafc; border-left: 4px solid var(--primary); border-radius: 0 8px 8px 0; }
+        .gate-bar-bg { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; margin-top: 4px; overflow: hidden;}
+        .gate-bar-fill { height: 100%; background: var(--success); }
+        .gate-bar-fill.locked { background: var(--danger); }
+
         /* 抽卡區塊 */
         #deck { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 40px; }
         .card { background: var(--card-bg); width: 280px; padding: 20px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 6px solid var(--primary); transition: transform 0.2s; }
@@ -46,7 +56,6 @@
         .badge.review { background: #fef3c7; color: #b45309; }
         .badge.new { background: #e0f2fe; color: #0369a1; }
         
-        /* 按鈕區 */
         .eval-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 10px; }
         .btn-eval { padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: 0.2s; color: white;}
         .btn-eval-forget { background: var(--danger); }
@@ -55,95 +64,118 @@
         .btn-eval-easy { background: var(--success); }
         .btn-eval:hover { filter: brightness(1.1); }
         
-        /* 說明面板 */
-        .manual-panel { background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 0.9rem; }
-        .manual-panel h3 { margin-top: 0; color: var(--primary); }
-        .dict-pill { display: inline-block; padding: 4px 10px; background: #e2e8f0; border-radius: 15px; margin: 4px; text-decoration: none; color: var(--text); font-size: 0.9rem; }
-        .dict-pill:hover { background: var(--primary); color: white; }
-
-        /* RPG 進度條 */
         .rpg-container { background: #e2e8f0; height: 20px; border-radius: 10px; overflow: hidden; margin-top: 10px; }
         .rpg-bar { background: linear-gradient(90deg, var(--warning), var(--danger)); height: 100%; width: 0%; transition: width 0.5s ease; }
     </style>
 </head>
 <body>
 
+    <div class="profile-switcher">
+        <button class="tab-btn active" id="tab-1" onclick="switchProfile(1)">👤 設定檔一</button>
+        <button class="tab-btn" id="tab-2" onclick="switchProfile(2)">👤 設定檔二</button>
+        <button class="tab-btn" id="tab-3" onclick="switchProfile(3)">👤 設定檔三</button>
+    </div>
+
     <div class="header-stats">
         <div class="flex-row">
-            <h2>🧠 兒童 SRS 學習系統 (萊特納核心)</h2>
-            <div>
-                <button class="btn btn-outline" onclick="toggleDashboard()">📊 數據看板</button>
-            </div>
+            <h2>🧠 兒童 SRS 系統 (閘門防禦版)</h2>
+            <button class="btn btn-outline" onclick="toggleDashboard()">📊 數據看板與管理</button>
         </div>
         <div class="rpg-status">
-            <strong>⚔️ 學習經驗值 (畢業卡片進度)</strong>
+            <strong>⚔️ 總學習經驗值 (畢業進度)</strong>
             <div class="rpg-container"><div class="rpg-bar" id="rpg-bar"></div></div>
             <div style="text-align: right; font-size: 0.8rem; color: var(--text-light);" id="rpg-text">0 / 0 畢業</div>
         </div>
     </div>
 
     <div id="dashboard" class="hidden">
-        <h3>📈 學習統計與資料管理</h3>
+        <h3>📈 學習統計</h3>
         <div class="stat-grid">
             <div class="stat-box"><div class="stat-num" id="stat-total">0</div>總收錄字數</div>
             <div class="stat-box"><div class="stat-num" id="stat-learning">0</div>學習中</div>
-            <div class="stat-box"><div class="stat-num" id="stat-grad">0</div>已畢業 (長期記憶)</div>
+            <div class="stat-box"><div class="stat-num" id="stat-grad">0</div>已畢業</div>
             <div class="stat-box"><div class="stat-num" id="stat-streak">0</div>連續登入天數</div>
         </div>
-        <div class="flex-row" style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
-            <button class="btn btn-primary" onclick="exportData()">💾 備份匯出 (JSON)</button>
-            <input type="file" id="import-file" style="display:none;" onchange="importData(event)">
-            <button class="btn btn-outline" onclick="document.getElementById('import-file').click()">📂 還原匯入 (JSON)</button>
-        </div>
-        <div style="margin-top: 20px;">
+
+        <div class="gate-status" id="gate-status-panel">
+            </div>
+
+        <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
             <h4>➕ 新增字彙 (以逗號分隔)</h4>
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <select id="new-word-tier" style="padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+                    <option value="1">Tier 1 (基礎字)</option>
+                    <option value="2">Tier 2 (進階字)</option>
+                    <option value="3">Tier 3 (挑戰字)</option>
+                </select>
                 <input type="text" id="new-words-input" placeholder="例如：蘋,果,貓,狗" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
                 <button class="btn btn-primary" onclick="addWords()">新增</button>
             </div>
         </div>
-    </div>
 
-    <div id="deck">
+        <div class="flex-row" style="margin-top: 20px;">
+            <button class="btn btn-primary" onclick="exportData()">💾 匯出目前設定檔</button>
+            <input type="file" id="import-file" style="display:none;" onchange="importData(event)">
+            <button class="btn btn-outline" onclick="document.getElementById('import-file').click()">📂 匯入至目前設定檔</button>
         </div>
-
-    <div class="manual-panel">
-        <h3>⚙️ 演算法說明：萊特納 2357 系統</h3>
-        <p>本系統針對兒童認知發展設計，廢除成人用的連續倍數乘法，採用固定天數陣列的階段晉升制，降低「完全忘記」時的心理挫折，並嚴格控管每日新卡數量（上限 5 張）。</p>
-        <table style="width: 100%; border-collapse: collapse; text-align: left; margin-top: 10px;">
-            <tr style="border-bottom: 2px solid #cbd5e1;"><th>評估按鈕</th><th>階段流轉邏輯</th><th>天數間隔變化</th></tr>
-            <tr style="border-bottom: 1px solid #e2e8f0;"><td><strong style="color:var(--danger)">完全忘記</strong></td><td>退兩階 (最低退至 0)</td><td>避免歸零挫折。當下重測一次。</td></tr>
-            <tr style="border-bottom: 1px solid #e2e8f0;"><td><strong style="color:var(--warning)">困難</strong></td><td>退一階 (最低退至 1)</td><td>增加近期出現頻率。</td></tr>
-            <tr style="border-bottom: 1px solid #e2e8f0;"><td><strong style="color:var(--primary)">良好</strong></td><td>晉升一階</td><td>1天 → 3天 → 5天 → 7天...</td></tr>
-            <tr><td><strong style="color:var(--success)">簡單</strong></td><td>跳級晉升兩階</td><td>快速通關，釋放工作記憶。</td></tr>
-        </table>
-        <p style="font-size: 0.8rem; color: var(--text-light); margin-top: 10px;">階段陣列：[0天, 1天, 3天, 5天, 7天, 14天, 21天, 60天, 180天(畢業)]</p>
     </div>
+
+    <div id="deck"></div>
 
 <script>
-    // === 1. 資料庫與全域設定 ===
-    let srsDatabase = JSON.parse(localStorage.getItem('srs_db')) || {};
-    let stats = JSON.parse(localStorage.getItem('srs_stats')) || { streak: 0, lastDate: null };
+    // === 1. 系統組態與多帳號架構 ===
+    let currentProfile = 1;
+    let srsDatabase = {};
+    let stats = {};
     
-    // 認知負荷控制：每日新卡片上限
     const LIMIT_NEW_CARDS_PER_DAY = 5; 
-    
-    // 萊特納 2357 階段陣列
     const STAGE_INTERVALS = [0, 1, 3, 5, 7, 14, 21, 60, 180];
     const MAX_STAGE = STAGE_INTERVALS.length - 1;
     const GRADUATION_INTERVAL = 180;
+    
+    // 嚴格閘門：要求 85% 的卡片進入長期記憶 (Stage >= 6，即 21 天)
+    const SAFETY_THRESHOLD = 0.85; 
+    const LONG_TERM_STAGE = 6;
 
-    // 處理連擊天數
-    const todayStr = new Date().toDateString();
-    if (stats.lastDate !== todayStr) {
-        if (stats.lastDate === new Date(Date.now() - 86400000).toDateString()) { stats.streak++; } 
-        else if (stats.lastDate !== null) { stats.streak = 1; }
-        else { stats.streak = 1; }
-        stats.lastDate = todayStr;
-        localStorage.setItem('srs_stats', JSON.stringify(stats));
+    // 初次載入資料遷移 (相容舊版單一帳號)
+    if (!localStorage.getItem('srs_db_1') && localStorage.getItem('srs_db')) {
+        localStorage.setItem('srs_db_1', localStorage.getItem('srs_db'));
+        localStorage.setItem('srs_stats_1', localStorage.getItem('srs_stats'));
     }
 
-    // === 2. 核心演算法 (萊特納狀態機) ===
+    function loadProfileData() {
+        srsDatabase = JSON.parse(localStorage.getItem(`srs_db_${currentProfile}`)) || {};
+        stats = JSON.parse(localStorage.getItem(`srs_stats_${currentProfile}`)) || { streak: 0, lastDate: null };
+        
+        // 處理連擊
+        const todayStr = new Date().toDateString();
+        if (stats.lastDate !== todayStr) {
+            if (stats.lastDate === new Date(Date.now() - 86400000).toDateString()) { stats.streak++; } 
+            else if (stats.lastDate !== null) { stats.streak = 1; }
+            else { stats.streak = 1; }
+            stats.lastDate = todayStr;
+            saveData();
+        }
+    }
+
+    function saveData() {
+        localStorage.setItem(`srs_db_${currentProfile}`, JSON.stringify(srsDatabase));
+        localStorage.setItem(`srs_stats_${currentProfile}`, JSON.stringify(stats));
+    }
+
+    function switchProfile(profileId) {
+        currentProfile = profileId;
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`tab-${profileId}`).classList.add('active');
+        
+        loadProfileData();
+        generateDailyDeck();
+        if (!document.getElementById('dashboard').classList.contains('hidden')) {
+            updateDashboard();
+        }
+    }
+
+    // === 2. 演算法與閘門核心 ===
     function migrateToStage(r) {
         if (r.stage !== undefined) return r.stage;
         if (r.interval >= 180) return 8;
@@ -158,15 +190,37 @@
     }
 
     function getNextStage(currentStage, q) {
-        if (q === 0) return Math.max(0, currentStage - 2); // 完全忘記：退兩階
-        if (q === 1) return Math.max(1, currentStage - 1); // 困難：退一階
-        if (q === 2) return Math.min(MAX_STAGE, currentStage + 1); // 良好：升一階
-        if (q === 3) return Math.min(MAX_STAGE, currentStage + 2); // 簡單：升兩階
+        if (q === 0) return Math.max(0, currentStage - 2); 
+        if (q === 1) return Math.max(1, currentStage - 1); 
+        if (q === 2) return Math.min(MAX_STAGE, currentStage + 1); 
+        if (q === 3) return Math.min(MAX_STAGE, currentStage + 2); 
         return currentStage;
     }
 
-    function calculateNextIntervalByStage(stage) {
-        return STAGE_INTERVALS[stage];
+    // 計算特定 Tier 的精熟度 (長期記憶比例)
+    function getTierMastery(tierLevel) {
+        let total = 0;
+        let mastered = 0;
+        for (let w in srsDatabase) {
+            let r = srsDatabase[w];
+            let t = r.tier || 1; // 預設無 Tier 者歸類為 1
+            if (t === tierLevel) {
+                total++;
+                if (migrateToStage(r) >= LONG_TERM_STAGE) mastered++;
+            }
+        }
+        return { total: total, mastered: mastered, rate: total === 0 ? 0 : (mastered / total) };
+    }
+
+    // 依賴閘門決策：回傳允許抽取的 Tier 陣列
+    function getUnlockedTiers() {
+        let t1 = getTierMastery(1);
+        if (t1.total === 0 || t1.rate < SAFETY_THRESHOLD) return [1]; // T1 未達標，僅限 T1
+        
+        let t2 = getTierMastery(2);
+        if (t2.total === 0 || t2.rate < SAFETY_THRESHOLD) return [1, 2]; // T1 達標，解鎖 T2
+        
+        return [1, 2, 3]; // 全解鎖
     }
 
     // === 3. UI 渲染邏輯 ===
@@ -178,13 +232,10 @@
 
     function updateDashboard() {
         let total = Object.keys(srsDatabase).length;
-        let grad = 0;
-        let learning = 0;
+        let grad = 0, learning = 0;
         
         for (let w in srsDatabase) {
-            let stg = migrateToStage(srsDatabase[w]);
-            if (stg >= MAX_STAGE) grad++;
-            else learning++;
+            if (migrateToStage(srsDatabase[w]) >= MAX_STAGE) grad++; else learning++;
         }
 
         document.getElementById('stat-total').innerText = total;
@@ -192,33 +243,53 @@
         document.getElementById('stat-grad').innerText = grad;
         document.getElementById('stat-streak').innerText = stats.streak;
 
-        // 更新 RPG 進度條
         let pct = total === 0 ? 0 : Math.round((grad / total) * 100);
         document.getElementById('rpg-bar').style.width = pct + '%';
         document.getElementById('rpg-text').innerText = `${grad} / ${total} 畢業 (${pct}%)`;
+
+        // 渲染閘門狀態
+        let t1 = getTierMastery(1);
+        let t2 = getTierMastery(2);
+        let unlocked = getUnlockedTiers();
+        
+        let html = `<strong>🔒 認知負荷閘門狀態 (目標 ${SAFETY_THRESHOLD*100}%)</strong><br>`;
+        
+        html += `<div style="font-size:0.9rem; margin-top:8px;">Tier 1 基礎字精熟度: ${Math.round(t1.rate*100)}% (${t1.mastered}/${t1.total})</div>`;
+        html += `<div class="gate-bar-bg"><div class="gate-bar-fill" style="width:${Math.min(100, t1.rate*100)}%"></div></div>`;
+        
+        if (unlocked.includes(2)) {
+            html += `<div style="font-size:0.9rem; margin-top:8px;">Tier 2 進階字精熟度: ${Math.round(t2.rate*100)}% (${t2.mastered}/${t2.total})</div>`;
+            html += `<div class="gate-bar-bg"><div class="gate-bar-fill" style="width:${Math.min(100, t2.rate*100)}%"></div></div>`;
+        } else {
+            html += `<div style="font-size:0.9rem; margin-top:8px; color:var(--danger)">Tier 2 進階字：未解鎖 (需 T1 達標)</div>`;
+            html += `<div class="gate-bar-bg"><div class="gate-bar-fill locked" style="width:100%"></div></div>`;
+        }
+        document.getElementById('gate-status-panel').innerHTML = html;
     }
 
     function createCardHTML(word, type) {
-        let r = srsDatabase[word] || { stage: 0 };
+        let r = srsDatabase[word];
         r.stage = migrateToStage(r); 
+        let tierLabel = `Tier ${r.tier || 1}`;
         
-        let int1 = calculateNextIntervalByStage(getNextStage(r.stage, 1));
-        let int2 = calculateNextIntervalByStage(getNextStage(r.stage, 2));
-        let int3 = calculateNextIntervalByStage(getNextStage(r.stage, 3));
+        let int1 = STAGE_INTERVALS[getNextStage(r.stage, 1)];
+        let int2 = STAGE_INTERVALS[getNextStage(r.stage, 2)];
+        let int3 = STAGE_INTERVALS[getNextStage(r.stage, 3)];
         
         let str1 = int1 >= GRADUATION_INTERVAL ? '畢業' : int1 + 'd';
         let str2 = int2 >= GRADUATION_INTERVAL ? '畢業' : int2 + 'd';
         let str3 = int3 >= GRADUATION_INTERVAL ? '畢業' : int3 + 'd';
-
         if (int1 === 0) str1 = '1m';
         
         return `
             <div class="card ${type}" id="card-${word}">
-                <div class="badge ${type}">${type==='review'?'待複習':(type==='penalty'?'重新記憶':'新解鎖')}</div>
+                <div style="display:flex; gap:10px;">
+                    <div class="badge ${type}">${type==='review'?'待複習':(type==='penalty'?'重新記憶':'新解鎖')}</div>
+                    <div class="badge" style="background:#f1f5f9; color:#64748b;">${tierLabel}</div>
+                </div>
                 <div class="char-title">${word}</div>
-                <a href="https://www.moedict.tw/${encodeURIComponent(word)}" target="_blank" style="text-decoration:none; color:var(--primary); font-weight:bold; font-size:1.1rem;">📖 萌典釋義</a>
                 <div class="eval-buttons">
-                    <button class="btn-eval btn-eval-forget" onclick="processReview('${word}', 0)">完全忘記 (1m)</button>
+                    <button class="btn-eval btn-eval-forget" onclick="processReview('${word}', 0)">完全忘記</button>
                     <button class="btn-eval btn-eval-hard" onclick="processReview('${word}', 1)">困難 (${str1})</button>
                     <button class="btn-eval btn-eval-good" onclick="processReview('${word}', 2)">良好 (${str2})</button>
                     <button class="btn-eval btn-eval-easy" onclick="processReview('${word}', 3)">簡單 (${str3})</button>
@@ -233,24 +304,28 @@
         
         let reviewQueue = [];
         let newQueue = [];
+        let unlockedTiers = getUnlockedTiers(); // 取得當前帳號允許抽取的新卡 Tier
 
         for (let word in srsDatabase) {
             let data = srsDatabase[word];
-            data.stage = migrateToStage(data); // 強制相容
+            data.stage = migrateToStage(data);
+            data.tier = data.tier || 1; 
 
             if (data.repetitions === 0) {
-                newQueue.push(word);
+                // 嚴格閘門：只將已解鎖 Tier 的新卡放入候選池
+                if (unlockedTiers.includes(data.tier)) {
+                    newQueue.push(word);
+                }
             } else if (now >= data.nextReview && data.stage < MAX_STAGE) {
                 reviewQueue.push(word);
             }
         }
 
-        // 渲染待複習卡片
-        reviewQueue.forEach(w => {
-            deckDiv.innerHTML += createCardHTML(w, 'review');
-        });
+        // 優先將低 Tier 的新卡排在前面
+        newQueue.sort((a, b) => (srsDatabase[a].tier || 1) - (srsDatabase[b].tier || 1));
 
-        // 渲染新卡片 (嚴格控制上限)
+        reviewQueue.forEach(w => deckDiv.innerHTML += createCardHTML(w, 'review'));
+
         let addedNew = 0;
         for (let i = 0; i < newQueue.length; i++) {
             if (addedNew >= LIMIT_NEW_CARDS_PER_DAY) break;
@@ -267,65 +342,60 @@
 
     // === 4. 資料處理 ===
     function processReview(word, q) {
-        let r = srsDatabase[word] || { interval: 0, repetitions: 0, stage: 0, nextReview: 0 };
+        let r = srsDatabase[word];
         r.stage = migrateToStage(r);
         
         let nextStage = getNextStage(r.stage, q);
         r.stage = nextStage;
-        r.interval = calculateNextIntervalByStage(nextStage);
+        r.interval = STAGE_INTERVALS[nextStage];
         r.repetitions++;
-        
-        // 0 天代表當日重排，非 0 則依據天數計算毫秒
         r.nextReview = q === 0 ? Date.now() : Date.now() + (r.interval * 24 * 60 * 60 * 1000);
-        srsDatabase[word] = r;
-        localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
+        
+        saveData();
         
         let card = document.getElementById(`card-${word}`);
         
-        // 處理重試邏輯 (Penalty Queue)
         if (q === 0) {
             let deck = document.getElementById('deck');
             card.style.opacity = '0.3';
             setTimeout(() => {
-                deck.appendChild(card); // 移至隊列尾端
+                deck.appendChild(card);
                 card.style.opacity = '1';
                 card.outerHTML = createCardHTML(word, 'penalty'); 
             }, 300);
         } else { 
             card.style.display = 'none'; 
         }
-        
         updateDashboard();
     }
 
     function addWords() {
         let input = document.getElementById('new-words-input').value;
+        let selectedTier = parseInt(document.getElementById('new-word-tier').value);
         if (!input) return;
         let words = input.split(',').map(w => w.trim()).filter(w => w.length > 0);
         
         let addedCount = 0;
         words.forEach(w => {
             if (!srsDatabase[w]) {
-                srsDatabase[w] = { interval: 0, repetitions: 0, stage: 0, nextReview: 0 };
+                srsDatabase[w] = { interval: 0, repetitions: 0, stage: 0, nextReview: 0, tier: selectedTier };
                 addedCount++;
             }
         });
         
         if (addedCount > 0) {
-            localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
+            saveData();
             document.getElementById('new-words-input').value = '';
-            alert(`成功新增 ${addedCount} 個字彙！`);
+            alert(`已新增 ${addedCount} 個字彙至 Tier ${selectedTier}！`);
             generateDailyDeck();
-        } else {
-            alert('字彙已存在或輸入無效。');
         }
     }
 
-    // === 5. 匯出與匯入 ===
+    // === 5. 匯出與匯入 (針對單一設定檔) ===
     function exportData() {
         const blob = new Blob([JSON.stringify({db: srsDatabase, stats: stats})], {type: "application/json"});
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `srs_kids_backup.json`; a.click();
+        const a = document.createElement('a'); a.href = url; a.download = `srs_profile_${currentProfile}_backup.json`; a.click();
     }
 
     function importData(e) {
@@ -334,19 +404,17 @@
             try {
                 const data = JSON.parse(ev.target.result);
                 if(data.db) { srsDatabase = data.db; stats = data.stats || { streak: 0, lastDate: null }; } 
-                else { srsDatabase = data; } // 兼容極早期版本
-                localStorage.setItem('srs_db', JSON.stringify(srsDatabase));
-                localStorage.setItem('srs_stats', JSON.stringify(stats));
-                alert('資料還原成功！');
+                else { srsDatabase = data; }
+                saveData();
+                alert(`資料還原至 設定檔 ${currentProfile} 成功！`);
                 location.reload();
-            } catch (err) {
-                alert('檔案格式錯誤。');
-            }
+            } catch (err) { alert('檔案格式錯誤。'); }
         };
         reader.readAsText(e.target.files[0]);
     }
 
     // === 6. 初始化執行 ===
+    loadProfileData();
     generateDailyDeck();
 
 </script>
