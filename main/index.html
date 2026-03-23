@@ -67,6 +67,28 @@
         #evo-title { font-size: 2.5rem; font-weight: bold; color: var(--warning); margin-bottom: 20px; animation: evo-pop 1s ease; }
         #evo-emoji { font-size: 10rem; animation: evo-pop 1s ease 0.2s backwards; }
         #evo-sub { font-size: 1.2rem; margin-top: 30px; opacity: 0.8; }
+   
+    /* ⚡ 懸浮通知容器 */
+#toast-container {
+    position: fixed; top: 20px; right: 20px; z-index: 10000;
+    display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+}
+.toast-card {
+    background: white; padding: 12px 20px; border-radius: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    display: flex; align-items: center; gap: 12px;
+    transform: translateX(120%); transition: transform 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    border-left: 5px solid var(--primary); pointer-events: auto;
+}
+.toast-card.show { transform: translateX(0); }
+.toast-icon { font-size: 1.5rem; }
+.toast-content { display: flex; flex-direction: column; }
+.toast-title { font-weight: bold; color: var(--text); font-size: 0.95rem; }
+.toast-sub { font-size: 0.8rem; color: var(--text-light); }
+/* 特殊配色 */
+.toast-star { border-left-color: var(--warning); }
+.toast-unlock { border-left-color: var(--success); }
+    
     </style>
 </head>
 <body>
@@ -143,6 +165,8 @@
         <div id="evo-sub">恭喜達成全新境界，力量覺醒。</div>
     </div>
 
+<div id="toast-container"></div>
+    
 <script>
     // 🐉 神獸進化論：十域洪荒宇宙觀設定
     const RPG_REALMS = [
@@ -269,100 +293,108 @@
         if (!db.classList.contains('hidden')) updateDashboard(false);
     }
 
-    function updateDashboard(isInit = false) { 
-        let total = Object.keys(srsDatabase).length, grad = 0, mastered = 0, learning = 0;
-        
-        for (let w in srsDatabase) { 
-            let r = srsDatabase[w];
-            let stage = migrateToStage(r);
-            if (stage >= MAX_STAGE) grad++; 
-            if (stage >= LONG_TERM_STAGE) mastered++; 
-            if (r.repetitions > 0 && stage < LONG_TERM_STAGE) learning++; 
-        }
-        
-        document.getElementById('stat-total').innerText = total;
-        document.getElementById('stat-learning').innerText = learning; 
-        document.getElementById('stat-grad').innerText = mastered; 
-        document.getElementById('stat-streak').innerText = stats.streak;
+// 📢 工具函數：彈出通知
+function showToast(title, sub, emoji, typeClass = '') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast-card ${typeClass}`;
+    toast.innerHTML = `
+        <div class="toast-icon">${emoji}</div>
+        <div class="toast-content">
+            <div class="toast-title">${title}</div>
+            <div class="toast-sub">${sub}</div>
+        </div>
+    `;
+    container.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 100);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 500);
+    }, 4000);
+}
 
-        // 🌟 神獸進化演算法
-        let currentRealmIdx = 0;
-        for (let i = 0; i < RPG_REALMS.length; i++) {
-            if (mastered >= RPG_REALMS[i].threshold) { currentRealmIdx = i; } 
-            else { break; }
-        }
-
-        // 🛑 封鎖判定與進化動畫觸發
-        if (!isInit && stats.lastRealmIdx !== undefined && currentRealmIdx > stats.lastRealmIdx) {
-            const overlay = document.getElementById('evolution-overlay');
-            const evoEmoji = document.getElementById('evo-emoji');
-            evoEmoji.innerText = RPG_REALMS[currentRealmIdx].emoji; 
-            overlay.classList.add('show');
-            setTimeout(() => { overlay.classList.remove('show'); }, 3500);
-        }
-        
-        stats.lastRealmIdx = currentRealmIdx;
-        saveData(); // 修復：改回 saveData() 確保寫入
-
-        let rpgHtml = "";
-        if (currentRealmIdx === RPG_REALMS.length - 1) {
-            rpgHtml = `
-                <div style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 4px;">🧬 當前型態：</div>
-                <div style="font-size: 1.4rem; font-weight: bold; color: var(--danger); margin-bottom: 5px;">${RPG_REALMS[currentRealmIdx].emoji} ${RPG_REALMS[currentRealmIdx].name} (滿級封頂)</div>
-            `;
-        } else {
-            let currentRealm = RPG_REALMS[currentRealmIdx];
-            let realmProgress = mastered - currentRealm.threshold;
-            let realmTotal = RPG_REALMS[currentRealmIdx + 1].threshold - currentRealm.threshold;
-            
-            let stars = Math.floor((realmProgress / realmTotal) * 5);
-            if (stars === 5 && realmProgress < realmTotal) stars = 4; 
-            
-            // 🌈 注入閃爍星星
-            let starStr = "";
-            for (let s = 0; s < 5; s++) {
-                if (s < stars) starStr += `<span class="rpg-star">★</span>`;
-                else starStr += `<span>☆</span>`;
-            }
-            
-            let nextStarThreshold = Math.ceil((stars + 1) * (realmTotal / 5)) + currentRealm.threshold;
-            let wordsToNextStar = nextStarThreshold - mastered;
-            let wordsToNextRealm = RPG_REALMS[currentRealmIdx + 1].threshold - mastered;
-
-            // 📱 手機排版優化：Flexbox 與區塊分離
-            rpgHtml = `
-                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 5px;">
-                    <div>
-                        <div style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 4px;">🧬 守護神獸：</div>
-                        <div style="font-size: 1.3rem; font-weight: bold; color: var(--text); display: flex; flex-direction: column; gap: 4px;">
-                            <span>${currentRealm.emoji} ${currentRealm.name}</span>
-                            <span style="color: var(--warning); text-shadow: 0 0 2px rgba(245, 158, 11, 0.3); font-size: 1.1rem;">${starStr}</span>
-                        </div>
-                    </div>
-                    <div style="font-size: 0.85rem; color: var(--text-light); display: flex; flex-direction: column; gap: 6px; background: rgba(255,255,255,0.6); padding: 10px 12px; border-radius: 8px;">
-                        <div>⭐ 距離下一星等還需 <b style="color: var(--text);">${wordsToNextStar}</b> 字</div>
-                        <div>🚀 距離【❓ 未知型態】還需 <b style="color: var(--text);">${wordsToNextRealm}</b> 字</div>
-                    </div>
-                </div>
-            `;
-        }
-        
-        document.getElementById('rpg-content').innerHTML = rpgHtml;
-
-        let pct = total === 0 ? 0 : Math.round((mastered / 2867) * 100); 
-        document.getElementById('rpg-bar').style.width = pct + '%';
-        document.getElementById('rpg-total-pct').innerText = pct;
-        document.getElementById('rpg-total-grad').innerText = mastered;
-
-        // 🔒 認知負荷閘門
-        let unlocked = getUnlockedTiers();
-        let currentFocusTier = unlocked[unlocked.length - 1]; 
-        let tStats = getTierMastery(currentFocusTier);
-        let html = `<strong>🔒 認知負荷閘門 (當前攻略: Tier ${currentFocusTier})</strong><br>`;
-        html += `<div style="font-size:0.9rem; margin-top:8px;">精熟度要求 ${Math.round(SAFETY_THRESHOLD*100)}%：目前 ${Math.round(tStats.rate*100)}% (${tStats.mastered}/${tStats.total})</div>`;
-        html += `<div class="gate-bar-bg"><div class="gate-bar-fill" style="width:${Math.min(100, tStats.rate*100)}%"></div></div>`;
-        document.getElementById('gate-status-panel').innerHTML = html;
+// 📊 核心監控函數 (整合進化、升星、解鎖邏輯)
+function updateDashboard(isInit = false) { 
+    let total = Object.keys(srsDatabase).length, grad = 0, mastered = 0, learning = 0;
+    
+    for (let w in srsDatabase) { 
+        let r = srsDatabase[w];
+        let stage = migrateToStage(r);
+        if (stage >= MAX_STAGE) grad++; 
+        if (stage >= LONG_TERM_STAGE) mastered++; 
+        if (r.repetitions > 0 && stage < LONG_TERM_STAGE) learning++; 
     }
+
+    // A. 檢測：進化 (Realm Up)
+    let currentRealmIdx = 0;
+    for (let i = 0; i < RPG_REALMS.length; i++) {
+        if (mastered >= RPG_REALMS[i].threshold) currentRealmIdx = i;
+        else break;
+    }
+    if (!isInit && stats.lastRealmIdx !== undefined && currentRealmIdx > stats.lastRealmIdx) {
+        const overlay = document.getElementById('evolution-overlay');
+        document.getElementById('evo-emoji').innerText = RPG_REALMS[currentRealmIdx].emoji; 
+        overlay.classList.add('show');
+        setTimeout(() => { overlay.classList.remove('show'); }, 3500);
+    }
+
+    // B. 檢測：星等提升 (Star Up)
+    let currentRealm = RPG_REALMS[currentRealmIdx];
+    let nextRealmThreshold = RPG_REALMS[currentRealmIdx + 1] ? RPG_REALMS[currentRealmIdx + 1].threshold : 2867;
+    let realmTotal = nextRealmThreshold - currentRealm.threshold;
+    let realmProgress = mastered - currentRealm.threshold;
+    let currentStars = Math.min(5, Math.floor((realmProgress / realmTotal) * 5));
+
+    if (!isInit && stats.lastStars !== undefined && currentStars > stats.lastStars && currentRealmIdx === stats.lastRealmIdx) {
+        showToast("神獸靈力提升！", `獲得第 ${currentStars} 顆星`, "⭐", "toast-star");
+    }
+
+    // C. 檢測：階層解鎖 (Tier Unlock)
+    let unlocked = getUnlockedTiers();
+    let maxTier = Math.max(...unlocked);
+    if (!isInit && stats.lastMaxTier !== undefined && maxTier > stats.lastMaxTier) {
+        showToast("全新字庫解鎖！", `Tier ${maxTier} 已開啟，挑戰開始`, "🔓", "toast-unlock");
+    }
+
+    // 更新持久化快照
+    stats.lastRealmIdx = currentRealmIdx;
+    stats.lastStars = currentStars;
+    stats.lastMaxTier = maxTier;
+    saveData();
+
+    // --- UI 渲染部分 ---
+    document.getElementById('stat-total').innerText = total;
+    document.getElementById('stat-learning').innerText = learning; 
+    document.getElementById('stat-grad').innerText = mastered; 
+    document.getElementById('stat-streak').innerText = stats.streak;
+
+    let starStr = "★".repeat(currentStars) + "☆".repeat(5 - currentStars);
+    document.getElementById('rpg-content').innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div>
+                <div style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 4px;">🧬 守護神獸：</div>
+                <div style="font-size: 1.3rem; font-weight: bold; color: var(--text);">${currentRealm.emoji} ${currentRealm.name}</div>
+                <div style="color: var(--warning); font-size: 1.1rem; letter-spacing: 2px;">${starStr}</div>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-light); background: rgba(255,255,255,0.6); padding: 8px; border-radius: 8px;">
+                🚀 距離下次進化還需 <b style="color: var(--text);">${nextRealmThreshold - mastered}</b> 字
+            </div>
+        </div>
+    `;
+
+    let pct = Math.round((mastered / 2867) * 100); 
+    document.getElementById('rpg-bar').style.width = pct + '%';
+    document.getElementById('rpg-total-pct').innerText = pct;
+    document.getElementById('rpg-total-grad').innerText = mastered;
+
+    let focusTier = maxTier;
+    let tStats = getTierMastery(focusTier);
+    document.getElementById('gate-status-panel').innerHTML = `
+        <strong>🔒 認知負荷閘門 (當前: Tier ${focusTier})</strong><br>
+        <div style="font-size:0.9rem; margin-top:8px;">精熟度要求 ${Math.round(SAFETY_THRESHOLD*100)}%：目前 ${Math.round(tStats.rate*100)}% (${tStats.mastered}/${tStats.total})</div>
+        <div class="gate-bar-bg"><div class="gate-bar-fill" style="width:${Math.min(100, tStats.rate*100)}%"></div></div>
+    `;
+}
 
     function createCardHTML(word, type) {
         let r = srsDatabase[word];
