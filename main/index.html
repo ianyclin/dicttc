@@ -54,10 +54,15 @@
             <h2>🧠 兒童 SRS 字卡學習系統</h2>
             <button class="btn btn-outline" onclick="toggleDashboard()">📊 數據看板</button>
         </div>
-        <div class="rpg-status">
-            <strong>⚔️ 總學習經驗值 (畢業進度)</strong>
-            <div class="rpg-container"><div class="rpg-bar" id="rpg-bar"></div></div>
-            <div style="text-align: right; font-size: 0.8rem; color: var(--text-light);" id="rpg-text">0 / 0 畢業</div>
+<div class="rpg-status" style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid var(--warning); margin-top: 10px;">
+            <div id="rpg-content">
+                </div>
+            <div class="rpg-container" style="margin-top: 10px;">
+                <div class="rpg-bar" id="rpg-bar"></div>
+            </div>
+            <div style="text-align: right; font-size: 0.75rem; color: var(--text-light); margin-top: 4px;">
+                總進化進度: <span id="rpg-total-pct">0</span>% (<span id="rpg-total-grad">0</span> / 2865 字)
+            </div>
         </div>
     </div>
 
@@ -106,6 +111,20 @@
     </footer>
 
 <script>
+    // 🐉 神獸進化論：十域洪荒宇宙觀設定
+    const RPG_REALMS = [
+        { threshold: 0, emoji: '🥚', name: '混沌起源星蛋' },
+        { threshold: 60, emoji: '🐛', name: '幻影翡翠靈蟲' },
+        { threshold: 150, emoji: '🦎', name: '幽冥暗影幻蜥' },
+        { threshold: 300, emoji: '🐺', name: '疾風霹靂魔狼' },
+        { threshold: 500, emoji: '🦍', name: '狂暴撼地巨猿' },
+        { threshold: 750, emoji: '🦅', name: '蒼穹撕裂雷鷹' },
+        { threshold: 1050, emoji: '🦁', name: '烈陽焚天神獅' },
+        { threshold: 1400, emoji: '🦄', name: '聖光裁決獨角獸' },
+        { threshold: 1800, emoji: '🐋', name: '北冥吞天巨鯤' },
+        { threshold: 2300, emoji: '🐉', name: '宇宙洪荒祖龍' },
+        { threshold: 2865, emoji: '👑', name: '萬界識字道祖' }
+    ];
     let currentProfile = 1;
     let srsDatabase = {};
     let stats = {};
@@ -198,17 +217,57 @@
         if (!db.classList.contains('hidden')) updateDashboard();
     }
 
-    function updateDashboard() {
+function updateDashboard() {
         let total = Object.keys(srsDatabase).length, grad = 0, learning = 0;
         for (let w in srsDatabase) { if (migrateToStage(srsDatabase[w]) >= MAX_STAGE) grad++; else learning++; }
+        
         document.getElementById('stat-total').innerText = total;
         document.getElementById('stat-learning').innerText = learning;
         document.getElementById('stat-grad').innerText = grad;
         document.getElementById('stat-streak').innerText = stats.streak;
-        let pct = total === 0 ? 0 : Math.round((grad / total) * 100);
-        document.getElementById('rpg-bar').style.width = pct + '%';
-        document.getElementById('rpg-text').innerText = `${grad} / ${total} 畢業 (${pct}%)`;
 
+        // 🌟 神獸進化演算法 (RPG Progression)
+        let currentRealmIdx = 0;
+        for (let i = 0; i < RPG_REALMS.length; i++) {
+            if (grad >= RPG_REALMS[i].threshold) { currentRealmIdx = i; } 
+            else { break; }
+        }
+
+        let rpgHtml = "";
+        if (currentRealmIdx === RPG_REALMS.length - 1) {
+            rpgHtml = `<div style="font-size: 1.3rem; font-weight: bold; color: var(--danger); margin-bottom: 5px;">${RPG_REALMS[currentRealmIdx].emoji} ${RPG_REALMS[currentRealmIdx].name} (滿級封頂)</div>`;
+        } else {
+            let currentRealm = RPG_REALMS[currentRealmIdx];
+            let nextRealm = RPG_REALMS[currentRealmIdx + 1];
+            let realmProgress = grad - currentRealm.threshold;
+            let realmTotal = nextRealm.threshold - currentRealm.threshold;
+            
+            // 計算 1~5 星等
+            let stars = Math.floor((realmProgress / realmTotal) * 5);
+            if (stars === 5 && realmProgress < realmTotal) stars = 4; // 鎖死防止提早滿星
+            let starStr = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+            
+            let nextStarThreshold = Math.ceil((stars + 1) * (realmTotal / 5)) + currentRealm.threshold;
+            let wordsToNextStar = nextStarThreshold - grad;
+            let wordsToNextRealm = nextRealm.threshold - grad;
+
+            rpgHtml = `
+                <div style="font-size: 1.2rem; font-weight: bold; color: var(--text); margin-bottom: 5px;">
+                    🧬 守護神獸：${currentRealm.emoji} ${currentRealm.name} <span style="color: var(--warning); text-shadow: 0 0 2px rgba(245, 158, 11, 0.3);">${starStr}</span>
+                </div>
+                <div style="font-size: 0.85rem; color: var(--text-light);">
+                    距離下一星等還需 <b>${wordsToNextStar}</b> 字 | 距離進化【${nextRealm.emoji}${nextRealm.name}】還需 <b>${wordsToNextRealm}</b> 字
+                </div>
+            `;
+        }
+        
+        document.getElementById('rpg-content').innerHTML = rpgHtml;
+        let pct = total === 0 ? 0 : Math.round((grad / 2865) * 100);
+        document.getElementById('rpg-bar').style.width = pct + '%';
+        document.getElementById('rpg-total-pct').innerText = pct;
+        document.getElementById('rpg-total-grad').innerText = grad;
+
+        // 🔒 認知負荷閘門 (保持原邏輯)
         let unlocked = getUnlockedTiers();
         let currentFocusTier = unlocked[unlocked.length - 1]; 
         let tStats = getTierMastery(currentFocusTier);
