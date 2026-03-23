@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小學生 SRS 字卡系統 v4.5 (多帳號與認知閘門版)</title>
+    <title>小學生 SRS 字卡系統 v4.5 (動態限流與十層閘門升級版)</title>
     <style>
         :root {
             --primary: #4f46e5;      
@@ -19,7 +19,6 @@
         
         body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; max-width: 960px; margin: auto; line-height: 1.6; padding-bottom: 60px;}
         
-        /* 頂部控制列與多帳號切換 */
         .profile-switcher { display: flex; gap: 10px; margin-bottom: 15px; background: #e2e8f0; padding: 6px; border-radius: 12px; }
         .tab-btn { flex: 1; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; color: var(--text-light); border: none; background: transparent; }
         .tab-btn.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -31,7 +30,6 @@
         .btn-primary:hover { background: var(--secondary); }
         .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
         
-        /* 儀表板與閘門狀態 */
         #dashboard { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .hidden { display: none !important; }
         .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-top: 15px; }
@@ -43,7 +41,6 @@
         .gate-bar-fill { height: 100%; background: var(--success); }
         .gate-bar-fill.locked { background: var(--danger); }
 
-        /* 抽卡區塊 */
         #deck { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 40px; }
         .card { background: var(--card-bg); width: 280px; padding: 20px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 6px solid var(--primary); transition: transform 0.2s; }
         .card:hover { transform: translateY(-5px); }
@@ -78,7 +75,7 @@
 
     <div class="header-stats">
         <div class="flex-row">
-            <h2>🧠 兒童 SRS 系統 (閘門防禦版)</h2>
+            <h2>🧠 兒童 SRS 系統 (動態限流升級版)</h2>
             <button class="btn btn-outline" onclick="toggleDashboard()">📊 數據看板與管理</button>
         </div>
         <div class="rpg-status">
@@ -101,12 +98,14 @@
             </div>
 
         <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-            <h4>➕ 新增字彙 (以逗號分隔)</h4>
+            <h4>➕ 手動新增字彙 (以逗號分隔)</h4>
             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                 <select id="new-word-tier" style="padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
-                    <option value="1">Tier 1 (基礎字)</option>
-                    <option value="2">Tier 2 (進階字)</option>
-                    <option value="3">Tier 3 (挑戰字)</option>
+                    <option value="1">Tier 1</option><option value="2">Tier 2</option>
+                    <option value="3">Tier 3</option><option value="4">Tier 4</option>
+                    <option value="5">Tier 5</option><option value="6">Tier 6</option>
+                    <option value="7">Tier 7</option><option value="8">Tier 8</option>
+                    <option value="9">Tier 9</option><option value="10">Tier 10</option>
                 </select>
                 <input type="text" id="new-words-input" placeholder="例如：蘋,果,貓,狗" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
                 <button class="btn btn-primary" onclick="addWords()">新增</button>
@@ -128,16 +127,20 @@
     let srsDatabase = {};
     let stats = {};
     
-    const LIMIT_NEW_CARDS_PER_DAY = 5; 
-    const STAGE_INTERVALS = [0, 1, 3, 5, 7, 14, 21, 60, 180];
-    const MAX_STAGE = STAGE_INTERVALS.length - 1;
-    const GRADUATION_INTERVAL = 180;
+    // 【升級 1：動態認知負載平衡參數】
+    const MAX_DAILY_LOAD = 25;       // 每日總負荷上限 (待複習 + 新卡)
+    const ABSOLUTE_NEW_LIMIT = 10;   // 單日新卡絕對上限
     
-    // 嚴格閘門：要求 85% 的卡片進入長期記憶 (Stage >= 6，即 21 天)
+    // 【升級 3：十層加速微型閘門參數】
+    const MAX_TIER = 10;
     const SAFETY_THRESHOLD = 0.85; 
     const LONG_TERM_STAGE = 6;
 
-    // 初次載入資料遷移 (相容舊版單一帳號)
+    const STAGE_INTERVALS = [0, 1, 3, 5, 7, 14, 21, 60, 180];
+    const MAX_STAGE = STAGE_INTERVALS.length - 1;
+    const GRADUATION_INTERVAL = 180;
+
+    // 初次載入資料遷移
     if (!localStorage.getItem('srs_db_1') && localStorage.getItem('srs_db')) {
         localStorage.setItem('srs_db_1', localStorage.getItem('srs_db'));
         localStorage.setItem('srs_stats_1', localStorage.getItem('srs_stats'));
@@ -147,7 +150,6 @@
         srsDatabase = JSON.parse(localStorage.getItem(`srs_db_${currentProfile}`)) || {};
         stats = JSON.parse(localStorage.getItem(`srs_stats_${currentProfile}`)) || { streak: 0, lastDate: null };
         
-        // 處理連擊
         const todayStr = new Date().toDateString();
         if (stats.lastDate !== todayStr) {
             if (stats.lastDate === new Date(Date.now() - 86400000).toDateString()) { stats.streak++; } 
@@ -176,6 +178,13 @@
     }
 
     // === 2. 演算法與閘門核心 ===
+    // 【升級 2：時間正規化，午夜過帳截斷】
+    function getMidnightTimestamp(ts) {
+        let d = new Date(ts);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime();
+    }
+
     function migrateToStage(r) {
         if (r.stage !== undefined) return r.stage;
         if (r.interval >= 180) return 8;
@@ -197,13 +206,11 @@
         return currentStage;
     }
 
-    // 計算特定 Tier 的精熟度 (長期記憶比例)
     function getTierMastery(tierLevel) {
-        let total = 0;
-        let mastered = 0;
+        let total = 0, mastered = 0;
         for (let w in srsDatabase) {
             let r = srsDatabase[w];
-            let t = r.tier || 1; // 預設無 Tier 者歸類為 1
+            let t = r.tier || 1; 
             if (t === tierLevel) {
                 total++;
                 if (migrateToStage(r) >= LONG_TERM_STAGE) mastered++;
@@ -212,15 +219,19 @@
         return { total: total, mastered: mastered, rate: total === 0 ? 0 : (mastered / total) };
     }
 
-    // 依賴閘門決策：回傳允許抽取的 Tier 陣列
+    // 【升級 3：十層動態遞迴解鎖】
     function getUnlockedTiers() {
-        let t1 = getTierMastery(1);
-        if (t1.total === 0 || t1.rate < SAFETY_THRESHOLD) return [1]; // T1 未達標，僅限 T1
-        
-        let t2 = getTierMastery(2);
-        if (t2.total === 0 || t2.rate < SAFETY_THRESHOLD) return [1, 2]; // T1 達標，解鎖 T2
-        
-        return [1, 2, 3]; // 全解鎖
+        let unlocked = [1]; // Tier 1 永遠解鎖
+        for (let i = 1; i < MAX_TIER; i++) {
+            let stats = getTierMastery(i);
+            // 當前層達到 85% 且有字，才解鎖下一層 (i + 1)
+            if (stats.total > 0 && stats.rate >= SAFETY_THRESHOLD) {
+                unlocked.push(i + 1);
+            } else {
+                break; 
+            }
+        }
+        return unlocked;
     }
 
     // === 3. UI 渲染邏輯 ===
@@ -247,21 +258,17 @@
         document.getElementById('rpg-bar').style.width = pct + '%';
         document.getElementById('rpg-text').innerText = `${grad} / ${total} 畢業 (${pct}%)`;
 
-        // 渲染閘門狀態
-        let t1 = getTierMastery(1);
-        let t2 = getTierMastery(2);
+        // 【優化：僅顯示當前攻略層，避免 10 條進度列超載】
         let unlocked = getUnlockedTiers();
+        let currentFocusTier = unlocked[unlocked.length - 1]; 
+        let tStats = getTierMastery(currentFocusTier);
         
-        let html = `<strong>🔒 認知負荷閘門狀態 (目標 ${SAFETY_THRESHOLD*100}%)</strong><br>`;
+        let html = `<strong>🔒 認知負荷閘門 (當前攻略: Tier ${currentFocusTier})</strong><br>`;
+        html += `<div style="font-size:0.9rem; margin-top:8px;">精熟度要求 ${SAFETY_THRESHOLD*100}%：目前 ${Math.round(tStats.rate*100)}% (${tStats.mastered}/${tStats.total})</div>`;
+        html += `<div class="gate-bar-bg"><div class="gate-bar-fill" style="width:${Math.min(100, tStats.rate*100)}%"></div></div>`;
         
-        html += `<div style="font-size:0.9rem; margin-top:8px;">Tier 1 基礎字精熟度: ${Math.round(t1.rate*100)}% (${t1.mastered}/${t1.total})</div>`;
-        html += `<div class="gate-bar-bg"><div class="gate-bar-fill" style="width:${Math.min(100, t1.rate*100)}%"></div></div>`;
-        
-        if (unlocked.includes(2)) {
-            html += `<div style="font-size:0.9rem; margin-top:8px;">Tier 2 進階字精熟度: ${Math.round(t2.rate*100)}% (${t2.mastered}/${t2.total})</div>`;
-            html += `<div class="gate-bar-bg"><div class="gate-bar-fill" style="width:${Math.min(100, t2.rate*100)}%"></div></div>`;
-        } else {
-            html += `<div style="font-size:0.9rem; margin-top:8px; color:var(--danger)">Tier 2 進階字：未解鎖 (需 T1 達標)</div>`;
+        if (tStats.rate < SAFETY_THRESHOLD && currentFocusTier < MAX_TIER) {
+            html += `<div style="font-size:0.9rem; margin-top:8px; color:var(--danger)">Tier ${currentFocusTier + 1}：未解鎖 (需當前層達標)</div>`;
             html += `<div class="gate-bar-bg"><div class="gate-bar-fill locked" style="width:100%"></div></div>`;
         }
         document.getElementById('gate-status-panel').innerHTML = html;
@@ -298,13 +305,14 @@
     }
 
     function generateDailyDeck() {
-        let now = Date.now();
+        // 【升級 2：時間正規化】
+        let nowMidnight = getMidnightTimestamp(Date.now());
         let deckDiv = document.getElementById('deck');
         deckDiv.innerHTML = '';
         
         let reviewQueue = [];
         let newQueue = [];
-        let unlockedTiers = getUnlockedTiers(); // 取得當前帳號允許抽取的新卡 Tier
+        let unlockedTiers = getUnlockedTiers(); 
 
         for (let word in srsDatabase) {
             let data = srsDatabase[word];
@@ -312,23 +320,27 @@
             data.tier = data.tier || 1; 
 
             if (data.repetitions === 0) {
-                // 嚴格閘門：只將已解鎖 Tier 的新卡放入候選池
                 if (unlockedTiers.includes(data.tier)) {
                     newQueue.push(word);
                 }
-            } else if (now >= data.nextReview && data.stage < MAX_STAGE) {
+            } else if (nowMidnight >= getMidnightTimestamp(data.nextReview) && data.stage < MAX_STAGE) {
+                // 【升級 2：跨日結算比對】
                 reviewQueue.push(word);
             }
         }
 
-        // 優先將低 Tier 的新卡排在前面
         newQueue.sort((a, b) => (srsDatabase[a].tier || 1) - (srsDatabase[b].tier || 1));
+
+        // 【升級 1：動態認知負載計算】
+        let reviewCount = reviewQueue.length;
+        let allowedNewCards = Math.max(0, MAX_DAILY_LOAD - reviewCount);
+        allowedNewCards = Math.min(allowedNewCards, ABSOLUTE_NEW_LIMIT);
 
         reviewQueue.forEach(w => deckDiv.innerHTML += createCardHTML(w, 'review'));
 
         let addedNew = 0;
         for (let i = 0; i < newQueue.length; i++) {
-            if (addedNew >= LIMIT_NEW_CARDS_PER_DAY) break;
+            if (addedNew >= allowedNewCards) break;
             deckDiv.innerHTML += createCardHTML(newQueue[i], 'new');
             addedNew++;
         }
@@ -391,7 +403,6 @@
         }
     }
 
-    // === 5. 匯出與匯入 (針對單一設定檔) ===
     function exportData() {
         const blob = new Blob([JSON.stringify({db: srsDatabase, stats: stats})], {type: "application/json"});
         const url = URL.createObjectURL(blob);
