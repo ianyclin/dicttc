@@ -88,9 +88,15 @@
         </ul>
     </div>
 
-    <footer style="text-align: center; padding: 20px; color: var(--text-light); font-size: 0.85rem; margin-top: 40px; border-top: 1px solid #e2e8f0;">
+<footer style="text-align: center; padding: 20px; color: var(--text-light); font-size: 0.85rem; margin-top: 40px; border-top: 1px solid #e2e8f0;">
         <p>&copy; 2026 SRS Learning System. All Rights Reserved.</p>
-        <p style="font-size: 0.75rem; opacity: 0.7;">Powered by Spaced Repetition Algorithm v5.1 | 十層微型閘門架構</p>
+        <p style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 5px;">Powered by Spaced Repetition Algorithm v5.1 | 十層微型閘門架構</p>
+        <p style="font-size: 0.75rem; opacity: 0.7; font-weight: bold;">Author: fb/指數三寶飯</p>
+        <div style="margin-top: 25px;">
+            <button onclick="clearCurrentProfile()" style="background: transparent; border: none; color: var(--danger); opacity: 0.3; font-size: 0.7rem; cursor: pointer; text-decoration: underline; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.3'">
+                一鍵清空當前設定檔
+            </button>
+        </div>
     </footer>
 
 <script>
@@ -292,7 +298,19 @@
         };
         reader.readAsText(e.target.files[0]);
     }
-
+// 💥 破壞性操作：清空當前設定檔 (具備雙重確認鎖)
+    function clearCurrentProfile() {
+        if (confirm(`⚠️ 警告：您即將徹底清空「設定檔 ${currentProfile}」的所有學習紀錄與進度！\n\n此操作無法復原。確定要繼續嗎？`)) {
+            if (confirm(`🚨 最終確認：清空後系統將重新載入原始 2867 字庫，孩子先前的努力將全數歸零。\n\n您確定要刪除嗎？`)) {
+                // 精準刪除當前設定檔的 LocalStorage 鍵值
+                localStorage.removeItem(`srs_db_${currentProfile}`);
+                localStorage.removeItem(`srs_stats_${currentProfile}`);
+                
+                alert(`設定檔 ${currentProfile} 已徹底清空。畫面即將重新載入以注入全新字庫。`);
+                location.reload(); // 重新整理網頁，觸發全新的字庫注入邏輯
+            }
+        }
+    }
     // 啟動初始化
     loadProfileData();
     generateDailyDeck();
