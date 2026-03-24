@@ -50,7 +50,6 @@
         .btn-eval-easy { background: var(--success); }
         .rpg-container { background: #e2e8f0; height: 20px; border-radius: 10px; overflow: hidden; margin-top: 10px; }
         .rpg-bar { background: linear-gradient(90deg, var(--warning), var(--danger)); height: 100%; width: 0%; transition: width 0.5s ease; }
-        .manual { background: #fff; padding: 20px; border-radius: 12px; margin-top: 40px; font-size: 0.9rem; color: var(--text-light); border: 1px dashed #cbd5e1; }
         
         @keyframes sparkle { 0%, 100% { opacity: 0.6; transform: scale(1); filter: brightness(1); } 50% { opacity: 1; transform: scale(1.1); filter: brightness(1.3) drop-shadow(0 0 3px rgba(245, 158, 11, 0.7)); } }
         .rpg-star { display: inline-block; animation: sparkle 2s infinite ease-in-out; }
@@ -65,11 +64,11 @@
         
         .toast-msg { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); z-index: 10000; opacity: 1; transition: opacity 0.4s ease; display: flex; align-items: center; gap: 8px; pointer-events: none; }
 
-        /* Settings Modal CSS */
-        #settings-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 9000; opacity: 0; transition: opacity 0.3s; }
-        #settings-overlay.show { display: flex; opacity: 1; }
-        .settings-modal { background: #fff; width: 90%; max-width: 400px; border-radius: 16px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); transform: translateY(20px); transition: transform 0.3s; max-height: 90vh; overflow-y: auto; }
-        #settings-overlay.show .settings-modal { transform: translateY(0); }
+        /* Shared Modal CSS */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 9000; opacity: 0; transition: opacity 0.3s; }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .modal-content { background: #fff; width: 90%; max-width: 450px; border-radius: 16px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); transform: translateY(20px); transition: transform 0.3s; max-height: 90vh; overflow-y: auto; }
+        .modal-overlay.show .modal-content { transform: translateY(0); }
         .setting-group { margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; }
         .setting-group:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .setting-title { font-weight: bold; margin-bottom: 10px; color: var(--text); display: flex; align-items: center; gap: 8px; }
@@ -77,6 +76,11 @@
         .range-val { background: #f1f5f9; padding: 2px 8px; border-radius: 6px; font-weight: bold; color: var(--primary); min-width: 30px; text-align: center;}
         select, input[type="range"] { accent-color: var(--primary); }
         .danger-zone { background: #fef2f2; padding: 15px; border-radius: 8px; border: 1px dashed var(--danger); margin-top: 10px; }
+        
+        /* Help Modal Specific */
+        .help-list { padding-left: 20px; font-size: 0.9rem; color: var(--text-light); line-height: 1.8; }
+        .help-list li { margin-bottom: 8px; }
+        .help-list strong { color: var(--text); }
     </style>
 </head>
 <body>
@@ -90,8 +94,9 @@
     <div class="header-stats">
         <div class="flex-row">
             <h2 style="margin:0;">🧠 兒童 SRS 字卡系統</h2>
-            <div style="display:flex; gap:10px;">
+            <div style="display:flex; gap:8px;">
                 <button class="btn btn-outline" onclick="toggleDashboard()">📊 看板</button>
+                <button class="btn btn-outline" onclick="openHelp()" style="border-color: var(--success); color: var(--success);">📖 說明</button>
                 <button class="btn btn-outline" onclick="openSettings()" style="border-color: var(--text-light); color: var(--text-light);">⚙️ 設定</button>
             </div>
         </div>
@@ -123,21 +128,9 @@
 
     <div id="deck"></div>
 
-    <div class="manual">
-        <h4>📖 使用說明</h4>
-        <ul>
-            <li><strong>📊 字庫分級</strong>：依照字頻高低分層，前六層涵蓋日常閱讀約 85% 字頻。</li>
-            <li><strong>🎯 每日任務</strong>：採用「專注模式」，每次僅顯示一張，避免孩童視覺與認知負載過高。</li>
-            <li><strong>🔒 按部就班</strong>：階層有 85% 的字進入長期記憶（複習間隔 > 21天）才會解鎖下一層。</li>
-            <li><strong>⚖️ 額外加碼</strong>：如果意猶未盡還可以額外加碼新卡，最多兩次。</li>
-            <li><strong>🚀 跨級跳躍</strong>：如果「新卡」按「簡單」，會直接保送至 21 天後複習，加速通關已認得的字。</li>
-            <li><strong>⚙️ 個人化設定</strong>：點擊右上方「設定」可為不同孩子調整字體、朗讀與字典來源。</li>
-        </ul>
-    </div>
-
     <footer style="text-align: center; padding: 20px; color: var(--text-light); font-size: 0.85rem; margin-top: 40px; border-top: 1px solid #e2e8f0;">
         <p>&copy; 2026 SRS Learning System. All Rights Reserved.</p>
-        <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;">SRS Engine v5.4 | Focus Mode Enabled</p>
+        <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;">SRS Engine v5.5 | Focus Mode Enabled</p>
         <p style="font-size: 0.75rem; font-weight: bold; margin-top: 10px;">
             Author: <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: none; opacity: 0.8;">fb/指數三寶爸</a>
         </p>
@@ -157,8 +150,46 @@
         <div id="evo-sub">恭喜達成全新境界，力量覺醒。</div>
     </div>
 
-    <div id="settings-overlay">
-        <div class="settings-modal">
+    <div id="help-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <div class="flex-row" style="margin-bottom: 20px;">
+                <h3 style="margin:0; color: var(--success);">📖 系統與使用說明</h3>
+                <button class="btn-icon" onclick="closeHelp()">✕</button>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-title">🧠 核心理念 (SRS 原理)</div>
+                <p style="font-size: 0.9rem; color: var(--text-light); line-height: 1.6;">
+                    本系統採用**間隔重複演算法 (Spaced Repetition System)**。大腦在即將忘記的瞬間進行複習，記憶效果最好。因此，系統會自動將錯誤的字卡安排在短期內出現，將熟悉的字卡推延至數天或數月後，以最少的時間達成最大的長期記憶量。
+                </p>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-title">🎯 系統機制與規則</div>
+                <ul class="help-list">
+                    <li><strong>字庫分級 (Tier)</strong>：2867 字依照字頻高低分為 10 層，前六層涵蓋日常閱讀約 85% 字頻。</li>
+                    <li><strong>認知保護閘門</strong>：當前階層必須有 85% 的字進入長期記憶（複習間隔 > 21天）才會解鎖下一層，嚴格控制孩子的認知負荷。</li>
+                    <li><strong>跨級跳躍</strong>：對於原本就已經會認的「新卡」，直接按下「簡單」，該字會被保送至 21 天後才複習，加速通關進度。</li>
+                    <li><strong>錯誤懲罰機制</strong>：若對字卡按下「忘記」，該字會被打回原形（重新記憶），並且會在當天的佇列尾端再次出現，直到答對為止。</li>
+                </ul>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-title">⚙️ 個人化設定與操作</div>
+                <ul class="help-list">
+                    <li><strong>專注模式</strong>：點擊「開始學習」後，畫面一次僅呈現一張字卡，避免視覺雜訊干擾孩童專注力。</li>
+                    <li><strong>字典查詢</strong>：點擊字卡中央的「大字」，會自動開啟教育部字典提供釋義與筆順。</li>
+                    <li><strong>獨立設定檔</strong>：右上角「⚙️ 設定」可針對不同設定檔（不同孩童）獨立調整：新字配額、發音時機、字體大小與字典來源。</li>
+                    <li><strong>資料備份</strong>：目前資料儲存於瀏覽器本地端，請定期於「📊 看板」中下載匯出備份，以免清除瀏覽器紀錄時遺失進度。</li>
+                </ul>
+            </div>
+
+            <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="closeHelp()">我知道了</button>
+        </div>
+    </div>
+
+    <div id="settings-overlay" class="modal-overlay">
+        <div class="modal-content">
             <div class="flex-row" style="margin-bottom: 20px;">
                 <h3 style="margin:0;">⚙️ 系統設定 (Profile <span id="st-profile-id"></span>)</h3>
                 <button class="btn-icon" onclick="closeSettings()">✕</button>
@@ -254,7 +285,6 @@
     function getMidnightTimestamp(ts) { let d = new Date(ts); d.setHours(0,0,0,0); return d.getTime(); }
 
     function loadSettings() {
-        // [修改點] 預設為簡編本與楷書，獨立拆分三組語音開關
         const defaultSettings = { dict: 'concise', font: 'kaiti', scale: 1.0, newLimit: 10, ttsLarge: true, ttsHard: false, ttsGood: false };
         let saved = JSON.parse(localStorage.getItem(`srs_settings_${currentProfile}`));
         currentSettings = { ...defaultSettings, ...saved };
@@ -268,6 +298,17 @@
         root.style.setProperty('--char-scale', currentSettings.scale);
     }
 
+    // Modal Controls
+    function openHelp() {
+        let overlay = document.getElementById('help-overlay');
+        overlay.style.display = 'flex'; setTimeout(() => overlay.classList.add('show'), 10);
+    }
+
+    function closeHelp() {
+        let overlay = document.getElementById('help-overlay');
+        overlay.classList.remove('show'); setTimeout(() => overlay.style.display = 'none', 300);
+    }
+
     function openSettings() {
         document.getElementById('st-profile-id').innerText = currentProfile;
         document.querySelector(`input[name="dict"][value="${currentSettings.dict}"]`).checked = true;
@@ -277,7 +318,6 @@
         document.getElementById('st-new').value = currentSettings.newLimit;
         document.getElementById('st-new-val').innerText = currentSettings.newLimit;
         
-        // 載入發音選項
         document.getElementById('st-tts-large').checked = currentSettings.ttsLarge;
         document.getElementById('st-tts-hard').checked = currentSettings.ttsHard;
         document.getElementById('st-tts-good').checked = currentSettings.ttsGood;
@@ -297,7 +337,6 @@
         currentSettings.scale = parseFloat(document.getElementById('st-scale').value);
         currentSettings.newLimit = parseInt(document.getElementById('st-new').value);
         
-        // 儲存發音選項
         currentSettings.ttsLarge = document.getElementById('st-tts-large').checked;
         currentSettings.ttsHard = document.getElementById('st-tts-hard').checked;
         currentSettings.ttsGood = document.getElementById('st-tts-good').checked;
@@ -441,7 +480,6 @@
         window.speechSynthesis.speak(u);
     }
 
-    // [修改點] 解綁大字點擊的固定發音，改為綁定設定檔參數，並修正各字典正確的 API 路由
     function handleCardClick(word) {
         if (currentSettings.ttsLarge) speakWord(word);
         
@@ -553,7 +591,6 @@
         document.getElementById('focus-card-wrapper').innerHTML = createCardHTML(currentItem.w, currentItem.t);
     }
 
-    // [修改點] 在使用者點擊按鈕評價的瞬間，依據設定決定是否朗讀該字卡
     function processReview(word, q) {
         if ((q === 0 || q === 1) && currentSettings.ttsHard) speakWord(word);
         if ((q === 2 || q === 3) && currentSettings.ttsGood) speakWord(word);
