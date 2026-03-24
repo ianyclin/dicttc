@@ -6,7 +6,7 @@
     <title>兒童 SRS 字卡學習系統</title>
     <style>
         :root { --primary: #4f46e5; --secondary: #4338ca; --warning: #f59e0b; --success: #0ea5e9; --danger: #ef4444; --bg: #f1f5f9; --card-bg: #ffffff; --text: #1e293b; --text-light: #64748b; 
-                --char-font: "PingFang TC", "Microsoft JhengHei", sans-serif; --char-scale: 1; }
+                --char-font: "BiauKai", "Kaiti TC", "DFKai-SB", serif; --char-scale: 1; }
         body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; max-width: 960px; margin: auto; line-height: 1.6; padding-bottom: 60px;}
         .profile-switcher { display: flex; gap: 10px; margin-bottom: 15px; background: #e2e8f0; padding: 6px; border-radius: 12px; }
         .tab-btn { flex: 1; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; color: var(--text-light); border: none; background: transparent; }
@@ -39,7 +39,7 @@
         .card.review { border-top-color: var(--warning); }
         .card.new { border-top-color: var(--success); }
         .card.penalty { border-top-color: var(--danger); background: #fef2f2; }
-        .char-title { font-family: var(--char-font); font-size: calc(4.5rem * var(--char-scale)); font-weight: bold; margin: 15px 0; color: var(--text); line-height: 1.2; }
+        .char-title { font-family: var(--char-font); font-size: calc(4.5rem * var(--char-scale)); font-weight: bold; margin: 15px 0; color: var(--text); line-height: 1.2; text-align: center; }
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
         .eval-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 10px; }
         .btn-eval { padding: 12px 10px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 0.95rem; color: white; transition: transform 0.1s;}
@@ -137,7 +137,10 @@
 
     <footer style="text-align: center; padding: 20px; color: var(--text-light); font-size: 0.85rem; margin-top: 40px; border-top: 1px solid #e2e8f0;">
         <p>&copy; 2026 SRS Learning System. All Rights Reserved.</p>
-        <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;">SRS Engine v5.3 | Focus Mode Enabled</p>
+        <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;">SRS Engine v5.4 | Focus Mode Enabled</p>
+        <p style="font-size: 0.75rem; font-weight: bold; margin-top: 10px;">
+            Author: <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: none; opacity: 0.8;">fb/指數三寶爸</a>
+        </p>
     </footer>
 
     <div id="focus-mode">
@@ -164,8 +167,8 @@
             <div class="setting-group">
                 <div class="setting-title">📖 字典來源路由</div>
                 <div style="display:flex; flex-direction:column; gap:8px; font-size:0.95rem;">
-                    <label><input type="radio" name="dict" value="mini"> 國語小字典 (預設，適合低年級)</label>
-                    <label><input type="radio" name="dict" value="concise"> 國語辭典簡編本 (適合中高年級)</label>
+                    <label><input type="radio" name="dict" value="mini"> 國語小字典 (適合低年級)</label>
+                    <label><input type="radio" name="dict" value="concise"> 國語辭典簡編本 (預設，適合中高年級)</label>
                     <label><input type="radio" name="dict" value="moedict"> 萌典 (高難度，含古文引申義)</label>
                 </div>
             </div>
@@ -175,8 +178,8 @@
                 <div class="setting-row">
                     <span>字體引擎</span>
                     <select id="st-font" style="padding: 4px; border-radius: 4px;">
+                        <option value="kaiti">教育部標準楷書 (預設推薦)</option>
                         <option value="sans">標準黑體 (無襯線)</option>
-                        <option value="kaiti">教育部標準楷書 (推薦)</option>
                     </select>
                 </div>
                 <div class="setting-row" style="margin-top:15px;">
@@ -187,6 +190,15 @@
             </div>
 
             <div class="setting-group">
+                <div class="setting-title">🗣️ 發音功能 (需瀏覽器支援)</div>
+                <div style="display:flex; flex-direction:column; gap:8px; font-size:0.95rem;">
+                    <label><input type="checkbox" id="st-tts-large"> 點擊大字時</label>
+                    <label><input type="checkbox" id="st-tts-hard"> 點擊忘記或困難時</label>
+                    <label><input type="checkbox" id="st-tts-good"> 點擊良好或簡單時</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
                 <div class="setting-title">🧠 認知負載控制</div>
                 <div class="setting-row">
                     <span>每日新卡發放上限</span>
@@ -194,13 +206,6 @@
                 </div>
                 <input type="range" id="st-new" min="5" max="25" step="1" value="10" style="width:100%;" oninput="document.getElementById('st-new-val').innerText = this.value">
                 <div style="font-size:0.8rem; color:var(--text-light); margin-top:5px;">註：複習卡無發放上限，以遵守 SRS 記憶曲線原則。</div>
-            </div>
-
-            <div class="setting-group">
-                <div class="setting-title">🗣️ 多感官輔助</div>
-                <label style="display:flex; align-items:center; gap:8px; font-size:0.95rem;">
-                    <input type="checkbox" id="st-tts"> 開啟自動發音 (切換字卡時朗讀)
-                </label>
             </div>
 
             <div class="setting-group">
@@ -231,7 +236,7 @@
     let srsDatabase = {};
     let stats = {};
     let currentSettings = {}; 
-    let sessionQueue = []; // 新增：狀態機佇列管理
+    let sessionQueue = []; 
 
     const MAX_DAILY_LOAD = 25, MAX_TIER = 10, SAFETY_THRESHOLD = 0.85, LONG_TERM_STAGE = 6;
     const STAGE_INTERVALS = [0, 1, 3, 5, 7, 14, 21, 60, 180], MAX_STAGE = 8, GRADUATION_INTERVAL = 180;
@@ -249,7 +254,8 @@
     function getMidnightTimestamp(ts) { let d = new Date(ts); d.setHours(0,0,0,0); return d.getTime(); }
 
     function loadSettings() {
-        const defaultSettings = { dict: 'mini', font: 'sans', scale: 1.0, newLimit: 10, tts: false };
+        // [修改點] 預設為簡編本與楷書，獨立拆分三組語音開關
+        const defaultSettings = { dict: 'concise', font: 'kaiti', scale: 1.0, newLimit: 10, ttsLarge: true, ttsHard: false, ttsGood: false };
         let saved = JSON.parse(localStorage.getItem(`srs_settings_${currentProfile}`));
         currentSettings = { ...defaultSettings, ...saved };
         applySettingsToUI();
@@ -270,7 +276,12 @@
         document.getElementById('st-scale-val').innerText = currentSettings.scale + 'x';
         document.getElementById('st-new').value = currentSettings.newLimit;
         document.getElementById('st-new-val').innerText = currentSettings.newLimit;
-        document.getElementById('st-tts').checked = currentSettings.tts;
+        
+        // 載入發音選項
+        document.getElementById('st-tts-large').checked = currentSettings.ttsLarge;
+        document.getElementById('st-tts-hard').checked = currentSettings.ttsHard;
+        document.getElementById('st-tts-good').checked = currentSettings.ttsGood;
+
         let overlay = document.getElementById('settings-overlay');
         overlay.style.display = 'flex'; setTimeout(() => overlay.classList.add('show'), 10);
     }
@@ -285,7 +296,12 @@
         currentSettings.font = document.getElementById('st-font').value;
         currentSettings.scale = parseFloat(document.getElementById('st-scale').value);
         currentSettings.newLimit = parseInt(document.getElementById('st-new').value);
-        currentSettings.tts = document.getElementById('st-tts').checked;
+        
+        // 儲存發音選項
+        currentSettings.ttsLarge = document.getElementById('st-tts-large').checked;
+        currentSettings.ttsHard = document.getElementById('st-tts-hard').checked;
+        currentSettings.ttsGood = document.getElementById('st-tts-good').checked;
+
         localStorage.setItem(`srs_settings_${currentProfile}`, JSON.stringify(currentSettings));
         applySettingsToUI(); closeSettings(); generateDailyDeck(); 
         showToast("設定已儲存", "系統參數已更新並套用。", "💾");
@@ -418,30 +434,36 @@
     }
 
     function speakWord(word) {
-        if (!currentSettings.tts || !window.speechSynthesis) return;
+        if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel();
         let u = new SpeechSynthesisUtterance(word);
         u.lang = 'zh-TW'; u.rate = 0.85; 
         window.speechSynthesis.speak(u);
     }
 
+    // [修改點] 解綁大字點擊的固定發音，改為綁定設定檔參數，並修正各字典正確的 API 路由
     function handleCardClick(word) {
-        speakWord(word);
+        if (currentSettings.ttsLarge) speakWord(word);
+        
         let url = '';
-        if (currentSettings.dict === 'mini') url = `https://dict.mini.moe.edu.tw/search.jsp?word=${word}`;
-        else if (currentSettings.dict === 'concise') url = `https://dict.concised.moe.edu.tw/search.jsp?word=${word}`;
-        else url = `https://www.moedict.tw/${word}`;
+        if (currentSettings.dict === 'mini') {
+            url = `https://dict.mini.moe.edu.tw/SearchIndex/searchResult?searchType=one&dictSearchField=${word}`;
+        } else if (currentSettings.dict === 'concise') {
+            url = `https://dict.concised.moe.edu.tw/search.jsp?word=${word}`;
+        } else {
+            url = `https://www.moedict.tw/${word}`;
+        }
         window.open(url, '_blank');
     }
 
-    // 核心卡片渲染 (單張模式用)
     function createCardHTML(word, type) {
         let r = srsDatabase[word]; r.stage = migrateToStage(r);
         let tierLabel = `Tier ${r.tier || 1}`;
         let int1 = STAGE_INTERVALS[getNextStage(r.stage, 1)], int2 = STAGE_INTERVALS[getNextStage(r.stage, 2)], int3 = STAGE_INTERVALS[getNextStage(r.stage, 3)];
         let str1 = int1 >= GRADUATION_INTERVAL ? '畢業' : int1 + 'd', str2 = int2 >= GRADUATION_INTERVAL ? '畢業' : int2 + 'd', str3 = int3 >= GRADUATION_INTERVAL ? '畢業' : int3 + 'd';
         if (int1 === 0) str1 = '1m';
-        let ttsIcon = currentSettings.tts ? `<span style="position:absolute; top:20px; right:20px; font-size:1.2rem; opacity:0.5;">🔊</span>` : '';
+        
+        let ttsIcon = (currentSettings.ttsLarge || currentSettings.ttsHard || currentSettings.ttsGood) ? `<span style="position:absolute; top:20px; right:20px; font-size:1.2rem; opacity:0.5;">🔊</span>` : '';
 
         return `
             <div class="card ${type}">
@@ -451,7 +473,7 @@
                     <div class="badge" style="background:#f1f5f9; color:#64748b;">${tierLabel}</div>
                 </div>
                 
-                <div class="char-title" onclick="handleCardClick('${word}')" style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text)'" title="點擊查詢字典">
+                <div class="char-title" onclick="handleCardClick('${word}')" style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text)'" title="點擊發音或查詢字典">
                     ${word}
                 </div>
                 
@@ -464,7 +486,6 @@
             </div>`;
     }
 
-    // [重構] 構建排程佇列 (Queue)，而非直接渲染 DOM
     function generateDailyDeck() {
         let nowMidnight = getMidnightTimestamp(Date.now());
         let reviewQueue = [], newQueue = [], unlockedTiers = getUnlockedTiers();
@@ -492,7 +513,6 @@
         renderDeckState();
     }
 
-    // 負責首頁入口視圖
     function renderDeckState() {
         let deckDiv = document.getElementById('deck');
         if (sessionQueue.length > 0) {
@@ -515,31 +535,29 @@
         updateDashboard(false);
     }
 
-    // 啟動專注模式
     function startFocusMode() {
         document.getElementById('focus-mode').classList.add('active');
         renderNextCard();
     }
 
-    // 離開專注模式
     function exitFocusMode() {
         document.getElementById('focus-mode').classList.remove('active');
-        renderDeckState(); // 返回首頁重新結算
+        renderDeckState(); 
     }
 
-    // 渲染專注模式中的下一張牌
     function renderNextCard() {
         if (sessionQueue.length === 0) { exitFocusMode(); return; }
         
         let currentItem = sessionQueue[0];
         document.getElementById('focus-remain').innerText = sessionQueue.length;
         document.getElementById('focus-card-wrapper').innerHTML = createCardHTML(currentItem.w, currentItem.t);
-        
-        if (currentSettings.tts) speakWord(currentItem.w);
     }
 
-    // 處理單張評估邏輯
+    // [修改點] 在使用者點擊按鈕評價的瞬間，依據設定決定是否朗讀該字卡
     function processReview(word, q) {
+        if ((q === 0 || q === 1) && currentSettings.ttsHard) speakWord(word);
+        if ((q === 2 || q === 3) && currentSettings.ttsGood) speakWord(word);
+
         let r = srsDatabase[word]; r.stage = migrateToStage(r);
         let isNewCard = (r.repetitions === 0), nextStage = getNextStage(r.stage, q);
         if (isNewCard && q === 3) nextStage = 6; 
@@ -550,19 +568,18 @@
             let cooldownDays = Math.max(1, r.interval);
             r.nextReview = Date.now() + (cooldownDays * 24 * 60 * 60 * 1000);
             if (isNewCard) stats.daily.learned = (stats.daily.learned || 0) + 1; else stats.daily.reviewed = (stats.daily.reviewed || 0) + 1;
-            sessionQueue.shift(); // 答對，移出佇列
+            sessionQueue.shift(); 
         } else { 
             r.nextReview = Date.now(); 
             let failedItem = sessionQueue.shift();
-            failedItem.t = 'penalty'; // 標記為懲罰狀態
-            sessionQueue.push(failedItem); // 塞回佇列尾端，強迫重學
+            failedItem.t = 'penalty'; 
+            sessionQueue.push(failedItem); 
         }
 
         saveData();
-        renderNextCard(); // 立刻切換下一張
+        renderNextCard(); 
     }
 
-    // 處理加碼邏輯
     function drawExtraCards() {
         if (stats.daily.extraClicks === undefined) stats.daily.extraClicks = 0;
         if (stats.daily.extraClicks >= 2) { showToast("大腦需要休息", "今日加碼次數已達上限。", "🚫"); return; }
@@ -580,7 +597,7 @@
         }
         
         showToast("火焰挑戰開始！", `額外領取了 ${addedCount} 張新字卡`, "🔥");
-        startFocusMode(); // 加碼後直接啟動專注模式
+        startFocusMode(); 
     }
 
     function exportData() {
