@@ -115,8 +115,8 @@
         <ul>
             <li><strong>📊 字庫分級</strong>：依照字頻高低分層，前六層涵蓋日常閱讀約 85% 字頻。</li>
             <li><strong>🎯 每日任務</strong>：每天自動分配新卡與複習卡，總量限制 25 張，保護小孩大腦不疲勞。</li>
-            <li><strong>🔒 精熟度 85%</strong>：目前階層有 85% 的字進入長期記憶（複習間隔 > 21天）才會解鎖下一層。</li>
-            <li><strong>⚖️ 額外加碼</strong>：可以，保護小孩大腦不疲勞。</li>
+            <li><strong>🔒 按部就班</strong>：目前階層有 85% 的字進入長期記憶（複習間隔 > 21天）才會解鎖下一層。</li>
+            <li><strong>⚖️ 額外加碼</strong>：如果意猶未盡還可以額外加碼字卡 5 張，最多兩次。</li>
             <li><strong>🚀 跨級跳躍</strong>：如果「新卡」按「簡單」，會直接保送至 21 天後複習，加速通關已認得的字。</li>
             <li><strong>🔍 深度查詢</strong>：點擊字卡上的大字，會於新分頁開啟【萌典】，提供完整釋義與筆順教學。</li>
         </ul>
@@ -397,7 +397,7 @@
             </div>`;
     }
 
-// [START] generateDailyDeck Patch
+// [PATCH] 支援動態隱藏加碼按鈕的 generateDailyDeck
 function generateDailyDeck() {
     let nowMidnight = getMidnightTimestamp(Date.now()), deckDiv = document.getElementById('deck');
     deckDiv.innerHTML = '';
@@ -410,18 +410,17 @@ function generateDailyDeck() {
         if (data.repetitions === 0) { 
             if (unlockedTiers.includes(data.tier || 1)) newQueue.push(word); 
         } else {
-            // 關鍵修正：必須是複習時間已到，且今天還沒處理過 (防止 refresh 抓回)
             if (nowMidnight >= getMidnightTimestamp(data.nextReview) && data.stage < MAX_STAGE) {
                 reviewQueue.push(word);
             }
         }
     }
     
-    // 2. 計算剩餘配額：總上限 - (今日已複習 + 今日已學習)
+    // 2. 計算剩餘配額
     let doneToday = (stats.daily.reviewed || 0) + (stats.daily.learned || 0);
     let totalRemainingQuota = Math.max(0, MAX_DAILY_LOAD - doneToday);
     
-    // 3. 分配複習卡 (優先佔用配額)
+    // 3. 分配複習卡
     let addedCount = 0;
     reviewQueue.forEach(w => {
         if (addedCount < totalRemainingQuota) {
@@ -430,7 +429,7 @@ function generateDailyDeck() {
         }
     });
     
-    // 4. 分配新卡 (填補剩餘配額，且受每日新卡上限限制)
+    // 4. 分配新卡
     let currentNewLearned = stats.daily.learned || 0;
     let allowedNewCards = Math.min(totalRemainingQuota - addedCount, ABSOLUTE_NEW_LIMIT - currentNewLearned);
     
@@ -439,18 +438,33 @@ function generateDailyDeck() {
         deckDiv.innerHTML += createCardHTML(newQueue[i], 'new');
     }
     
-    // 5. 空狀態處理
+    // 5. 空狀態處理 (加入按鈕隱藏邏輯)
     if (deckDiv.innerHTML === '') {
         let extraAvailable = 0;
         for (let w in srsDatabase) if (srsDatabase[w].repetitions === 0 && unlockedTiers.includes(srsDatabase[w].tier || 1)) extraAvailable++;
+        
+        // 讀取加碼次數，預設為 0
+        let extraClicks = stats.daily.extraClicks || 0;
+        let btnHtml = '';
+
+        if (extraClicks >= 2) {
+            // 已達 2 次上限，隱藏按鈕並顯示提示
+            btnHtml = `<p style="color: var(--danger); font-weight: bold; margin-top: 15px;">🛑 今日加碼已達上限 (2/2)，請讓大腦休息！</p>`;
+        } else if (extraAvailable > 0) {
+            // 未達上限且有字可學，顯示按鈕與剩餘次數
+            btnHtml = `<button class="btn btn-outline" onclick="drawExtraCards()" style="border-color: var(--danger); color: var(--danger);">🔥 加碼挑戰新字 (剩餘 ${2 - extraClicks} 次)</button>`;
+        } else {
+            // 無字可學
+            btnHtml = `<p style="color: var(--warning); margin-top: 15px;">🏁 當前解鎖階層已無新字，請先精熟舊字以開啟新 Tier。</p>`;
+        }
+
         deckDiv.innerHTML = `<div style="text-align:center; padding: 40px; width: 100%;">
             <div style="color: var(--success); font-weight:bold; font-size: 1.5rem; margin-bottom: 20px;">🎉 今日任務已達成！(已完成 ${doneToday} 張)</div>
-            ${extraAvailable > 0 ? `<button class="btn btn-outline" onclick="drawExtraCards()">🔥 加碼挑戰新字</button>` : ''}
+            ${btnHtml}
         </div>`;
     }
     updateDashboard(false);
 }
-// [END] generateDailyDeck Patch
 
 // [START] processReview Patch
 function processReview(word, q) {
@@ -496,18 +510,17 @@ function processReview(word, q) {
 }
 // [END] processReview Patch
 
-// [PATCH] 受控的加碼邏輯
+// [PATCH] 配合計數器運作的 drawExtraCards
 function drawExtraCards() {
-    // 1. 初始化或讀取今日加碼次數
     if (stats.daily.extraClicks === undefined) stats.daily.extraClicks = 0;
 
-    // 2. 設定硬上限：每天最多加碼 2 次 (共 10 字)
     if (stats.daily.extraClicks >= 2) {
-        showToast("大腦休息時間！", "今日加碼次數已達上限，明天再努力。", "🚫", "toast-unlock");
+        showToast("大腦需要休息", "今日加碼次數已達上限。", "🚫", "toast-unlock");
         return;
     }
 
     let deckDiv = document.getElementById('deck'), newQueue = [], unlockedTiers = getUnlockedTiers();
+    
     for (let word in srsDatabase) {
         if (srsDatabase[word].repetitions === 0 && unlockedTiers.includes(srsDatabase[word].tier || 1)) {
             newQueue.push(word);
@@ -515,27 +528,27 @@ function drawExtraCards() {
     }
 
     if (newQueue.length === 0) {
-        showToast("階層已清空", "當前解鎖的 Tier 已無新字。", "🏁");
+        showToast("階層已清空", "當前解鎖的字庫已無新字。", "🏁");
         return;
     }
 
     newQueue.sort((a, b) => (srsDatabase[a].tier || 1) - (srsDatabase[b].tier || 1));
     
-    // 3. 執行加碼
+    // 累加計數並存檔
     stats.daily.extraClicks++;
-    saveData();
+    saveData(); 
 
-    // 這裡我們不清空現有 deck，而是直接 append 新卡片
-    let added = 0;
-    for (let i = 0; i < newQueue.length && added < 5; i++) {
-        const cardHTML = createCardHTML(newQueue[i], 'new');
-        // 如果目前畫面上是「今日達成」的訊息，清空它再加
-        if (deckDiv.innerHTML.includes("今日任務已達成")) deckDiv.innerHTML = '';
-        deckDiv.innerHTML += cardHTML;
-        added++;
+    let addedCount = 0;
+    const batchSize = 5; 
+
+    if (deckDiv.innerHTML.includes("今日任務已達成")) deckDiv.innerHTML = '';
+
+    for (let i = 0; i < newQueue.length && addedCount < batchSize; i++) {
+        deckDiv.innerHTML += createCardHTML(newQueue[i], 'new');
+        addedCount++;
     }
 
-    showToast("挑戰開始！", `額外領取了 ${added} 張新字卡`, "🔥", "toast-star");
+    showToast("火焰挑戰開始！", `額外領取了 ${addedCount} 張新字卡`, "🔥", "toast-star");
 }
 
     function exportData() {
