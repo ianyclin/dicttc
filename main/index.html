@@ -76,8 +76,8 @@
         .modal-content { 
             background: #fff; width: 90%; max-width: 450px; border-radius: 16px; padding: 24px 24px 0 24px; 
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); transform: translateY(20px); transition: transform 0.3s; 
-            max-height: 80vh; max-height: 80dvh; /* 縮減高度並啟用動態視口，避開 Safari 底欄 */
-            overflow-y: auto; overscroll-behavior: contain; /* 鎖定滾動邊界 */
+            max-height: 80vh; max-height: 80dvh;
+            overflow-y: auto; overscroll-behavior: contain;
             display: flex; flex-direction: column;
         }
         .modal-overlay.show .modal-content { transform: translateY(0); }
@@ -96,11 +96,16 @@
             border-top: 1px solid #e2e8f0; z-index: 10; border-radius: 0 0 16px 16px;
         }
         
-        /* Help Modal Specific */
-        .help-list { padding-left: 20px; font-size: 0.9rem; color: var(--text-light); line-height: 1.8; }
+        /* Help Modal & Changelog Specific */
+        .help-list { padding-left: 20px; font-size: 0.9rem; color: var(--text-light); line-height: 1.8; margin-top: 5px; }
         .help-list li { margin-bottom: 8px; }
         .help-list strong { color: var(--text); }
         .fast-track-box { background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fcd34d; margin-top: 10px; }
+        
+        .changelog-box { background: #f8fafc; padding: 15px; border-radius: 8px; margin-top: 15px; font-size: 0.85rem; border: 1px solid #e2e8f0; display: none; }
+        .changelog-box.active { display: block; }
+        .ver-tag { background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-family: monospace; margin-right: 5px; }
+        .date-tag { color: #94a3b8; font-size: 0.75rem; margin-left: 5px; float: right; font-family: monospace; }
     </style>
 </head>
 <body>
@@ -150,9 +155,9 @@
 
     <footer style="text-align: center; padding: 20px; color: var(--text-light); font-size: 0.85rem; margin-top: 40px; border-top: 1px solid #e2e8f0;">
         <p>&copy; 2026 SRS Learning System. All Rights Reserved.</p>
-        <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;">SRS Engine v5.8 | PWA Enabled</p>
+        <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;">SRS Engine v5.9 | PWA & Changelog Enabled</p>
         <p style="font-size: 0.75rem; font-weight: bold; margin-top: 10px;">
-            Author: <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: none; opacity: 0.8;">fb/指數三寶飯</a>
+            Author: <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: none; opacity: 0.8;">fb/指數三寶爸</a>
         </p>
     </footer>
 
@@ -180,8 +185,8 @@
 
                 <div class="setting-group">
                     <div class="setting-title">🧠 核心理念 (SRS 原理)</div>
-                    <p style="font-size: 0.9rem; color: var(--text-light); line-height: 1.6;">
-                        本系統採用「間隔重複系統 (Spaced Repetition System)」。大腦在即將忘記的瞬間進行複習，記憶效果最好。因此，系統會自動將錯誤的字卡安排在短期內出現，將熟悉的字卡推延至數天或數月後，以最少的時間達成最大的長期記憶量。
+                    <p style="font-size: 0.9rem; color: var(--text-light); line-height: 1.6; margin-top: 5px;">
+                        本系統採用「間隔重複演算法 (Spaced Repetition System)」。大腦在即將忘記的瞬間進行複習，記憶效果最好。因此，系統會自動將錯誤的字卡安排在短期內出現，將熟悉的字卡推延至數天或數月後，以最少的時間達成最大的長期記憶量。
                     </p>
                 </div>
 
@@ -204,6 +209,45 @@
                         <li><strong>資料備份</strong>：目前資料儲存於瀏覽器本地端，請定期於「📊 看板」中下載匯出備份，以免清除瀏覽器紀錄時遺失進度。</li>
                     </ul>
                 </div>
+
+                <div class="setting-group">
+                    <button class="btn btn-outline" style="width:100%; font-size: 0.85rem; border-color: #cbd5e1; color: #64748b;" onclick="toggleChangelog()">🕒 查看版本變更沿革</button>
+                    <div id="changelog-box" class="changelog-box">
+                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><span class="ver-tag">v5.9</span>結構化版本記錄與日期戳記。</div>
+                            <div class="date-tag">2026.03.24</div>
+                        </div>
+                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><span class="ver-tag">v5.8</span>行動端 UI 適配 (dvh)；Modal 黏性底欄。</div>
+                            <div class="date-tag">2026.03.24</div>
+                        </div>
+                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><span class="ver-tag">v5.7</span>PWA 桌面化宣告；自訂 iOS 桌面圖示。</div>
+                            <div class="date-tag">2026.03.24</div>
+                        </div>
+                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><span class="ver-tag">v5.6</span>🚀 跨級跳躍模式 (強制解鎖/精熟前六層)。</div>
+                            <div class="date-tag">2026.03.24</div>
+                        </div>
+                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><span class="ver-tag">v5.4</span>TTS 精準發音模組；恢復版權標示。</div>
+                            <div class="date-tag">2026.03.24</div>
+                        </div>
+                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><span class="ver-tag">v5.3</span>專注模式轉型；狀態機佇列架構導入。</div>
+                            <div class="date-tag">2026.03.24</div>
+                        </div>
+                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><span class="ver-tag">v5.2</span>系統設定面板；字典路由；防呆算術鎖。</div>
+                            <div class="date-tag">2026.03.24</div>
+                        </div>
+                        <div style="margin-bottom:0; display:flex; justify-content:space-between; align-items:center;">
+                            <div><span class="ver-tag">v5.1</span>SRS 演算法重啟；解鎖複習上限；渲染優化。</div>
+                            <div class="date-tag">2026.03.24</div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
             
             <div class="sticky-footer">
@@ -355,6 +399,7 @@
 
     // Modal Controls
     function openHelp() {
+        document.getElementById('changelog-box').classList.remove('active'); // 確保打開時是收合狀態
         let overlay = document.getElementById('help-overlay');
         overlay.style.display = 'flex'; setTimeout(() => overlay.classList.add('show'), 10);
     }
@@ -362,6 +407,10 @@
     function closeHelp() {
         let overlay = document.getElementById('help-overlay');
         overlay.classList.remove('show'); setTimeout(() => overlay.style.display = 'none', 300);
+    }
+    
+    function toggleChangelog() {
+        document.getElementById('changelog-box').classList.toggle('active');
     }
 
     function openSettings() {
