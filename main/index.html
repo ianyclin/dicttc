@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>兒童 SRS 字卡學習系統</title>
+    
+    <link id="dynamic-icon" rel="apple-touch-icon" href="icon-egg.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SRS 字卡">
+
     <style>
         :root { --primary: #4f46e5; --secondary: #4338ca; --warning: #f59e0b; --success: #0ea5e9; --danger: #ef4444; --bg: #f1f5f9; --card-bg: #ffffff; --text: #1e293b; --text-light: #64748b; 
                 --char-font: "BiauKai", "Kaiti TC", "DFKai-SB", serif; --char-scale: 1; }
@@ -132,9 +138,9 @@
 
     <footer style="text-align: center; padding: 20px; color: var(--text-light); font-size: 0.85rem; margin-top: 40px; border-top: 1px solid #e2e8f0;">
         <p>&copy; 2026 SRS Learning System. All Rights Reserved.</p>
-        <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;">SRS Engine v5.6 | Focus Mode Enabled</p>
+        <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;">SRS Engine v5.7 | PWA Enabled</p>
         <p style="font-size: 0.75rem; font-weight: bold; margin-top: 10px;">
-            Author: <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: none; opacity: 0.8;">fb/指數三寶飯</a>
+            Author: <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: none; opacity: 0.8;">fb/指數三寶爸</a>
         </p>
     </footer>
 
@@ -195,6 +201,16 @@
             <div class="flex-row" style="margin-bottom: 20px;">
                 <h3 style="margin:0;">⚙️ 系統設定 (Profile <span id="st-profile-id"></span>)</h3>
                 <button class="btn-icon" onclick="closeSettings()">✕</button>
+            </div>
+            
+            <div class="setting-group">
+                <div class="setting-title">📱 桌面圖示 (iOS 主畫面)</div>
+                <div style="display:flex; flex-direction:column; gap:8px; font-size:0.95rem;">
+                    <label><input type="radio" name="appIcon" value="icon-egg.png"> 🥚 起源星蛋 (預設)</label>
+                    <label><input type="radio" name="appIcon" value="icon-beast.png"> 🐛 幻影幼獸</label>
+                    <label><input type="radio" name="appIcon" value="icon-card.png"> 🎴 魔法字卡</label>
+                </div>
+                <div style="font-size:0.8rem; color:var(--text-light); margin-top:5px;">註：選定儲存後，請透過 Safari 底部的「分享 ➔ 加入主畫面」以建立專屬桌面捷徑。若日後更改，需刪除原桌面捷徑並重新加入。</div>
             </div>
 
             <div class="setting-group">
@@ -301,8 +317,7 @@
     function getMidnightTimestamp(ts) { let d = new Date(ts); d.setHours(0,0,0,0); return d.getTime(); }
 
     function loadSettings() {
-        // 加入 forceUnlockTier 預設值
-        const defaultSettings = { dict: 'concise', font: 'kaiti', scale: 1.0, newLimit: 10, ttsLarge: true, ttsHard: false, ttsGood: false, forceUnlockTier: 0 };
+        const defaultSettings = { dict: 'concise', font: 'kaiti', scale: 1.0, newLimit: 10, ttsLarge: true, ttsHard: false, ttsGood: false, forceUnlockTier: 0, appIcon: 'icon-egg.png' };
         let saved = JSON.parse(localStorage.getItem(`srs_settings_${currentProfile}`));
         currentSettings = { ...defaultSettings, ...saved };
         applySettingsToUI();
@@ -313,6 +328,10 @@
         if (currentSettings.font === 'kaiti') root.style.setProperty('--char-font', '"BiauKai", "Kaiti TC", "DFKai-SB", serif');
         else root.style.setProperty('--char-font', '"PingFang TC", "Microsoft JhengHei", sans-serif');
         root.style.setProperty('--char-scale', currentSettings.scale);
+        
+        // 動態抽換 iOS Icon 標籤
+        let iconLink = document.getElementById('dynamic-icon');
+        if (iconLink) iconLink.href = currentSettings.appIcon;
     }
 
     // Modal Controls
@@ -328,6 +347,11 @@
 
     function openSettings() {
         document.getElementById('st-profile-id').innerText = currentProfile;
+        
+        // 載入 Icon 設定
+        let iconRadio = document.querySelector(`input[name="appIcon"][value="${currentSettings.appIcon}"]`);
+        if(iconRadio) iconRadio.checked = true;
+
         document.querySelector(`input[name="dict"][value="${currentSettings.dict}"]`).checked = true;
         document.getElementById('st-font').value = currentSettings.font;
         document.getElementById('st-scale').value = currentSettings.scale;
@@ -349,6 +373,9 @@
     }
 
     function saveSettings() {
+        // 儲存 Icon 設定
+        currentSettings.appIcon = document.querySelector('input[name="appIcon"]:checked').value;
+        
         currentSettings.dict = document.querySelector('input[name="dict"]:checked').value;
         currentSettings.font = document.getElementById('st-font').value;
         currentSettings.scale = parseFloat(document.getElementById('st-scale').value);
@@ -360,10 +387,9 @@
 
         localStorage.setItem(`srs_settings_${currentProfile}`, JSON.stringify(currentSettings));
         applySettingsToUI(); closeSettings(); generateDailyDeck(); 
-        showToast("設定已儲存", "系統參數已更新並套用。", "💾");
+        showToast("設定已儲存", "若有變更圖示，請重新加入 iOS 主畫面以生效", "💾");
     }
 
-    // 🚀 跳級執行邏輯
     function executeSkip() {
         let mode = document.querySelector('input[name="skipMode"]:checked').value;
         let msg = mode === 'master' 
@@ -418,7 +444,7 @@
         saveData(); loadSettings();
 
         if (Object.keys(srsDatabase).length === 0) {
-            const raw = "的是一不有人在國年中大會為台出上到以時也民來要他對與生成日長後了家能可前市發這行多說就過公我表高地動政新學自下法個分選都開美現場主但方業月於和作天及全最經進用心將外小示文力工等因灣機事得子定同當元者好區部之加合還重黨員提本而車讓北名理總金關手去更立面間度如體起沒資至所內其已入萬們次期無她統意第化明路點此府品被實今議道應打很兩並電三看回相共情計調產安建局報保只由持受教水然從通果任林再正位著案未交院性展球近數身平活導指影設感目二接代或韓比女處特運想戰利港商投強問務認昨海南程物每辦少參眾造東常師團才量題社老氣結陳十推則達華委口式約隊基舉原園演做管先包助各向香光制連單續費醫己反觀求治風價空友客頭解賽專山網花首望陸完照蔡警張英知放書見縣帶色創除種規司直變線傳清畫營世聯周收樣界信使支查樂流取改科預權協王視門校該請麼別太四非許服愛決軍給義親透布育系整遊五農言件轉曾供易百兒歲片論何節料記際馬卻組雄住難又告即些勢消術黃質率環男真需超獲走店引希增標士把那檢防型西滿往房若德格濟站據送且食仍爭李失技官票話集步像境考證你護裡容領備較雙跟熱例配億初另條僅排旅必瑜藝聲職落段獎補斯低具稱響確白級幾施病神驗研修否季維半輕列深火升依星媽快款始態源六紅覺福底優習離擔吃音孩亞戶席景顯攝致號限雖項養製形邊算裝準牌里早擊效精策善登評健普宣便買歷九功購拉圖智綠執吳拍訪克柯獨象角況城拿晚千免鄉龍談採味廠餐停積阿傷母卡速興假佳狀企值廣勝置越括極隨須息班紀八岸眼識館候察郭青史謝斷足航壓待害居桃命退減威訊甚顧類層戲根留媒念署午破鐵土川終遭志衛試歌益判療銷找險什嚴酒副喜責幫究蘭貿劇歡搭疑適嘉屬控群黑止負座洲承死換注稅聽訴七樓爾字審遠復油願練錢派賴榮語粉係讀課錄器股吸歐財降模寶笑藍溫享富思銀唱石賣休婚競露室屋售均呼父康故禮令討族額勞央羅飛臉秀監絕宜核童針差繼存春波測切寫延突藥蘇構菜盟移肉京域律批申緊哲幣庭抗素追聞圍講血惠竹米違印夜爆邀攻街陽板永貨輪刻劃救估材恐衝左巴典夠雲姓密朋古董融互奇守臨博楊玩訂納絲鄭穿細爸夫挑版魚彈啟暴盡燈雨麗冠穩劉付充洋跑島急慧擇痛皮盤幕績背餘似右犯短範舞乎彩順銘罪避敗微播慶草錯鎮堅橋泰缺亮蘋竟江私翻豪曲久招棒簡般豬徵鐘潮症簽苦野倒嗎障哥蛋飯屆殺湖茶訓釋罰迷階貼危宮良迎刑含異豐靠懷村衣遇陣尚租舊詢驚尼木飲毒瑞困略筆腳駕廳怎幸倫坪逐搶樹架仁葉套授畢脫剛田籍武鼓怕擁禁築努宗激屏患腦圈州彰捷隆宅愈擴昌編跨介弟織附召慢河涉份勵夢牛輸它聚鮮盛距冷勇染省趣醒幅序棄旗紛頂齡忙掉澳戴朝妻析薪返拜損朱烈偏慮散端伴巨裁冰尤尺疫累診零夏幼玉癌索藉跳坐惡揮災雅沙乾森浪苗轉培尋操蓮述隔洗漸碼震偉堂峰籲船章束賞掌援漲諾載雞革促捐輔靈靜伊弱恩亂圓誤壞妹廚秋緩廿旁映熟燒符臺藏鬆亡射庫植輛鍵占吉楚洪邦喊折抽漁贏飾咖探替頻婦挺聖遺鏡陪嫌歸珍蓋哪誰坦皆答封湯綜觸呈徐叫唯奧尊抱暫雜予憲握檔罷骨麻乘奪宏溪牙甜寬軟駐兵隻倍漫駛麵按敏汙紙趕巧廢塊揚敢祖迫雷鴻抵縮雪亦刺哈憶捕溝滑巡勤暖糖詞誠賓槍珠複傑喝宇柏硬逾籃純肯儀固忘忠措汽獻菸姊孫憂莊覽俊兼冬宿晨欣睡逃閱啡婆梅毛豆頓奶淡仔既辛塞帳敦松游盼漢騎壇拒邱尾概甲胡輩週麥振耳袋阻凌刀床撞某焦箱鄰債扣鞋擬朗淨赴趨券吧旦池礙緣佛凱塑牆賠鳥匯桌掛擺虎貓贈輯剩壘拚讚侵摩斤濃顏髮句慣攤敬潛詩貞跌霸齊侯廟伯徒泡疾祝莫隱鳳氛混紐舒覆途酸陷鬥儘厚君坡塔寧幹怪托烏鋼閒偵狗瓜礎鎖默繳併偶壽末祕裂丁洛盧託貝轟惜潔玲緒肌谷顆借呢嘗忍截擾晶燕祭謂賺慈梁芳償宋敵沉沿潘皇籌胞鍋串伸拆暗涯督繁艦艾貸側圾垃毫狂淚遷契妳彭役抓櫃澤蕭邁掃撤旺栗絡繪翔腸芬軌閉仲后殊煮膠萊衡兄喬姐涵炎稿虛販賢嚇奈廖杯添輝秘搞淑秒脅腿鋒丹啊孟戀戒洞窗荷迪俄刷勒干揭搖獅耀遍埔帝彼循扮杜熊莉誌趙閃炸燃瓦蜜詹辣鹿乏刊恢攜泉爐碰辭逆錦鏈餅鬧魯津煙祥郵頒騙魔唐嘴懂拖棟紹膚菲蟲鑑闆哭妝尖悉撐敲聊肥舍遲凡冒卅呂乳佩卓寒扁扶梯穎跡迴佔偷姿怡燦胎臟譽薦饋宴悲拓琴襲誕踏傾准劑曼噸怒怨慎搜橫牽盒睛逼鑽黎丟兆奮寄廷徑毀沈繫蹤醬騰夥尿拼曉瓶箭罵肝蒙辯閣壯浮液烤翁逢飽伍壁妙嬰幻恰搬榜歉殖滅炒罹耐仰余堆孕慘暑柔滲裕貌墨砲俗噴址堪夕忽抹柱浩渡潭綁螢鬼凍募泥滾澎潤糕胸茲錶鍾奏孔押洽瑪甘耗聘肺貢躍遞駁鹽吹暨泛漏爺牠綱腹衰雕啦夾姆孝巷拔插撥欲灰番疏碩篇紋肩胃脈荒菌諸頃颱擠擦曝椅殘漂稍膽蔣詐謀賭采韻濕勁姻弄紫蝦詳陰頗鼻傅允暢繞羽蔬賀霧儲帥描斥晉涼滋盃禍腐腰袖註軸闖頁龜割娃拋枝櫻泳濱獄眠縱耕腫虧趁酬瑋乃吊恆憑曆氏汁盈腕鋪催剪吞娜寮峽帽彥挖旋欠毅稻耶范薩褲陶驅仙佐悠昭桶梨犬盜羊芒貫贊馨飆嘆妥彎懲扭浴猶疼碳磨脂膜菊薄諮謹鍊井冊勸嗆埋堡寵龐捨杰沖煩爬猛碎薇蜂辨逮蹟函勘奉妮娘廉憾懸捲擋湧澄琳脆鳴吐喪坑孤桿爛玻璃肚銅倉兌坊塵廈徹慰敘斑旭框械汗爽碗籤糾罩魏昇填崩廁您懼掩栽煤疊瘋瘦祈胖茂誘貪迅遵釀鈴丈凝寺崇抬摸斗昆欄淺葛虐迄鄧飼倆墊妨娛屍悅披旬椒欺殼汰淋疲窮緻艇艱訟頸俱厲奔廊彷忌怖憤拘檻歧氧灘炮盾瞬碧稀縫聰舟蒸蒐誼貧蹈錫嬤屢挫攀朵濫灌玫瘤禦粗締腔蒂誇轄鴨鷹鼠捍伏咬彿欽獸竊籠肇蔥謙譜遙釐佑僚凸喚奕婷岡摘滴瑩篩紗罕翰莎菁賈逛遣郎鬱魂洩仇仿僑劍吵堵幽拳撒昏瓊甄礦秉糊腎臣譯踐逸酷鈞麟鼎傲卸塗嫁宛履掀沛牧磚臭蕾衍豔趴踩躲逝遮隧雇曬亭儒勿卷厭垂撲撫擅晴桑柴棚珊琪瑰盪砂筋糧纖蛇蝶諷銳霖飄魅侶坤屈岩桂淹淪甫痕癒穆翠肢芝葡蚊賦趟邏污刪喻帆弘棲潑眷碑繩臥裸諜辰銜于剝婉寸彬扎抑撿橘溢灑烘獵疆粒膩舌蓄賄赫踢郁酥傘勾吋吻啤墜寓嶼廂恨悔慕撼擎斜柳淘滯焚牲矚砍臂艘茄萄藤虹謠辱醉菇俠偽傻凶卿叔喘嘲囊嫩岳征拾漆犧癮盆砸秩粹綿羞膝蒜蘆螺詮赤躺轎酵韋黏齒紓丘劣哀庸彌悶摔昂棋溼煎煌熬眉矛翼蓬蘿衫裙襪襯闊騷夯勳倡傍僵刮勉卵喔巾弊悍扯拌昔棉殷殿淵煉煞爵狼罐謊阪饒驟檯乖乙峻巢帕悟惟扛攔攬杉毯汪沾淇潰猜粽腺莓葬薛衷貶輿釣闢雀餵鵝勃匙吾咪塌墓奢姑嬌崛嶺惑慌捉撕烹燙玄琉瓷睞肅肖膏芭蠻裔訝誓諒諧辜遂醜鹹斌唇削噪尬庇恭捧椎樺泊溜漠漿狠盲礁纏芋萌蕉虞遜鑲陌霍伐叉喉姚悄惱惹抄拱摺撰晃枚株歇浸渴牢睹磁磯秦筍糟繽醇顛髒崗仕俐卑叛哩嘛坎崎愉挨旨溯熙狹猴畏瞭紮艙薑賜霜馮滷丸匹埃墾宵尷崔慨扇抨掘撈敷濾畜窄肪脊臘逗驕町仗咽塢壤宙御捏掏擲攏暈橡澡燥癱穀穴窩膀芙芽蔔蕩蝕邪餓餡鮑伶兇划剖叢宰寂屁弦挽挪搏枕槓槽檸浦碌竄筒緬翅聆肆蝴袍裹豹陵韌舖潢鉅匿叮呀姜姨慾戈抖掙斬梭棵樁樸檬泌炫甸盯禽窘竭羈耍脹覓豚鞏佈樑偕劫呆夷恤懶戚楓榕渣炭煥狄瑟畔綴繃脾蒼蔓諱醋釘鈔鑼馳亨俏倘冤卦咳哨壺奠彙挾揪攪杏枯歹沸湊燉甩癢矽稚穫絨綻纜羨膨萃萎薯訣詭豫躁酌酪攸兔勻匆匠匪吟垮峙嶄愁擱敞斐昧晰梗樞渾濤瑚瑕瓣禪竿紡缸蘊謬賊跪蹲郊醃鈕鉤鞭頌頰鴉郝伺呵嚼寡寨崑弗恥愧懇撇摧札椰歪汀溶澱澀睜矮矯碟粥茫蔽蛙謎輒鋁阱餃髓倖凹哇嘯囚姬悼憐揣梵泣溺澈瀏燭犀狐疵瞄禱簿糞腥蛛蠟輻遼鉛鑰隙痠伙倦倚冥凳吼咒喇嘔奎奴妄寞寢崖帖拐拭梳棕橙沫漬焰甦皺眶眺磅窺綽脖鍛隸艷裏琦乍侮俯剔吶喀嗅嘻噓囉屑怠惶懈揉暇炙爪瞞矩笨笛簾肋臀蠢譬豎躬轍鈣鋸靴顫鬍齣丙劈噹嚨愚拯掠櫥氫瑯疤瞎翹肘陋飢鹼叭哄唸嚐弧恍憊沮瞧筷糙絞聳莖誦贖軀鎂靡噁癡";
+            const raw = "的是一不有人在國年中大會為台出上到以時也民來要他對與生成日長後了家能可前市發這行多說就過公我表高地動政新學自下法個分選都開美現場主但方業月於和作天及全最經進用心將外小示文力工等因灣機事得子定同當元者好區部之加合還重黨員提本而車讓北名理總金關手去更立面間度如體起沒資至所內其已入萬們次期無她統意第化明路點此府品被實今議道應打很兩並電三看回相共情計調產安建局報保只由持受教水然從通果任林再正位著案未交院性展球近數身平活導指影設感目二接代或韓比女處特運想戰利港商投強問務認昨海南程物每辦少參眾造東常師團才量題社老氣結陳十推則達華委口式約隊基舉原園演做管先包助各向香光制連單續費醫己反觀求治風價空友客頭解賽專山網花首望陸完照蔡警張英知放書見縣帶色創除種規司直變線傳清畫營世聯周收樣界信使支查樂流取改科預權協王視門校該請麼別太四非許服愛決軍給義親透布育系整遊五農言件轉曾供易百兒歲片論何節料記際馬卻組雄住難又告即些勢消術黃質率環男真需超獲走店引希增標士把那檢防型西滿往房若德格濟站據送且食仍爭李失技官票話集步像境考證你護裡容領備較雙跟熱例配億初另條僅排旅必瑜藝聲職落段獎補斯低具稱響確白級幾施病神驗研修否季維半輕列深火升依星媽快款始態源六紅覺福底優習離擔吃音孩亞戶席景顯攝致號限雖項養製形邊算裝準牌里早擊效精策善登評健普宣便買歷九功購拉圖智綠執吳拍訪克柯獨象角況城拿晚千免鄉龍談採味廠餐停積阿傷母卡速興假佳狀企值廣勝置越括極隨須息班紀八岸眼識館候察郭青史謝斷足航壓待害居桃命退減威訊甚顧類層戲根留媒念署午破鐵土川終遭志衛試歌益判療銷找險什嚴酒副喜責幫究蘭貿劇歡搭疑適嘉屬控群黑止負座洲承死換注稅聽訴七樓爾字審遠復油願練錢派賴榮語粉係讀課錄器股吸歐財降模寶笑藍溫享富思銀唱石賣休婚競露室屋售均呼父康故禮令討族額勞央羅飛臉秀監絕宜核童針差繼存春波測切寫延突藥蘇構菜盟移肉京域律批申緊哲幣庭抗素追聞圍講血惠竹米違印夜爆邀攻街陽板永貨輪刻劃救估材恐衝左巴典夠雲姓密朋古董融互奇守臨博楊玩訂納絲鄭穿細爸夫挑版魚彈啟暴盡燈雨麗冠穩劉付充洋跑島急慧擇痛皮盤幕績背餘似右犯短範舞乎彩順銘罪避敗微播慶草錯鎮堅橋泰缺亮蘋竟江私翻豪曲久招棒簡般豬徵鐘潮症簽苦野倒嗎障哥蛋飯屆殺湖茶訓釋罰迷階貼危宮良迎刑含異豐靠懷村衣遇陣尚租舊詢驚尼木飲毒瑞困略筆腳駕廳怎幸倫坪逐搶樹架仁葉套授畢脫剛田籍武鼓怕擁禁築努宗激屏患腦圈州彰捷隆宅愈擴昌編跨介弟織附召慢河涉份勵夢牛輸它聚鮮盛距冷勇染省趣醒幅序棄旗紛頂齡忙掉澳戴朝妻析薪返拜損朱烈偏慮散端伴巨裁冰尤尺疫累診零夏幼玉癌索藉跳坐惡揮災雅沙乾森浪苗轉培尋操蓮述隔洗漸碼震偉堂峰籲船章束賞掌援漲諾載雞革促捐輔靈靜伊弱恩亂圓誤壞妹廚秋緩廿旁映熟燒符臺藏鬆亡射庫植輛鍵占吉楚洪邦喊折抽漁贏飾咖探替頻婦挺聖遺鏡陪嫌歸珍蓋哪誰坦皆答封湯綜觸呈徐叫唯奧尊抱暫雜予憲握檔罷骨麻乘奪宏溪牙甜寬軟駐兵隻倍漫駛麵按敏汙紙趕巧廢塊揚敢祖迫雷鴻抵縮雪亦刺哈憶捕溝滑巡勤暖糖詞誠賓槍珠複傑喝宇柏硬逾籃純肯儀固忘忠措汽獻菸姊孫憂莊覽俊兼冬宿晨欣睡逃閱啡婆梅毛豆頓奶淡仔既辛塞帳敦松游盼漢騎壇拒邱尾概甲胡輩週麥振耳袋阻凌刀床撞某焦箱鄰債扣鞋擬朗淨赴趨券吧旦池礙緣佛凱塑牆賠鳥匯桌掛擺虎貓贈輯剩壘拚讚侵摩斤濃顏髮句慣攤敬潛詩貞跌霸齊侯廟伯徒泡疾祝莫隱鳳氛混紐舒覆途酸陷鬥儘厚君坡塔寧幹怪托烏鋼閒偵狗瓜礎鎖默繳併偶壽末祕裂丁洛盧託貝轟惜潔玲緒肌谷顆借呢嘗忍截擾晶燕祭謂賺慈梁芳償宋敵沉沿潘皇籌胞鍋串伸拆暗涯督繁艦艾貸側圾垃毫狂淚遷契妳彭役抓櫃澤蕭邁掃撤旺栗絡繪翔腸芬軌閉仲后殊煮膠萊衡兄喬姐涵炎稿虛販賢嚇奈廖杯添輝秘搞淑秒脅腿鋒丹啊孟戀戒洞窗荷迪俄刷勒干揭搖獅耀遍埔帝彼循扮杜熊莉誌趙閃炸燃瓦蜜詹辣鹿乏刊恢攜泉爐碰辭逆錦鏈餅鬧魯津煙祥郵頒騙魔唐嘴懂拖棟紹膚菲蟲鑑闆哭妝尖悉撐敲聊肥舍遲凡冒卅呂乳佩卓寒扁扶梯穎跡迴佔偷姿怡燦胎臟譽薦饋宴悲拓琴襲誕踏傾准劑曼噸怒怨慎搜橫牽盒睛逼鑽黎丟兆奮寄廷徑毀沈繫蹤醬騰夥尿拼曉瓶箭罵肝蒙辯閣壯浮液烤翁逢飽伍壁妙嬰幻恰搬榜歉殖滅炒罹耐仰余堆孕慘暑柔滲裕貌墨砲俗噴址堪夕忽抹柱浩渡潭綁螢鬼凍募泥滾澎潤糕胸茲錶鍾奏孔押洽瑪甘耗聘肺貢躍遞駁鹽吹暨泛漏爺牠綱腹衰雕啦夾姆孝巷拔插撥欲灰番疏碩篇紋肩胃脈荒菌諸頃颱擠擦曝椅殘漂稍膽蔣詐謀賭采韻濕勁姻弄紫蝦詳陰頗鼻傅允暢繞羽蔬賀霧儲帥描斥晉涼滋盃禍腐腰袖註軸闖頁龜割娃拋枝櫻泳濱獄眠縱耕腫虧趁酬瑋乃吊恆憑曆氏汁盈腕鋪催剪吞娜寮峽帽彥挖旋欠毅稻耶范薩褲陶驅仙佐悠昭桶梨犬盜羊芒貫贊馨飆嘆妥彎懲扭浴猶疼碳磨脂膜菊薄諮謹鍊井冊勸嗆埋堡寵龐捨杰沖煩爬猛碎薇蜂辨逮蹟函勘奉妮娘廉憾懸捲擋湧澄琳脆鳴吐喪坑孤桿爛玻璃肚銅倉兌坊塵廈徹慰敘斑旭框械汗爽碗籤糾罩魏昇填崩廁您懼掩栽煤疊瘋瘦祈胖茂誘貪迅遵釀鈴丈凝寺崇抬摸斗昆欄淺葛虐迄鄧飼倆墊妨娛屍悅披旬椒欺殼汰淋疲窮緻艇艱訟頸俱厲奔廊彷忌怖憤拘檻歧氧灘炮盾瞬碧稀縫聰舟蒸蒐誼貧蹈錫嬤屢挫攀朵濫灌玫瘤禦粗締腔蒂誇轄鴨鷹鼠捍伏咬彿欽獸竊籠肇蔥謙譜遙釐佑僚喚奕婷岡摘滴瑩篩紗罕翰莎菁賈逛遣郎鬱魂洩仇仿僑劍吵堵幽拳撒昏瓊甄礦秉糊腎臣譯踐逸酷鈞麟鼎傲卸塗嫁宛履掀沛牧磚臭蕾衍豔趴踩躲逝遮隧雇曬亭儒勿卷厭垂撲撫擅晴桑柴棚珊琪瑰盪砂筋糧纖蛇蝶諷銳霖飄魅侶坤屈岩桂淹淪甫痕癒穆翠肢芝葡蚊賦趟邏污刪喻帆弘棲潑眷碑繩臥裸諜辰銜于剝婉寸彬扎抑撿橘溢灑烘獵疆粒膩舌蓄賄赫踢郁酥傘勾吋吻啤墜寓嶼廂恨悔慕撼擎斜柳淘滯焚牲矚砍臂艘茄萄藤虹謠辱醉菇俠偽傻凶卿叔喘嘲囊嫩岳征拾漆犧癮盆砸秩粹綿羞膝蒜蘆螺詮赤躺轎酵韋黏齒紓丘劣哀庸彌悶摔昂棋溼煎煌熬眉矛翼蓬蘿衫裙襪襯闊騷夯勳倡傍僵刮勉卵喔巾弊悍扯拌昔棉殷殿淵煉煞爵狼罐謊阪饒驟檯乖乙峻巢帕悟惟扛攔攬杉毯汪沾淇潰猜粽腺莓葬薛衷貶輿釣闢雀餵鵝勃匙吾咪塌墓奢姑嬌崛嶺惑慌捉撕烹燙玄琉瓷睞肅肖膏芭蠻裔訝誓諒諧辜遂醜鹹斌唇削噪尬庇恭捧椎樺泊溜漠漿狠盲礁纏芋萌蕉虞遜鑲陌霍伐叉喉姚悄惱惹抄拱摺撰晃枚株歇浸渴牢睹磁磯秦筍糟繽醇顛髒崗仕俐卑叛哩嘛坎崎愉挨旨溯熙狹猴畏瞭紮艙薑賜霜馮滷丸匹埃墾宵尷崔慨扇抨掘撈敷濾畜窄肪脊臘逗驕町仗咽塢壤宙御捏掏擲攏暈橡澡燥癱穀穴窩膀芙芽蔔蕩蝕邪餓餡鮑伶兇划剖叢宰寂屁弦挽挪搏枕槓槽檸浦碌竄筒緬翅聆肆蝴袍裹豹陵韌舖潢鉅匿叮呀姜姨慾戈抖掙斬梭棵樁樸檬泌炫甸盯禽窘竭羈耍脹覓豚鞏佈樑偕劫呆夷恤懶戚楓榕渣炭煥狄瑟畔綴繃脾蒼蔓諱醋釘鈔鑼馳亨俏倘冤卦咳哨壺奠彙挾揪攪杏枯歹沸湊燉甩癢矽稚穫絨綻纜羨膨萃萎薯訣詭豫躁酌酪攸兔勻匆匠匪吟垮峙嶄愁擱敞斐昧晰梗樞渾濤瑚瑕瓣禪竿紡缸蘊謬賊跪蹲郊醃鈕鉤鞭頌頰鴉郝伺呵嚼寡寨崑弗恥愧懇撇摧札椰歪汀溶澱澀睜矮矯碟粥茫蔽蛙謎輒鋁阱餃髓倖凹哇嘯囚姬悼憐揣梵泣溺澈瀏燭犀狐疵瞄禱簿糞腥蛛蠟輻遼鉛鑰隙痠伙倦倚冥凳吼咒喇嘔奎奴妄寞寢崖帖拐拭梳棕橙沫漬焰甦皺眶眺磅窺綽脖鍛隸艷裏琦乍侮俯剔吶喀嗅嘻噓囉屑怠惶懈揉暇炙爪瞞矩笨笛簾肋臀蠢譬豎躬轍鈣鋸靴顫鬍齣丙劈噹嚨愚拯掠櫥氫瑯疤瞎翹肘陋飢鹼叭哄唸嚐弧恍憊沮瞧筷糙絞聳莖誦贖軀鎂靡噁癡";
             const uniqueWords = [...new Set(raw.split(''))];
             const capacities = [40, 60, 100, 150, 200, 250, 350, 450, 550];
             let cT = 1, it = 0;
@@ -467,7 +493,6 @@
         return { total, mastered, rate: total === 0 ? 0 : mastered / total };
     }
 
-    // 整合 override 變數
     function getUnlockedTiers() {
         let unlocked = [1];
         let forceTier = currentSettings.forceUnlockTier || 0;
@@ -596,7 +621,6 @@
             allowedNewCards = Math.min(MAX_DAILY_LOAD - sessionQueue.length, currentSettings.newLimit - currentNewLearned);
         }
         
-        // [修改點] 若啟動跨層解鎖，則隨機混抽新卡，以確保看到不同層級的字
         if (currentSettings.forceUnlockTier >= 7) {
             newQueue.sort(() => Math.random() - 0.5);
         } else {
