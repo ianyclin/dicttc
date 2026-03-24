@@ -7,7 +7,7 @@
     <style>
         :root { --primary: #4f46e5; --secondary: #4338ca; --warning: #f59e0b; --success: #0ea5e9; --danger: #ef4444; --bg: #f1f5f9; --card-bg: #ffffff; --text: #1e293b; --text-light: #64748b; 
                 --char-font: "BiauKai", "Kaiti TC", "DFKai-SB", serif; --char-scale: 1; }
-        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; max-width: 960px; margin: auto; line-height: 1.6; padding-bottom: 60px;}
+        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; max-width: 960px; margin: auto; line-height: 1.6; padding-bottom: 60px; }
         .profile-switcher { display: flex; gap: 10px; margin-bottom: 15px; background: #e2e8f0; padding: 6px; border-radius: 12px; }
         .tab-btn { flex: 1; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; color: var(--text-light); border: none; background: transparent; }
         .tab-btn.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -24,25 +24,25 @@
         .stat-box { background: var(--bg); padding: 15px; border-radius: 8px; text-align: center; }
         .stat-num { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
         .gate-status { margin-top: 15px; padding: 15px; background: #f8fafc; border-left: 4px solid var(--primary); border-radius: 0 8px 8px 0; }
-        .gate-bar-bg { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; margin-top: 4px; overflow: hidden;}
+        .gate-bar-bg { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; margin-top: 4px; overflow: hidden; }
         .gate-bar-fill { height: 100%; background: var(--success); }
         
-        #deck { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 40px; min-height: 200px;}
+        #deck { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 40px; min-height: 200px; }
         
         /* 專注模式 UI */
         #focus-mode { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s ease; opacity: 0; pointer-events: none; }
         #focus-mode.active { opacity: 1; pointer-events: auto; }
-        .focus-header { position: absolute; top: 20px; width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-sizing: border-box;}
+        .focus-header { position: absolute; top: 20px; width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-sizing: border-box; }
         .focus-remain-badge { background: var(--primary); color: white; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         
-        .card { background: var(--card-bg); width: 280px; padding: 20px; border-radius: 16px; box-shadow: 0 15px 25px -5px rgba(0,0,0,0.15); display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 6px solid var(--primary); position: relative;}
+        .card { background: var(--card-bg); width: 280px; padding: 20px; border-radius: 16px; box-shadow: 0 15px 25px -5px rgba(0,0,0,0.15); display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 6px solid var(--primary); position: relative; }
         .card.review { border-top-color: var(--warning); }
         .card.new { border-top-color: var(--success); }
         .card.penalty { border-top-color: var(--danger); background: #fef2f2; }
         .char-title { font-family: var(--char-font); font-size: calc(4.5rem * var(--char-scale)); font-weight: bold; margin: 15px 0; color: var(--text); line-height: 1.2; text-align: center; }
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
         .eval-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 10px; }
-        .btn-eval { padding: 12px 10px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 0.95rem; color: white; transition: transform 0.1s;}
+        .btn-eval { padding: 12px 10px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 0.95rem; color: white; transition: transform 0.1s; }
         .btn-eval:active { transform: scale(0.95); }
         .btn-eval-forget { background: var(--danger); }
         .btn-eval-hard { background: var(--warning); }
@@ -73,14 +73,16 @@
         .setting-group:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .setting-title { font-weight: bold; margin-bottom: 10px; color: var(--text); display: flex; align-items: center; gap: 8px; }
         .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.95rem; }
-        .range-val { background: #f1f5f9; padding: 2px 8px; border-radius: 6px; font-weight: bold; color: var(--primary); min-width: 30px; text-align: center;}
-        select, input[type="range"] { accent-color: var(--primary); }
+        .range-val { background: #f1f5f9; padding: 2px 8px; border-radius: 6px; font-weight: bold; color: var(--primary); min-width: 30px; text-align: center; }
+        select, input[type="range"], input[type="radio"], input[type="checkbox"] { accent-color: var(--primary); }
         .danger-zone { background: #fef2f2; padding: 15px; border-radius: 8px; border: 1px dashed var(--danger); margin-top: 10px; }
         
         /* Help Modal Specific */
         .help-list { padding-left: 20px; font-size: 0.9rem; color: var(--text-light); line-height: 1.8; }
         .help-list li { margin-bottom: 8px; }
         .help-list strong { color: var(--text); }
+        
+        .fast-track-box { background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fcd34d; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -130,7 +132,7 @@
 
     <footer style="text-align: center; padding: 20px; color: var(--text-light); font-size: 0.85rem; margin-top: 40px; border-top: 1px solid #e2e8f0;">
         <p>&copy; 2026 SRS Learning System. All Rights Reserved.</p>
-        <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;">SRS Engine v5.5 | Focus Mode Enabled</p>
+        <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;">SRS Engine v5.6 | Focus Mode Enabled</p>
         <p style="font-size: 0.75rem; font-weight: bold; margin-top: 10px;">
             Author: <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: none; opacity: 0.8;">fb/指數三寶爸</a>
         </p>
@@ -240,6 +242,20 @@
             </div>
 
             <div class="setting-group">
+                <div class="fast-track-box">
+                    <div class="setting-title" style="color: #b45309;">🚀 跨級跳躍模式 (Fast Track)</div>
+                    <p style="font-size: 0.85rem; color: #92400e; margin-bottom: 12px; line-height: 1.4;">
+                        適用於具備基礎識字能力的孩童，可直接略過基礎層級。
+                    </p>
+                    <div style="display:flex; flex-direction:column; gap:8px; font-size:0.9rem; margin-bottom: 12px; color: #78350f;">
+                        <label><input type="radio" name="skipMode" value="unlock" checked> 解鎖前六層：新卡包含 1~7 層混抽</label>
+                        <label><input type="radio" name="skipMode" value="master"> 直接精熟：前 6 層直接滿級，新卡從第 7 層開始</label>
+                    </div>
+                    <button class="btn btn-outline" style="width:100%; border-color: #b45309; color: #b45309; background: #fef3c7;" onclick="executeSkip()">⚡ 執行跳級設定</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
                 <div class="danger-zone">
                     <div class="setting-title" style="color: var(--danger);">🚨 危險操作區</div>
                     <p style="font-size:0.85rem; margin-bottom: 10px;">清除此設定檔的所有記憶進度。操作前需解開防呆鎖。</p>
@@ -285,7 +301,8 @@
     function getMidnightTimestamp(ts) { let d = new Date(ts); d.setHours(0,0,0,0); return d.getTime(); }
 
     function loadSettings() {
-        const defaultSettings = { dict: 'concise', font: 'kaiti', scale: 1.0, newLimit: 10, ttsLarge: true, ttsHard: false, ttsGood: false };
+        // 加入 forceUnlockTier 預設值
+        const defaultSettings = { dict: 'concise', font: 'kaiti', scale: 1.0, newLimit: 10, ttsLarge: true, ttsHard: false, ttsGood: false, forceUnlockTier: 0 };
         let saved = JSON.parse(localStorage.getItem(`srs_settings_${currentProfile}`));
         currentSettings = { ...defaultSettings, ...saved };
         applySettingsToUI();
@@ -344,6 +361,36 @@
         localStorage.setItem(`srs_settings_${currentProfile}`, JSON.stringify(currentSettings));
         applySettingsToUI(); closeSettings(); generateDailyDeck(); 
         showToast("設定已儲存", "系統參數已更新並套用。", "💾");
+    }
+
+    // 🚀 跳級執行邏輯
+    function executeSkip() {
+        let mode = document.querySelector('input[name="skipMode"]:checked').value;
+        let msg = mode === 'master' 
+            ? "⚠️ 警告：這將把前 6 層（共約 1700 字）直接標記為「已精熟」，並瞬間獲得大量經驗值。\n\n確定執行？"
+            : "⚠️ 確認：這將強制開啟前 7 層的認知閘門，新卡將從 1~7 層中混合抽取。\n\n確定執行？";
+        
+        if (confirm(msg)) {
+            if (mode === 'master') {
+                for (let w in srsDatabase) {
+                    if ((srsDatabase[w].tier || 1) <= 6) {
+                        srsDatabase[w].stage = 8;
+                        srsDatabase[w].interval = 180;
+                        srsDatabase[w].repetitions = 1; 
+                        srsDatabase[w].nextReview = Date.now() + (180 * 24 * 60 * 60 * 1000);
+                    }
+                }
+                saveData();
+                showToast("跳級成功", "前六層已標記為精熟！", "🚀");
+            } else {
+                currentSettings.forceUnlockTier = 7;
+                localStorage.setItem(`srs_settings_${currentProfile}`, JSON.stringify(currentSettings));
+                showToast("閘門解鎖", "已開放 1~7 層新卡抽取！", "🔓");
+            }
+            closeSettings();
+            generateDailyDeck(); 
+            updateDashboard(false); 
+        }
     }
 
     function secureClearProfile() {
@@ -420,10 +467,14 @@
         return { total, mastered, rate: total === 0 ? 0 : mastered / total };
     }
 
+    // 整合 override 變數
     function getUnlockedTiers() {
         let unlocked = [1];
+        let forceTier = currentSettings.forceUnlockTier || 0;
         for (let i = 1; i < MAX_TIER; i++) {
-            let s = getTierMastery(i); if (s.total > 0 && s.rate >= SAFETY_THRESHOLD) unlocked.push(i + 1); else break;
+            let s = getTierMastery(i); 
+            if ((s.total > 0 && s.rate >= SAFETY_THRESHOLD) || i < forceTier) unlocked.push(i + 1); 
+            else break;
         }
         return unlocked;
     }
@@ -469,7 +520,9 @@
 
         let unlocked = getUnlockedTiers(), currentFocusTier = unlocked[unlocked.length - 1]; 
         let tStats = getTierMastery(currentFocusTier);
-        document.getElementById('gate-status-panel').innerHTML = `<strong>🔒 認知負荷閘門 (當前攻略: Tier ${currentFocusTier})</strong><br><div style="font-size:0.9rem; margin-top:8px;">精熟度要求 ${Math.round(SAFETY_THRESHOLD*100)}%：目前 ${Math.round(tStats.rate*100)}% (${tStats.mastered}/${tStats.total})</div><div class="gate-bar-bg"><div class="gate-bar-fill" style="width:${Math.min(100, tStats.rate*100)}%"></div></div>`;
+        
+        let forceMsg = currentSettings.forceUnlockTier ? `<span style="color:var(--warning); font-size:0.8rem; margin-left:10px;">(跳躍模式已啟用)</span>` : "";
+        document.getElementById('gate-status-panel').innerHTML = `<strong>🔒 認知負荷閘門 (當前攻略: Tier ${currentFocusTier}) ${forceMsg}</strong><br><div style="font-size:0.9rem; margin-top:8px;">精熟度要求 ${Math.round(SAFETY_THRESHOLD*100)}%：目前 ${Math.round(tStats.rate*100)}% (${tStats.mastered}/${tStats.total})</div><div class="gate-bar-bg"><div class="gate-bar-fill" style="width:${Math.min(100, tStats.rate*100)}%"></div></div>`;
     }
 
     function speakWord(word) {
@@ -543,7 +596,13 @@
             allowedNewCards = Math.min(MAX_DAILY_LOAD - sessionQueue.length, currentSettings.newLimit - currentNewLearned);
         }
         
-        newQueue.sort((a, b) => (srsDatabase[a].tier || 1) - (srsDatabase[b].tier || 1));
+        // [修改點] 若啟動跨層解鎖，則隨機混抽新卡，以確保看到不同層級的字
+        if (currentSettings.forceUnlockTier >= 7) {
+            newQueue.sort(() => Math.random() - 0.5);
+        } else {
+            newQueue.sort((a, b) => (srsDatabase[a].tier || 1) - (srsDatabase[b].tier || 1));
+        }
+
         for (let i = 0; i < newQueue.length && i < allowedNewCards; i++) {
             sessionQueue.push({w: newQueue[i], t: 'new'});
         }
@@ -624,7 +683,12 @@
         for (let word in srsDatabase) if (srsDatabase[word].repetitions === 0 && unlockedTiers.includes(srsDatabase[word].tier || 1)) newQueue.push(word);
         if (newQueue.length === 0) { showToast("階層已清空", "當前解鎖的字庫已無新字。", "🏁"); return; }
 
-        newQueue.sort((a, b) => (srsDatabase[a].tier || 1) - (srsDatabase[b].tier || 1));
+        if (currentSettings.forceUnlockTier >= 7) {
+            newQueue.sort(() => Math.random() - 0.5);
+        } else {
+            newQueue.sort((a, b) => (srsDatabase[a].tier || 1) - (srsDatabase[b].tier || 1));
+        }
+
         stats.daily.extraClicks++; saveData(); 
 
         let addedCount = 0, batchSize = 5;
