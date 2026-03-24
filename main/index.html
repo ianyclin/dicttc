@@ -26,15 +26,24 @@
         .gate-status { margin-top: 15px; padding: 15px; background: #f8fafc; border-left: 4px solid var(--primary); border-radius: 0 8px 8px 0; }
         .gate-bar-bg { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; margin-top: 4px; overflow: hidden;}
         .gate-bar-fill { height: 100%; background: var(--success); }
+        
         #deck { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 40px; min-height: 200px;}
-        .card { background: var(--card-bg); width: 280px; padding: 20px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 6px solid var(--primary); position: relative;}
+        
+        /* 專注模式 UI */
+        #focus-mode { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s ease; opacity: 0; pointer-events: none; }
+        #focus-mode.active { opacity: 1; pointer-events: auto; }
+        .focus-header { position: absolute; top: 20px; width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-sizing: border-box;}
+        .focus-remain-badge { background: var(--primary); color: white; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        
+        .card { background: var(--card-bg); width: 280px; padding: 20px; border-radius: 16px; box-shadow: 0 15px 25px -5px rgba(0,0,0,0.15); display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 6px solid var(--primary); position: relative;}
         .card.review { border-top-color: var(--warning); }
         .card.new { border-top-color: var(--success); }
         .card.penalty { border-top-color: var(--danger); background: #fef2f2; }
-        .char-title { font-family: var(--char-font); font-size: calc(3.5rem * var(--char-scale)); font-weight: bold; margin: 10px 0; color: var(--text); line-height: 1.2; }
+        .char-title { font-family: var(--char-font); font-size: calc(4.5rem * var(--char-scale)); font-weight: bold; margin: 15px 0; color: var(--text); line-height: 1.2; }
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
         .eval-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 10px; }
-        .btn-eval { padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 0.9rem; color: white;}
+        .btn-eval { padding: 12px 10px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 0.95rem; color: white; transition: transform 0.1s;}
+        .btn-eval:active { transform: scale(0.95); }
         .btn-eval-forget { background: var(--danger); }
         .btn-eval-hard { background: var(--warning); }
         .btn-eval-good { background: var(--primary); }
@@ -43,15 +52,9 @@
         .rpg-bar { background: linear-gradient(90deg, var(--warning), var(--danger)); height: 100%; width: 0%; transition: width 0.5s ease; }
         .manual { background: #fff; padding: 20px; border-radius: 12px; margin-top: 40px; font-size: 0.9rem; color: var(--text-light); border: 1px dashed #cbd5e1; }
         
-        @keyframes sparkle {
-            0%, 100% { opacity: 0.6; transform: scale(1); filter: brightness(1); }
-            50% { opacity: 1; transform: scale(1.1); filter: brightness(1.3) drop-shadow(0 0 3px rgba(245, 158, 11, 0.7)); }
-        }
+        @keyframes sparkle { 0%, 100% { opacity: 0.6; transform: scale(1); filter: brightness(1); } 50% { opacity: 1; transform: scale(1.1); filter: brightness(1.3) drop-shadow(0 0 3px rgba(245, 158, 11, 0.7)); } }
         .rpg-star { display: inline-block; animation: sparkle 2s infinite ease-in-out; }
-        .rpg-star:nth-child(2) { animation-delay: 0.3s; }
-        .rpg-star:nth-child(3) { animation-delay: 0.6s; }
-        .rpg-star:nth-child(4) { animation-delay: 0.9s; }
-        .rpg-star:nth-child(5) { animation-delay: 1.2s; }
+        .rpg-star:nth-child(2) { animation-delay: 0.3s; } .rpg-star:nth-child(3) { animation-delay: 0.6s; } .rpg-star:nth-child(4) { animation-delay: 0.9s; } .rpg-star:nth-child(5) { animation-delay: 1.2s; }
 
         #evolution-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; color: white; opacity: 0; transition: opacity 0.5s ease; }
         #evolution-overlay.show { display: flex; opacity: 1; }
@@ -120,10 +123,30 @@
 
     <div id="deck"></div>
 
+    <div class="manual">
+        <h4>📖 使用說明</h4>
+        <ul>
+            <li><strong>📊 字庫分級</strong>：依照字頻高低分層，前六層涵蓋日常閱讀約 85% 字頻。</li>
+            <li><strong>🎯 每日任務</strong>：採用「專注模式」，每次僅顯示一張，避免孩童視覺與認知負載過高。</li>
+            <li><strong>🔒 按部就班</strong>：階層有 85% 的字進入長期記憶（複習間隔 > 21天）才會解鎖下一層。</li>
+            <li><strong>⚖️ 額外加碼</strong>：如果意猶未盡還可以額外加碼新卡，最多兩次。</li>
+            <li><strong>🚀 跨級跳躍</strong>：如果「新卡」按「簡單」，會直接保送至 21 天後複習，加速通關已認得的字。</li>
+            <li><strong>⚙️ 個人化設定</strong>：點擊右上方「設定」可為不同孩子調整字體、朗讀與字典來源。</li>
+        </ul>
+    </div>
+
     <footer style="text-align: center; padding: 20px; color: var(--text-light); font-size: 0.85rem; margin-top: 40px; border-top: 1px solid #e2e8f0;">
         <p>&copy; 2026 SRS Learning System. All Rights Reserved.</p>
-        <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;">SRS Engine v5.2 | Dynamic Progression</p>
+        <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;">SRS Engine v5.3 | Focus Mode Enabled</p>
     </footer>
+
+    <div id="focus-mode">
+        <div class="focus-header">
+            <button class="btn btn-outline" style="border-color: var(--text-light); color: var(--text-light); padding: 6px 12px; font-size: 0.9rem;" onclick="exitFocusMode()">🔙 中斷離開</button>
+            <div class="focus-remain-badge">剩餘 <span id="focus-remain">0</span> 張</div>
+        </div>
+        <div id="focus-card-wrapper"></div>
+    </div>
 
     <div id="evolution-overlay">
         <div id="evo-title">守護神獸進化！</div>
@@ -176,7 +199,7 @@
             <div class="setting-group">
                 <div class="setting-title">🗣️ 多感官輔助</div>
                 <label style="display:flex; align-items:center; gap:8px; font-size:0.95rem;">
-                    <input type="checkbox" id="st-tts"> 開啟點擊卡片發音 (需瀏覽器支援)
+                    <input type="checkbox" id="st-tts"> 開啟自動發音 (切換字卡時朗讀)
                 </label>
             </div>
 
@@ -204,11 +227,12 @@
         setTimeout(() => { toast.remove(); }, 2500);
     }
 
-    // 系統變數
     let currentProfile = 1;
     let srsDatabase = {};
     let stats = {};
     let currentSettings = {}; 
+    let sessionQueue = []; // 新增：狀態機佇列管理
+
     const MAX_DAILY_LOAD = 25, MAX_TIER = 10, SAFETY_THRESHOLD = 0.85, LONG_TERM_STAGE = 6;
     const STAGE_INTERVALS = [0, 1, 3, 5, 7, 14, 21, 60, 180], MAX_STAGE = 8, GRADUATION_INTERVAL = 180;
     
@@ -224,7 +248,6 @@
     function getYesterdayString() { let d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10); }
     function getMidnightTimestamp(ts) { let d = new Date(ts); d.setHours(0,0,0,0); return d.getTime(); }
 
-    // [設定模組] 載入與儲存
     function loadSettings() {
         const defaultSettings = { dict: 'mini', font: 'sans', scale: 1.0, newLimit: 10, tts: false };
         let saved = JSON.parse(localStorage.getItem(`srs_settings_${currentProfile}`));
@@ -234,13 +257,8 @@
 
     function applySettingsToUI() {
         let root = document.documentElement;
-        // 應用字體
-        if (currentSettings.font === 'kaiti') {
-            root.style.setProperty('--char-font', '"BiauKai", "Kaiti TC", "DFKai-SB", serif');
-        } else {
-            root.style.setProperty('--char-font', '"PingFang TC", "Microsoft JhengHei", sans-serif');
-        }
-        // 應用字級倍率
+        if (currentSettings.font === 'kaiti') root.style.setProperty('--char-font', '"BiauKai", "Kaiti TC", "DFKai-SB", serif');
+        else root.style.setProperty('--char-font', '"PingFang TC", "Microsoft JhengHei", sans-serif');
         root.style.setProperty('--char-scale', currentSettings.scale);
     }
 
@@ -253,16 +271,13 @@
         document.getElementById('st-new').value = currentSettings.newLimit;
         document.getElementById('st-new-val').innerText = currentSettings.newLimit;
         document.getElementById('st-tts').checked = currentSettings.tts;
-        
         let overlay = document.getElementById('settings-overlay');
-        overlay.style.display = 'flex';
-        setTimeout(() => overlay.classList.add('show'), 10);
+        overlay.style.display = 'flex'; setTimeout(() => overlay.classList.add('show'), 10);
     }
 
     function closeSettings() {
         let overlay = document.getElementById('settings-overlay');
-        overlay.classList.remove('show');
-        setTimeout(() => overlay.style.display = 'none', 300);
+        overlay.classList.remove('show'); setTimeout(() => overlay.style.display = 'none', 300);
     }
 
     function saveSettings() {
@@ -271,11 +286,8 @@
         currentSettings.scale = parseFloat(document.getElementById('st-scale').value);
         currentSettings.newLimit = parseInt(document.getElementById('st-new').value);
         currentSettings.tts = document.getElementById('st-tts').checked;
-        
         localStorage.setItem(`srs_settings_${currentProfile}`, JSON.stringify(currentSettings));
-        applySettingsToUI();
-        closeSettings();
-        generateDailyDeck(); // 重新渲染牌桌套用新限額與 URL
+        applySettingsToUI(); closeSettings(); generateDailyDeck(); 
         showToast("設定已儲存", "系統參數已更新並套用。", "💾");
     }
 
@@ -284,46 +296,33 @@
         let ans = prompt(`🚨 系統防護鎖：\n請輸入 ${a} x ${b} 的答案以授權清空操作：`);
         if (parseInt(ans) === a * b) {
             if (confirm(`最終確認：即將清空設定檔 ${currentProfile}，所有學習歸零？`)) {
-                localStorage.removeItem(`srs_db_${currentProfile}`);
-                localStorage.removeItem(`srs_stats_${currentProfile}`);
-                localStorage.removeItem(`srs_settings_${currentProfile}`);
-                sessionStorage.setItem('activeProfile', currentProfile);
-                alert('已清空，系統即將重啟。');
-                location.reload();
+                localStorage.removeItem(`srs_db_${currentProfile}`); localStorage.removeItem(`srs_stats_${currentProfile}`); localStorage.removeItem(`srs_settings_${currentProfile}`);
+                sessionStorage.setItem('activeProfile', currentProfile); alert('已清空，系統即將重啟。'); location.reload();
             }
-        } else {
-            alert('❌ 防護鎖驗證失敗，操作已阻擋。');
-        }
+        } else { alert('❌ 防護鎖驗證失敗，操作已阻擋。'); }
     }
 
     function loadProfileData() {
-        const dbKey = `srs_db_${currentProfile}`;
-        const statsKey = `srs_stats_${currentProfile}`;
+        const dbKey = `srs_db_${currentProfile}`, statsKey = `srs_stats_${currentProfile}`;
         srsDatabase = JSON.parse(localStorage.getItem(dbKey)) || {};
         let loadedStats = JSON.parse(localStorage.getItem(statsKey));
         let today = new Date().toISOString().slice(0, 10); 
         
         if (!loadedStats || loadedStats.lastDateCheck !== today) {
-            stats = {
-                daily: { reviewed: 0, learned: 0 },
-                streak: (loadedStats && loadedStats.lastDateCheck === getYesterdayString()) ? (loadedStats.streak + 1) : 1, 
-                lastDateCheck: today, lastRealmIdx: loadedStats ? loadedStats.lastRealmIdx : 0 
-            };
+            stats = { daily: { reviewed: 0, learned: 0 }, streak: (loadedStats && loadedStats.lastDateCheck === getYesterdayString()) ? (loadedStats.streak + 1) : 1, lastDateCheck: today, lastRealmIdx: loadedStats ? loadedStats.lastRealmIdx : 0 };
             if (loadedStats && loadedStats.streak > 1 && loadedStats.lastDateCheck !== getYesterdayString()) stats.streak = 1; 
         } else { stats = loadedStats; }
         
-        saveData();
-        loadSettings(); // 載入設定
+        saveData(); loadSettings();
 
         if (Object.keys(srsDatabase).length === 0) {
-            const raw = "的是一不有人在國年中大會為台出上到以時也民來要他對與生成日長後了家能可前市發這行多說就過公我表高地動政新學自下法個分選都開美現場主但方業月於和作天及全最經進用心將外小示文力工等因灣機事得子定同當元者好區部之加合還重黨員提本而車讓北名理總金關手去更立面間度如體起沒資至所內其已入萬們次期無她統意第化明路點此府品被實今議道應打很兩並電三看回相共情計調產安建局報保只由持受教水然從通果任林再正位著案未交院性展球近數身平活導指影設感目二接代或韓比女處特運想戰利港商投強問務認昨海南程物每辦少參眾造東常師團才量題社老氣結陳十推則達華委口式約隊基舉原園演做管先包助各向香光制連單續費醫己反觀求治風價空友客頭解賽專山網花首望陸完照蔡警張英知放書見縣帶色創除種規司直變線傳清畫營世聯周收樣界信使支查樂流取改科預權協王視門校該請麼別太四非許服愛決軍給義親透布育系整遊五農言件轉曾供易百兒歲片論何節料記際馬卻組雄住難又告即些勢消術黃質率環男真需超獲走店引希增標士把那檢防型西滿往房若德格濟站據送且食仍爭李失技官票話集步像境考證你護裡容領備較雙跟熱例配億初另條僅排旅必瑜藝聲職落段獎補斯低具稱響確白級幾施病神驗研修否季維半輕列深火升依星媽快款始態源六紅覺福底優習離擔吃音孩亞戶席景顯攝致號限雖項養製形邊算裝準牌里早擊效精策善登評健普宣便買歷九功購拉圖智綠執吳拍訪克柯獨象角況城拿晚千免鄉龍談採味廠餐停積阿傷母卡速興假佳狀企值廣勝置越括極隨須息班紀八岸眼識館候察郭青史謝斷足航壓待害居桃命退減威訊甚顧類層戲根留媒念署午破鐵土川終遭志衛試歌益判療銷找險什嚴酒副喜責幫究蘭貿劇歡搭疑適嘉屬控群黑止負座洲承死換注稅聽訴七樓爾字審遠復油願練錢派賴榮語粉係讀課錄器股吸歐財降模寶笑藍溫享富思銀唱石賣休婚競露室屋售均呼父康故禮令討族額勞央羅飛臉秀監絕宜核童針差繼存春波測切寫延突藥蘇構菜盟移肉京域律批申緊哲幣庭抗素追聞圍講血惠竹米違印夜爆邀攻街陽板永貨輪刻劃救估材恐衝左巴典夠雲姓密朋古董融互奇守臨博楊玩訂納絲鄭穿細爸夫挑版魚彈啟暴盡燈雨麗冠穩劉付充洋跑島急慧擇痛皮盤幕績背餘似右犯短範舞乎彩順銘罪避敗微播慶草錯鎮堅橋泰缺亮蘋竟江私翻豪曲久招棒簡般豬徵鐘潮症簽苦野倒嗎障哥蛋飯屆殺湖茶訓釋罰迷階貼危宮良迎刑含異豐靠懷村衣遇陣尚租舊詢驚尼木飲毒瑞困略筆腳駕廳怎幸倫坪逐搶樹架仁葉套授畢脫剛田籍武鼓怕擁禁築努宗激屏患腦圈州彰捷隆宅愈擴昌編跨介弟織附召慢河涉份勵夢牛輸它聚鮮盛距冷勇染省趣醒幅序棄旗紛頂齡忙掉澳戴朝妻析薪返拜損朱烈偏慮散端伴巨裁冰尤尺疫累診零夏幼玉癌索藉跳坐惡揮災雅沙乾森浪苗貴培尋操蓮述隔洗漸碼震偉堂峰籲船章束賞掌援漲諾載雞革促捐輔靈靜伊弱恩亂圓誤壞妹廚秋緩廿旁映熟燒符臺藏鬆亡射庫植輛鍵占吉楚洪邦喊折抽漁贏飾咖探替頻婦挺聖遺鏡陪嫌歸珍蓋哪誰坦皆答封湯綜觸呈徐叫唯奧尊抱暫雜予憲握檔罷骨麻乘奪宏溪牙甜寬軟駐兵隻倍漫駛麵按敏汙紙趕巧廢塊揚敢祖迫雷鴻抵縮雪亦刺哈憶捕溝滑巡勤暖糖詞誠賓槍珠複傑喝宇柏硬逾籃純肯儀固忘忠措汽獻菸姊孫憂莊覽俊兼冬宿晨欣睡逃閱啡婆梅毛豆頓奶淡仔既辛塞帳敦松游盼漢騎壇拒邱尾概甲胡輩週麥振耳袋阻凌刀床撞某焦箱鄰債扣鞋擬朗淨赴趨券吧旦池礙緣佛凱塑牆賠鳥匯桌掛擺虎貓贈輯剩壘拚讚侵摩斤濃顏髮句慣攤敬潛詩貞跌霸齊侯廟伯徒泡疾祝莫隱鳳氛混紐舒覆途酸陷鬥儘厚君坡塔寧幹怪托烏鋼閒偵狗瓜礎鎖默繳併偶壽末祕裂丁洛盧託貝轟惜潔玲緒肌谷顆借呢嘗忍截擾晶燕祭謂賺慈梁芳償宋敵沉沿潘皇籌胞鍋串伸拆暗涯督繁艦艾貸側圾垃毫狂淚遷契妳彭役抓櫃澤蕭邁掃撤旺栗絡繪翔腸芬軌閉仲后殊煮膠萊衡兄喬姐涵炎稿虛販賢嚇奈廖杯添輝秘搞淑秒脅腿鋒丹啊孟戀戒洞窗荷迪俄刷勒干揭搖獅耀遍埔帝彼循扮杜熊莉誌趙閃炸燃瓦蜜詹辣鹿乏刊恢攜泉爐碰辭逆錦鏈餅鬧魯津煙祥郵頒騙魔唐嘴懂拖棟紹膚菲蟲鑑闆哭妝尖悉撐敲聊肥舍遲凡冒卅呂乳佩卓寒扁扶梯穎跡迴佔偷姿怡燦胎臟譽薦饋宴悲拓琴襲誕踏傾准劑曼噸怒怨慎搜橫牽盒睛逼鑽黎丟兆奮寄廷徑毀沈繫蹤醬騰夥尿拼曉瓶箭罵肝蒙辯閣壯浮液烤翁逢飽伍壁妙嬰幻恰搬榜歉殖滅炒罹耐仰余堆孕慘暑柔滲裕貌墨砲俗噴址堪夕忽抹柱浩渡潭綁螢鬼凍募泥滾澎潤糕胸茲錶鍾奏孔押洽瑪甘耗聘肺貢躍遞駁鹽吹暨泛漏爺牠綱腹衰雕啦夾姆孝巷拔插撥欲灰番疏碩篇紋肩胃脈荒菌諸頃颱擠擦曝椅殘漂稍膽蔣詐謀賭采韻濕勁姻弄紫蝦詳陰頗鼻傅允暢繞羽蔬賀霧儲帥描斥晉涼滋盃禍腐腰袖註軸闖頁龜割娃拋枝櫻泳濱獄眠縱耕腫虧趁酬瑋乃吊恆憑曆氏汁盈腕鋪催剪吞娜寮峽帽彥挖旋欠毅稻耶范薩褲陶驅仙佐悠昭桶梨犬盜羊芒貫贊馨飆嘆妥彎懲扭浴猶疼碳磨脂膜菊薄諮謹鍊井冊勸嗆埋堡寵龐捨杰沖煩爬猛碎薇蜂辨逮蹟函勘奉妮娘廉憾懸捲擋湧澄琳脆鳴吐喪坑孤桿爛玻璃肚銅倉兌坊塵廈徹慰敘斑旭框械汗爽碗籤糾罩魏昇填崩廁您懼掩栽煤疊瘋瘦祈胖茂誘貪迅遵釀鈴丈凝寺崇抬摸斗昆欄淺葛虐迄鄧飼倆墊妨娛屍悅披旬椒欺殼汰淋疲窮緻艇艱訟頸俱厲奔廊彷忌怖憤拘檻歧氧灘炮盾瞬碧稀縫聰舟蒸蒐誼貧蹈錫嬤屢挫攀朵濫灌玫瘤禦粗締腔蒂誇轄鴨鷹鼠捍伏咬彿欽獸竊籠肇蔥謙譜遙釐佑僚凸喚奕婷岡摘滴瑩篩紗罕翰莎菁賈逛遣郎鬱魂洩仇仿僑劍吵堵幽拳撒昏瓊甄礦秉糊腎臣譯踐逸酷鈞麟鼎傲卸塗嫁宛履掀沛牧磚臭蕾衍豔趴踩躲逝遮隧雇曬亭儒勿卷厭垂撲撫擅晴桑柴棚珊琪瑰盪砂筋糧纖蛇蝶諷銳霖飄魅侶坤屈岩桂淹淪甫痕癒穆翠肢芝葡蚊賦趟邏污刪喻帆弘棲潑眷碑繩臥裸諜辰銜于剝婉寸彬扎抑撿橘溢灑烘獵疆粒膩舌蓄賄赫踢郁酥傘勾吋吻啤墜寓嶼廂恨悔慕撼擎斜柳淘滯焚牲矚砍臂艘茄萄藤虹謠辱醉菇俠偽傻凶卿叔喘嘲囊嫩岳征拾漆犧癮盆砸秩粹綿羞膝蒜蘆螺詮赤躺轎酵韋黏齒紓丘劣哀庸彌悶摔昂棋溼煎煌熬眉矛翼蓬蘿衫裙襪襯闊騷夯勳倡傍僵刮勉卵喔巾弊悍扯拌昔棉殷殿淵煉煞爵狼罐謊阪饒驟檯乖乙峻巢帕悟惟扛攔攬杉毯汪沾淇潰猜粽腺莓葬薛衷貶輿釣闢雀餵鵝勃匙吾咪塌墓奢姑嬌崛嶺惑慌捉撕烹燙玄琉瓷睞肅肖膏芭蠻裔訝誓諒諧辜遂醜鹹斌唇削噪尬庇恭捧椎樺泊溜漠漿狠盲礁纏芋萌蕉虞遜鑲陌霍伐叉喉姚悄惱惹抄拱摺撰晃枚株歇浸渴牢睹磁磯秦筍糟繽醇顛髒崗仕俐卑叛哩嘛坎崎愉挨旨溯熙狹猴畏瞭紮艙薑賜霜馮滷丸匹埃墾宵尷崔慨扇抨掘撈敷濾畜窄肪脊臘逗驕町仗咽塢壤宙御捏掏擲攏暈橡澡燥癱穀穴窩膀芙芽蔔蕩蝕邪餓餡鮑伶兇划剖叢宰寂屁弦挽挪搏枕槓槽檸浦碌竄筒緬翅聆肆蝴袍裹豹陵韌舖潢鉅匿叮呀姜姨慾戈抖掙斬梭棵樁樸檬泌炫甸盯禽窘竭羈耍脹覓豚鞏佈樑偕劫呆夷恤懶戚楓榕渣炭煥狄瑟畔綴繃脾蒼蔓諱醋釘鈔鑼馳亨俏倘冤卦咳哨壺奠彙挾揪攪杏枯歹沸湊燉甩癢矽稚穫絨綻纜羨膨萃萎薯訣詭豫躁酌酪攸兔勻匆匠匪吟垮峙嶄愁擱敞斐昧晰梗樞渾濤瑚瑕瓣禪竿紡缸蘊謬賊跪蹲郊醃鈕鉤鞭頌頰鴉郝伺呵嚼寡寨崑弗恥愧懇撇摧札椰歪汀溶澱澀睜矮矯碟粥茫蔽蛙謎輒鋁阱餃髓倖凹哇嘯囚姬悼憐揣梵泣觸澈瀏燭犀狐疵瞄禱簿糞腥蛛蠟輻遼鉛鑰隙痠伙倦倚冥凳吼咒喇嘔奎奴妄寞寢崖帖拐拭梳棕橙沫漬焰甦皺眶眺磅窺綽脖鍛隸艷裏琦乍侮俯剔吶喀嗅嘻噓囉屑怠惶懈揉暇炙爪瞞矩笨笛簾肋臀蠢譬豎躬轍鈣鋸靴顫鬍齣丙劈噹嚨愚拯掠櫥氫瑯疤瞎翹肘陋飢鹼叭哄唸嚐弧恍憊沮瞧筷糙絞聳莖誦贖軀鎂靡噁癡";
+            const raw = "的是一不有人在國年中大會為台出上到以時也民來要他對與生成日長後了家能可前市發這行多說就過公我表高地動政新學自下法個分選都開美現場主但方業月於和作天及全最經進用心將外小示文力工等因灣機事得子定同當元者好區部之加合還重黨員提本而車讓北名理總金關手去更立面間度如體起沒資至所內其已入萬們次期無她統意第化明路點此府品被實今議道應打很兩並電三看回相共情計調產安建局報保只由持受教水然從通果任林再正位著案未交院性展球近數身平活導指影設感目二接代或韓比女處特運想戰利港商投強問務認昨海南程物每辦少參眾造東常師團才量題社老氣結陳十推則達華委口式約隊基舉原園演做管先包助各向香光制連單續費醫己反觀求治風價空友客頭解賽專山網花首望陸完照蔡警張英知放書見縣帶色創除種規司直變線傳清畫營世聯周收樣界信使支查樂流取改科預權協王視門校該請麼別太四非許服愛決軍給義親透布育系整遊五農言件轉曾供易百兒歲片論何節料記際馬卻組雄住難又告即些勢消術黃質率環男真需超獲走店引希增標士把那檢防型西滿往房若德格濟站據送且食仍爭李失技官票話集步像境考證你護裡容領備較雙跟熱例配億初另條僅排旅必瑜藝聲職落段獎補斯低具稱響確白級幾施病神驗研修否季維半輕列深火升依星媽快款始態源六紅覺福底優習離擔吃音孩亞戶席景顯攝致號限雖項養製形邊算裝準牌里早擊效精策善登評健普宣便買歷九功購拉圖智綠執吳拍訪克柯獨象角況城拿晚千免鄉龍談採味廠餐停積阿傷母卡速興假佳狀企值廣勝置越括極隨須息班紀八岸眼識館候察郭青史謝斷足航壓待害居桃命退減威訊甚顧類層戲根留媒念署午破鐵土川終遭志衛試歌益判療銷找險什嚴酒副喜責幫究蘭貿劇歡搭疑適嘉屬控群黑止負座洲承死換注稅聽訴七樓爾字審遠復油願練錢派賴榮語粉係讀課錄器股吸歐財降模寶笑藍溫享富思銀唱石賣休婚競露室屋售均呼父康故禮令討族額勞央羅飛臉秀監絕宜核童針差繼存春波測切寫延突藥蘇構菜盟移肉京域律批申緊哲幣庭抗素追聞圍講血惠竹米違印夜爆邀攻街陽板永貨輪刻劃救估材恐衝左巴典夠雲姓密朋古董融互奇守臨博楊玩訂納絲鄭穿細爸夫挑版魚彈啟暴盡燈雨麗冠穩劉付充洋跑島急慧擇痛皮盤幕績背餘似右犯短範舞乎彩順銘罪避敗微播慶草錯鎮堅橋泰缺亮蘋竟江私翻豪曲久招棒簡般豬徵鐘潮症簽苦野倒嗎障哥蛋飯屆殺湖茶訓釋罰迷階貼危宮良迎刑含異豐靠懷村衣遇陣尚租舊詢驚尼木飲毒瑞困略筆腳駕廳怎幸倫坪逐搶樹架仁葉套授畢脫剛田籍武鼓怕擁禁築努宗激屏患腦圈州彰捷隆宅愈擴昌編跨介弟織附召慢河涉份勵夢牛輸它聚鮮盛距冷勇染省趣醒幅序棄旗紛頂齡忙掉澳戴朝妻析薪返拜損朱烈偏慮散端伴巨裁冰尤尺疫累診零夏幼玉癌索藉跳坐惡揮災雅沙乾森浪苗轉培尋操蓮述隔洗漸碼震偉堂峰籲船章束賞掌援漲諾載雞革促捐輔靈靜伊弱恩亂圓誤壞妹廚秋緩廿旁映熟燒符臺藏鬆亡射庫植輛鍵占吉楚洪邦喊折抽漁贏飾咖探替頻婦挺聖遺鏡陪嫌歸珍蓋哪誰坦皆答封湯綜觸呈徐叫唯奧尊抱暫雜予憲握檔罷骨麻乘奪宏溪牙甜寬軟駐兵隻倍漫駛麵按敏汙紙趕巧廢塊揚敢祖迫雷鴻抵縮雪亦刺哈憶捕溝滑巡勤暖糖詞誠賓槍珠複傑喝宇柏硬逾籃純肯儀固忘忠措汽獻菸姊孫憂莊覽俊兼冬宿晨欣睡逃閱啡婆梅毛豆頓奶淡仔既辛塞帳敦松游盼漢騎壇拒邱尾概甲胡輩週麥振耳袋阻凌刀床撞某焦箱鄰債扣鞋擬朗淨赴趨券吧旦池礙緣佛凱塑牆賠鳥匯桌掛擺虎貓贈輯剩壘拚讚侵摩斤濃顏髮句慣攤敬潛詩貞跌霸齊侯廟伯徒泡疾祝莫隱鳳氛混紐舒覆途酸陷鬥儘厚君坡塔寧幹怪托烏鋼閒偵狗瓜礎鎖默繳併偶壽末祕裂丁洛盧託貝轟惜潔玲緒肌谷顆借呢嘗忍截擾晶燕祭謂賺慈梁芳償宋敵沉沿潘皇籌胞鍋串伸拆暗涯督繁艦艾貸側圾垃毫狂淚遷契妳彭役抓櫃澤蕭邁掃撤旺栗絡繪翔腸芬軌閉仲后殊煮膠萊衡兄喬姐涵炎稿虛販賢嚇奈廖杯添輝秘搞淑秒脅腿鋒丹啊孟戀戒洞窗荷迪俄刷勒干揭搖獅耀遍埔帝彼循扮杜熊莉誌趙閃炸燃瓦蜜詹辣鹿乏刊恢攜泉爐碰辭逆錦鏈餅鬧魯津煙祥郵頒騙魔唐嘴懂拖棟紹膚菲蟲鑑闆哭妝尖悉撐敲聊肥舍遲凡冒卅呂乳佩卓寒扁扶梯穎跡迴佔偷姿怡燦胎臟譽薦饋宴悲拓琴襲誕踏傾准劑曼噸怒怨慎搜橫牽盒睛逼鑽黎丟兆奮寄廷徑毀沈繫蹤醬騰夥尿拼曉瓶箭罵肝蒙辯閣壯浮液烤翁逢飽伍壁妙嬰幻恰搬榜歉殖滅炒罹耐仰余堆孕慘暑柔滲裕貌墨砲俗噴址堪夕忽抹柱浩渡潭綁螢鬼凍募泥滾澎潤糕胸茲錶鍾奏孔押洽瑪甘耗聘肺貢躍遞駁鹽吹暨泛漏爺牠綱腹衰雕啦夾姆孝巷拔插撥欲灰番疏碩篇紋肩胃脈荒菌諸頃颱擠擦曝椅殘漂稍膽蔣詐謀賭采韻濕勁姻弄紫蝦詳陰頗鼻傅允暢繞羽蔬賀霧儲帥描斥晉涼滋盃禍腐腰袖註軸闖頁龜割娃拋枝櫻泳濱獄眠縱耕腫虧趁酬瑋乃吊恆憑曆氏汁盈腕鋪催剪吞娜寮峽帽彥挖旋欠毅稻耶范薩褲陶驅仙佐悠昭桶梨犬盜羊芒貫贊馨飆嘆妥彎懲扭浴猶疼碳磨脂膜菊薄諮謹鍊井冊勸嗆埋堡寵龐捨杰沖煩爬猛碎薇蜂辨逮蹟函勘奉妮娘廉憾懸捲擋湧澄琳脆鳴吐喪坑孤桿爛玻璃肚銅倉兌坊塵廈徹慰敘斑旭框械汗爽碗籤糾罩魏昇填崩廁您懼掩栽煤疊瘋瘦祈胖茂誘貪迅遵釀鈴丈凝寺崇抬摸斗昆欄淺葛虐迄鄧飼倆墊妨娛屍悅披旬椒欺殼汰淋疲窮緻艇艱訟頸俱厲奔廊彷忌怖憤拘檻歧氧灘炮盾瞬碧稀縫聰舟蒸蒐誼貧蹈錫嬤屢挫攀朵濫灌玫瘤禦粗締腔蒂誇轄鴨鷹鼠捍伏咬彿欽獸竊籠肇蔥謙譜遙釐佑僚凸喚奕婷岡摘滴瑩篩紗罕翰莎菁賈逛遣郎鬱魂洩仇仿僑劍吵堵幽拳撒昏瓊甄礦秉糊腎臣譯踐逸酷鈞麟鼎傲卸塗嫁宛履掀沛牧磚臭蕾衍豔趴踩躲逝遮隧雇曬亭儒勿卷厭垂撲撫擅晴桑柴棚珊琪瑰盪砂筋糧纖蛇蝶諷銳霖飄魅侶坤屈岩桂淹淪甫痕癒穆翠肢芝葡蚊賦趟邏污刪喻帆弘棲潑眷碑繩臥裸諜辰銜于剝婉寸彬扎抑撿橘溢灑烘獵疆粒膩舌蓄賄赫踢郁酥傘勾吋吻啤墜寓嶼廂恨悔慕撼擎斜柳淘滯焚牲矚砍臂艘茄萄藤虹謠辱醉菇俠偽傻凶卿叔喘嘲囊嫩岳征拾漆犧癮盆砸秩粹綿羞膝蒜蘆螺詮赤躺轎酵韋黏齒紓丘劣哀庸彌悶摔昂棋溼煎煌熬眉矛翼蓬蘿衫裙襪襯闊騷夯勳倡傍僵刮勉卵喔巾弊悍扯拌昔棉殷殿淵煉煞爵狼罐謊阪饒驟檯乖乙峻巢帕悟惟扛攔攬杉毯汪沾淇潰猜粽腺莓葬薛衷貶輿釣闢雀餵鵝勃匙吾咪塌墓奢姑嬌崛嶺惑慌捉撕烹燙玄琉瓷睞肅肖膏芭蠻裔訝誓諒諧辜遂醜鹹斌唇削噪尬庇恭捧椎樺泊溜漠漿狠盲礁纏芋萌蕉虞遜鑲陌霍伐叉喉姚悄惱惹抄拱摺撰晃枚株歇浸渴牢睹磁磯秦筍糟繽醇顛髒崗仕俐卑叛哩嘛坎崎愉挨旨溯熙狹猴畏瞭紮艙薑賜霜馮滷丸匹埃墾宵尷崔慨扇抨掘撈敷濾畜窄肪脊臘逗驕町仗咽塢壤宙御捏掏擲攏暈橡澡燥癱穀穴窩膀芙芽蔔蕩蝕邪餓餡鮑伶兇划剖叢宰寂屁弦挽挪搏枕槓槽檸浦碌竄筒緬翅聆肆蝴袍裹豹陵韌舖潢鉅匿叮呀姜姨慾戈抖掙斬梭棵樁樸檬泌炫甸盯禽窘竭羈耍脹覓豚鞏佈樑偕劫呆夷恤懶戚楓榕渣炭煥狄瑟畔綴繃脾蒼蔓諱醋釘鈔鑼馳亨俏倘冤卦咳哨壺奠彙挾揪攪杏枯歹沸湊燉甩癢矽稚穫絨綻纜羨膨萃萎薯訣詭豫躁酌酪攸兔勻匆匠匪吟垮峙嶄愁擱敞斐昧晰梗樞渾濤瑚瑕瓣禪竿紡缸蘊謬賊跪蹲郊醃鈕鉤鞭頌頰鴉郝伺呵嚼寡寨崑弗恥愧懇撇摧札椰歪汀溶澱澀睜矮矯碟粥茫蔽蛙謎輒鋁阱餃髓倖凹哇嘯囚姬悼憐揣梵泣溺澈瀏燭犀狐疵瞄禱簿糞腥蛛蠟輻遼鉛鑰隙痠伙倦倚冥凳吼咒喇嘔奎奴妄寞寢崖帖拐拭梳棕橙沫漬焰甦皺眶眺磅窺綽脖鍛隸艷裏琦乍侮俯剔吶喀嗅嘻噓囉屑怠惶懈揉暇炙爪瞞矩笨笛簾肋臀蠢譬豎躬轍鈣鋸靴顫鬍齣丙劈噹嚨愚拯掠櫥氫瑯疤瞎翹肘陋飢鹼叭哄唸嚐弧恍憊沮瞧筷糙絞聳莖誦贖軀鎂靡噁癡";
             const uniqueWords = [...new Set(raw.split(''))];
             const capacities = [40, 60, 100, 150, 200, 250, 350, 450, 550];
             let cT = 1, it = 0;
             uniqueWords.forEach(w => {
                 srsDatabase[w] = { interval: 0, repetitions: 0, stage: 0, nextReview: 0, tier: cT };
-                it++;
-                if (cT < 10 && it >= capacities[cT-1]) { cT++; it = 0; }
+                it++; if (cT < 10 && it >= capacities[cT-1]) { cT++; it = 0; }
             });
             saveData();
         }
@@ -336,12 +335,10 @@
     }
 
     function switchProfile(profileId) {
-        currentProfile = profileId;
-        sessionStorage.setItem('activeProfile', currentProfile);
+        currentProfile = profileId; sessionStorage.setItem('activeProfile', currentProfile);
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(`tab-${profileId}`).classList.add('active');
-        loadProfileData();
-        if (!document.getElementById('dashboard').classList.contains('hidden')) updateDashboard(true);
+        loadProfileData(); if (!document.getElementById('dashboard').classList.contains('hidden')) updateDashboard(true);
     }
 
     function migrateToStage(r) {
@@ -363,9 +360,7 @@
         let total = 0, mastered = 0;
         for (let w in srsDatabase) {
             let r = srsDatabase[w];
-            if ((r.tier || 1) === tierLevel) {
-                total++; if (migrateToStage(r) >= LONG_TERM_STAGE) mastered++;
-            }
+            if ((r.tier || 1) === tierLevel) { total++; if (migrateToStage(r) >= LONG_TERM_STAGE) mastered++; }
         }
         return { total, mastered, rate: total === 0 ? 0 : mastered / total };
     }
@@ -373,15 +368,13 @@
     function getUnlockedTiers() {
         let unlocked = [1];
         for (let i = 1; i < MAX_TIER; i++) {
-            let s = getTierMastery(i);
-            if (s.total > 0 && s.rate >= SAFETY_THRESHOLD) unlocked.push(i + 1); else break;
+            let s = getTierMastery(i); if (s.total > 0 && s.rate >= SAFETY_THRESHOLD) unlocked.push(i + 1); else break;
         }
         return unlocked;
     }
 
     function toggleDashboard() {
-        const db = document.getElementById('dashboard');
-        db.classList.toggle('hidden');
+        const db = document.getElementById('dashboard'); db.classList.toggle('hidden');
         if (!db.classList.contains('hidden')) updateDashboard(false);
     }
 
@@ -412,7 +405,6 @@
             let cr = RPG_REALMS[currentRealmIdx], rProg = mastered - cr.threshold, rTot = RPG_REALMS[currentRealmIdx + 1].threshold - cr.threshold;
             let stars = Math.floor((rProg / rTot) * 5); if (stars === 5 && rProg < rTot) stars = 4; 
             let starStr = ""; for (let s = 0; s < 5; s++) starStr += (s < stars) ? `<span class="rpg-star">★</span>` : `<span>☆</span>`;
-            
             let nStarThresh = Math.ceil((stars + 1) * (rTot / 5)) + cr.threshold;
             rpgHtml = `<div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 5px;"><div><div style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 4px;">🧬 守護神獸：</div><div style="font-size: 1.3rem; font-weight: bold; color: var(--text); display: flex; flex-direction: column; gap: 4px;"><span>${cr.emoji} ${cr.name}</span><span style="color: var(--warning); text-shadow: 0 0 2px rgba(245, 158, 11, 0.3); font-size: 1.1rem;">${starStr}</span></div></div><div style="font-size: 0.85rem; color: var(--text-light); display: flex; flex-direction: column; gap: 6px; background: rgba(255,255,255,0.6); padding: 10px 12px; border-radius: 8px;"><div>⭐ 距離下一星等還需 <b style="color: var(--text);">${nStarThresh - mastered}</b> 字</div><div>🚀 距離【❓ 未知型態】還需 <b style="color: var(--text);">${RPG_REALMS[currentRealmIdx + 1].threshold - mastered}</b> 字</div></div></div>`;
         }
@@ -425,7 +417,6 @@
         document.getElementById('gate-status-panel').innerHTML = `<strong>🔒 認知負荷閘門 (當前攻略: Tier ${currentFocusTier})</strong><br><div style="font-size:0.9rem; margin-top:8px;">精熟度要求 ${Math.round(SAFETY_THRESHOLD*100)}%：目前 ${Math.round(tStats.rate*100)}% (${tStats.mastered}/${tStats.total})</div><div class="gate-bar-bg"><div class="gate-bar-fill" style="width:${Math.min(100, tStats.rate*100)}%"></div></div>`;
     }
 
-    // [語音系統] 點擊觸發發音
     function speakWord(word) {
         if (!currentSettings.tts || !window.speechSynthesis) return;
         window.speechSynthesis.cancel();
@@ -443,29 +434,24 @@
         window.open(url, '_blank');
     }
 
+    // 核心卡片渲染 (單張模式用)
     function createCardHTML(word, type) {
         let r = srsDatabase[word]; r.stage = migrateToStage(r);
         let tierLabel = `Tier ${r.tier || 1}`;
         let int1 = STAGE_INTERVALS[getNextStage(r.stage, 1)], int2 = STAGE_INTERVALS[getNextStage(r.stage, 2)], int3 = STAGE_INTERVALS[getNextStage(r.stage, 3)];
         let str1 = int1 >= GRADUATION_INTERVAL ? '畢業' : int1 + 'd', str2 = int2 >= GRADUATION_INTERVAL ? '畢業' : int2 + 'd', str3 = int3 >= GRADUATION_INTERVAL ? '畢業' : int3 + 'd';
         if (int1 === 0) str1 = '1m';
-        
         let ttsIcon = currentSettings.tts ? `<span style="position:absolute; top:20px; right:20px; font-size:1.2rem; opacity:0.5;">🔊</span>` : '';
 
         return `
-            <div class="card ${type}" id="card-${word}">
+            <div class="card ${type}">
                 ${ttsIcon}
                 <div style="display:flex; gap:10px;">
                     <div class="badge ${type}">${type==='review'?'待複習':(type==='penalty'?'重新記憶':'新解鎖')}</div>
                     <div class="badge" style="background:#f1f5f9; color:#64748b;">${tierLabel}</div>
                 </div>
                 
-                <div class="char-title" 
-                     onclick="handleCardClick('${word}')" 
-                     style="cursor: pointer; transition: color 0.2s;" 
-                     onmouseover="this.style.color='var(--primary)'" 
-                     onmouseout="this.style.color='var(--text)'"
-                     title="點擊查詢字典">
+                <div class="char-title" onclick="handleCardClick('${word}')" style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text)'" title="點擊查詢字典">
                     ${word}
                 </div>
                 
@@ -478,8 +464,9 @@
             </div>`;
     }
 
+    // [重構] 構建排程佇列 (Queue)，而非直接渲染 DOM
     function generateDailyDeck() {
-        let nowMidnight = getMidnightTimestamp(Date.now()), deckDiv = document.getElementById('deck');
+        let nowMidnight = getMidnightTimestamp(Date.now());
         let reviewQueue = [], newQueue = [], unlockedTiers = getUnlockedTiers();
         
         for (let word in srsDatabase) {
@@ -488,32 +475,70 @@
             else { if (nowMidnight >= getMidnightTimestamp(data.nextReview) && data.stage < MAX_STAGE) reviewQueue.push(word); }
         }
         
-        let deckHtml = []; let addedCount = 0;
-        reviewQueue.forEach(w => { deckHtml.push(createCardHTML(w, 'review')); addedCount++; });
+        sessionQueue = [];
+        reviewQueue.forEach(w => sessionQueue.push({w: w, t: 'review'}));
         
         let allowedNewCards = 0;
-        if (addedCount < MAX_DAILY_LOAD) {
+        if (sessionQueue.length < MAX_DAILY_LOAD) {
             let currentNewLearned = stats.daily.learned || 0;
-            // 套用設定面板的新卡上限
-            allowedNewCards = Math.min(MAX_DAILY_LOAD - addedCount, currentSettings.newLimit - currentNewLearned);
+            allowedNewCards = Math.min(MAX_DAILY_LOAD - sessionQueue.length, currentSettings.newLimit - currentNewLearned);
         }
         
         newQueue.sort((a, b) => (srsDatabase[a].tier || 1) - (srsDatabase[b].tier || 1));
-        for (let i = 0; i < newQueue.length && i < allowedNewCards; i++) { deckHtml.push(createCardHTML(newQueue[i], 'new')); addedCount++; }
+        for (let i = 0; i < newQueue.length && i < allowedNewCards; i++) {
+            sessionQueue.push({w: newQueue[i], t: 'new'});
+        }
         
-        if (deckHtml.length === 0) {
-            let extraAvailable = 0;
+        renderDeckState();
+    }
+
+    // 負責首頁入口視圖
+    function renderDeckState() {
+        let deckDiv = document.getElementById('deck');
+        if (sessionQueue.length > 0) {
+            deckDiv.innerHTML = `
+                <div style="text-align:center; padding: 40px; width: 100%;">
+                    <div style="font-size: 1.2rem; color: var(--text-light); margin-bottom: 25px;">今日任務佇列： <strong>${sessionQueue.length}</strong> 張卡片</div>
+                    <button class="btn btn-primary" style="font-size: 1.5rem; padding: 15px 40px; border-radius: 50px; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);" onclick="startFocusMode()">🚀 開始學習</button>
+                </div>`;
+        } else {
+            let extraAvailable = 0, unlockedTiers = getUnlockedTiers();
             for (let w in srsDatabase) if (srsDatabase[w].repetitions === 0 && unlockedTiers.includes(srsDatabase[w].tier || 1)) extraAvailable++;
             let extraClicks = stats.daily.extraClicks || 0, btnHtml = '';
+            
             if (extraClicks >= 2) btnHtml = `<p style="color: var(--danger); font-weight: bold; margin-top: 15px;">🛑 今日加碼已達上限 (2/2)，請讓大腦休息！</p>`;
             else if (extraAvailable > 0) btnHtml = `<button class="btn btn-outline" onclick="drawExtraCards()" style="border-color: var(--danger); color: var(--danger);">🔥 加碼挑戰新字 (剩餘 ${2 - extraClicks} 次)</button>`;
             else btnHtml = `<p style="color: var(--warning); margin-top: 15px;">🏁 當前解鎖階層已無新字，請先精熟舊字以開啟新 Tier。</p>`;
 
-            deckHtml.push(`<div style="text-align:center; padding: 40px; width: 100%;"><div style="color: var(--success); font-weight:bold; font-size: 1.5rem; margin-bottom: 20px;">🎉 今日任務已達成！</div>${btnHtml}</div>`);
+            deckDiv.innerHTML = `<div style="text-align:center; padding: 40px; width: 100%;"><div style="color: var(--success); font-weight:bold; font-size: 1.5rem; margin-bottom: 20px;">🎉 今日任務已達成！</div>${btnHtml}</div>`;
         }
-        deckDiv.innerHTML = deckHtml.join(''); updateDashboard(false);
+        updateDashboard(false);
     }
 
+    // 啟動專注模式
+    function startFocusMode() {
+        document.getElementById('focus-mode').classList.add('active');
+        renderNextCard();
+    }
+
+    // 離開專注模式
+    function exitFocusMode() {
+        document.getElementById('focus-mode').classList.remove('active');
+        renderDeckState(); // 返回首頁重新結算
+    }
+
+    // 渲染專注模式中的下一張牌
+    function renderNextCard() {
+        if (sessionQueue.length === 0) { exitFocusMode(); return; }
+        
+        let currentItem = sessionQueue[0];
+        document.getElementById('focus-remain').innerText = sessionQueue.length;
+        document.getElementById('focus-card-wrapper').innerHTML = createCardHTML(currentItem.w, currentItem.t);
+        
+        if (currentSettings.tts) speakWord(currentItem.w);
+    }
+
+    // 處理單張評估邏輯
     function processReview(word, q) {
         let r = srsDatabase[word]; r.stage = migrateToStage(r);
         let isNewCard = (r.repetitions === 0), nextStage = getNextStage(r.stage, q);
@@ -525,33 +550,37 @@
             let cooldownDays = Math.max(1, r.interval);
             r.nextReview = Date.now() + (cooldownDays * 24 * 60 * 60 * 1000);
             if (isNewCard) stats.daily.learned = (stats.daily.learned || 0) + 1; else stats.daily.reviewed = (stats.daily.reviewed || 0) + 1;
-        } else { r.nextReview = Date.now(); }
+            sessionQueue.shift(); // 答對，移出佇列
+        } else { 
+            r.nextReview = Date.now(); 
+            let failedItem = sessionQueue.shift();
+            failedItem.t = 'penalty'; // 標記為懲罰狀態
+            sessionQueue.push(failedItem); // 塞回佇列尾端，強迫重學
+        }
 
         saveData();
-        let card = document.getElementById(`card-${word}`);
-        if (q === 0) {
-            card.style.opacity = '0.3'; setTimeout(() => { document.getElementById('deck').appendChild(card); card.style.opacity = '1'; card.outerHTML = createCardHTML(word, 'penalty'); }, 300);
-        } else { 
-            card.style.display = 'none'; if (document.querySelectorAll('#deck .card:not([style*="display: none"])').length === 0) generateDailyDeck();
-        }
-        updateDashboard(false);
+        renderNextCard(); // 立刻切換下一張
     }
 
+    // 處理加碼邏輯
     function drawExtraCards() {
         if (stats.daily.extraClicks === undefined) stats.daily.extraClicks = 0;
         if (stats.daily.extraClicks >= 2) { showToast("大腦需要休息", "今日加碼次數已達上限。", "🚫"); return; }
-        let deckDiv = document.getElementById('deck'), newQueue = [], unlockedTiers = getUnlockedTiers();
+        let newQueue = [], unlockedTiers = getUnlockedTiers();
         for (let word in srsDatabase) if (srsDatabase[word].repetitions === 0 && unlockedTiers.includes(srsDatabase[word].tier || 1)) newQueue.push(word);
         if (newQueue.length === 0) { showToast("階層已清空", "當前解鎖的字庫已無新字。", "🏁"); return; }
 
         newQueue.sort((a, b) => (srsDatabase[a].tier || 1) - (srsDatabase[b].tier || 1));
         stats.daily.extraClicks++; saveData(); 
 
-        let addedCount = 0, batchSize = 5, deckHtml = [];
-        if (deckDiv.innerHTML.includes("今日任務已達成")) deckDiv.innerHTML = '';
-        for (let i = 0; i < newQueue.length && addedCount < batchSize; i++) { deckHtml.push(createCardHTML(newQueue[i], 'new')); addedCount++; }
-        deckDiv.insertAdjacentHTML('beforeend', deckHtml.join(''));
+        let addedCount = 0, batchSize = 5;
+        for (let i = 0; i < newQueue.length && addedCount < batchSize; i++) {
+            sessionQueue.push({w: newQueue[i], t: 'new'});
+            addedCount++;
+        }
+        
         showToast("火焰挑戰開始！", `額外領取了 ${addedCount} 張新字卡`, "🔥");
+        startFocusMode(); // 加碼後直接啟動專注模式
     }
 
     function exportData() {
