@@ -364,38 +364,39 @@
         document.getElementById('gate-status-panel').innerHTML = html;
     }
 
-    function createCardHTML(word, type) {
-        let r = srsDatabase[word];
-        r.stage = migrateToStage(r);
-        let tierLabel = `Tier ${r.tier || 1}`;
-        let int1 = STAGE_INTERVALS[getNextStage(r.stage, 1)], int2 = STAGE_INTERVALS[getNextStage(r.stage, 2)], int3 = STAGE_INTERVALS[getNextStage(r.stage, 3)];
-        let str1 = int1 >= GRADUATION_INTERVAL ? '畢業' : int1 + 'd', str2 = int2 >= GRADUATION_INTERVAL ? '畢業' : int2 + 'd', str3 = int3 >= GRADUATION_INTERVAL ? '畢業' : int3 + 'd';
-        if (int1 === 0) str1 = '1m';
-        
-        return `
-            <div class="card ${type}" id="card-${word}">
-                <div style="display:flex; gap:10px;">
-                    <div class="badge ${type}">${type==='review'?'待複習':(type==='penalty'?'重新記憶':'新解鎖')}</div>
-                    <div class="badge" style="background:#f1f5f9; color:#64748b;">${tierLabel}</div>
-                </div>
-                
-                <div class="char-title" 
-                     onclick="window.open('[https://www.moedict.tw/$](https://www.moedict.tw/$){word}', '_blank')" 
-                     style="cursor: pointer; transition: color 0.2s;" 
-                     onmouseover="this.style.color='var(--primary)'" 
-                     onmouseout="this.style.color='var(--text)'"
-                     title="點擊開啟【萌典】查詢釋義與筆順">
-                    ${word}
-                </div>
-                
-                <div class="eval-buttons">
-                    <button class="btn-eval btn-eval-forget" onclick="processReview('${word}', 0)">完全忘記</button>
-                    <button class="btn-eval btn-eval-hard" onclick="processReview('${word}', 1)">困難 (${str1})</button>
-                    <button class="btn-eval btn-eval-good" onclick="processReview('${word}', 2)">良好 (${str2})</button>
-                    <button class="btn-eval btn-eval-easy" onclick="processReview('${word}', 3)">簡單 (${str3})</button>
-                </div>
-            </div>`;
-    }
+// [PATCH] 修復萌典連結的 URL 格式
+function createCardHTML(word, type) {
+    let r = srsDatabase[word];
+    r.stage = migrateToStage(r);
+    let tierLabel = `Tier ${r.tier || 1}`;
+    let int1 = STAGE_INTERVALS[getNextStage(r.stage, 1)], int2 = STAGE_INTERVALS[getNextStage(r.stage, 2)], int3 = STAGE_INTERVALS[getNextStage(r.stage, 3)];
+    let str1 = int1 >= GRADUATION_INTERVAL ? '畢業' : int1 + 'd', str2 = int2 >= GRADUATION_INTERVAL ? '畢業' : int2 + 'd', str3 = int3 >= GRADUATION_INTERVAL ? '畢業' : int3 + 'd';
+    if (int1 === 0) str1 = '1m';
+    
+    return `
+        <div class="card ${type}" id="card-${word}">
+            <div style="display:flex; gap:10px;">
+                <div class="badge ${type}">${type==='review'?'待複習':(type==='penalty'?'重新記憶':'新解鎖')}</div>
+                <div class="badge" style="background:#f1f5f9; color:#64748b;">${tierLabel}</div>
+            </div>
+            
+            <div class="char-title" 
+                 onclick="window.open('https://www.moedict.tw/${word}', '_blank')" 
+                 style="cursor: pointer; transition: color 0.2s;" 
+                 onmouseover="this.style.color='var(--primary)'" 
+                 onmouseout="this.style.color='var(--text)'"
+                 title="點擊開啟【萌典】查詢釋義與筆順">
+                ${word}
+            </div>
+            
+            <div class="eval-buttons">
+                <button class="btn-eval btn-eval-forget" onclick="processReview('${word}', 0)">完全忘記</button>
+                <button class="btn-eval btn-eval-hard" onclick="processReview('${word}', 1)">困難 (${str1})</button>
+                <button class="btn-eval btn-eval-good" onclick="processReview('${word}', 2)">良好 (${str2})</button>
+                <button class="btn-eval btn-eval-easy" onclick="processReview('${word}', 3)">簡單 (${str3})</button>
+            </div>
+        </div>`;
+}
 
 // [PATCH] 支援動態隱藏加碼按鈕的 generateDailyDeck
 function generateDailyDeck() {
