@@ -16,8 +16,8 @@
 
         :root { 
             --primary: #4f46e5; --secondary: #4338ca; --warning: #f59e0b; --success: #0ea5e9; --danger: #ef4444; --bg: #f1f5f9; --card-bg: #ffffff; --text: #1e293b; --text-light: #64748b; 
-            /* 修正優先級：優先抓取系統原生標楷體，其次採用雲端芫荽體 */
-            --char-font: "BiauKai", "Kaiti TC", "TW-Kai", "DFKai-SB", "Iansui", serif; 
+            /* 修正：將 Iansui 移至絕對第一順位，無視蘋果原生字體 */
+            --char-font: "Iansui", "BiauKai", "Kaiti TC", "TW-Kai", "DFKai-SB", serif; 
             --char-scale: 1; 
         }
         body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; max-width: 960px; margin: auto; line-height: 1.6; padding-bottom: 60px; }
