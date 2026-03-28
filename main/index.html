@@ -431,9 +431,9 @@
 
 function applySettingsToUI() {
         let root = document.documentElement;
-        // 修正：動態套用時，必須使用新的芫荽體與標準楷書優先級
+        // 修正：JS 動態渲染也必須將 Iansui 設為第一順位
         if (currentSettings.font === 'kaiti') {
-            root.style.setProperty('--char-font', '"BiauKai", "Kaiti TC", "TW-Kai", "DFKai-SB", "Iansui", serif');
+            root.style.setProperty('--char-font', '"Iansui", "BiauKai", "Kaiti TC", "TW-Kai", "DFKai-SB", serif');
         } else {
             root.style.setProperty('--char-font', '"PingFang TC", "Microsoft JhengHei", sans-serif');
         }
