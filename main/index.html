@@ -10,12 +10,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SRS 字卡">
 
-    <style>
-        /* 注入雲端開源楷體引擎，解決 iOS 阻擋系統字體問題 */
-        @import url('https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap');
+<style>
+        /* 注入芫荽體 (Iansui) 引擎，對齊台灣教育部識字標準 */
+        @import url('https://cdn.jsdelivr.net/npm/iansui@0.9.3/dist/iansui.css');
 
-        :root { --primary: #4f46e5; --secondary: #4338ca; --warning: #f59e0b; --success: #0ea5e9; --danger: #ef4444; --bg: #f1f5f9; --card-bg: #ffffff; --text: #1e293b; --text-light: #64748b; 
-                --char-font: "LXGW WenKai TC", "Kaiti TC", "STKaiti", "BiauKai", "KaiTi", "DFKai-SB", "TW-Kai", "MingLiU", serif; --char-scale: 1; }
+        :root { 
+            --primary: #4f46e5; --secondary: #4338ca; --warning: #f59e0b; --success: #0ea5e9; --danger: #ef4444; --bg: #f1f5f9; --card-bg: #ffffff; --text: #1e293b; --text-light: #64748b; 
+            /* 修正優先級：優先抓取系統原生標楷體，其次採用雲端芫荽體 */
+            --char-font: "BiauKai", "Kaiti TC", "TW-Kai", "DFKai-SB", "Iansui", serif; 
+            --char-scale: 1; 
+        }
         body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; max-width: 960px; margin: auto; line-height: 1.6; padding-bottom: 60px; }
         .profile-switcher { display: flex; gap: 10px; margin-bottom: 15px; background: #e2e8f0; padding: 6px; border-radius: 12px; }
         .tab-btn { flex: 1; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; color: var(--text-light); border: none; background: transparent; }
@@ -215,6 +219,7 @@
                         <li><strong>專注模式</strong>：點擊「開始學習」後，畫面一次僅呈現一張字卡，避免視覺雜訊干擾專注力。</li>
                         <li><strong>獨立設定檔</strong>：右上角「⚙️ 設定」可針對不同孩童獨立調整：新字配額、發音時機、桌面圖示與字典來源。</li>
                         <li><strong>💾 資料備份與跨裝置轉移</strong>：系統採離線運作，請定期至「📊 看板」點擊「匯出備份」以防進度遺失。您也可以利用「匯入復原」將進度無縫轉移至其他手機或平板。</li>
+<li><span style="color:var(--danger); font-weight:bold;">⚠️ 無法發音的終極解法：</span>若點擊字卡完全無聲，請確認手機側邊的「實體靜音鍵」已切換至響鈴模式，並且已將媒體音量調大。</li>
                         <li><strong>📱 iPhone 桌面 App 轉移指南</strong>：強烈建議透過 Safari 的「分享 ➔ 加入主畫面」將系統轉為桌面 App，查字典時會更加流暢！<br><span style="color:var(--danger); font-size:0.85rem; display:inline-block; margin-top:4px; line-height:1.4;">⚠️ 提醒：桌面 App 與 Safari 瀏覽器的存檔是獨立不互通的。請先在 Safari「匯出備份」，接著開啟您新增在桌面的 App「匯入復原」，即可完成進度轉移。</span></li>
                     </ul>
                 </div>
@@ -405,8 +410,16 @@
         { threshold: 1800, emoji: '🐋', name: '北冥吞天巨鯤' }, { threshold: 2300, emoji: '🐉', name: '宇宙洪荒祖龍' },
         { threshold: 2867, emoji: '👑', name: '萬界識字道祖' }
     ];
-
-    function getYesterdayString() { let d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10); }
+    
+// 捨棄 UTC 的 isoSring()，強制提取設備本地時區 (台灣 UTC+8) 的 YYYY-MM-DD
+    function getTodayString() { 
+        let d = new Date(); 
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); 
+    }
+    function getYesterdayString() { 
+        let d = new Date(); d.setDate(d.getDate() - 1); 
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); 
+    }
     function getMidnightTimestamp(ts) { let d = new Date(ts); d.setHours(0,0,0,0); return d.getTime(); }
 
     function loadSettings() {
@@ -479,21 +492,21 @@
         overlay.classList.remove('show'); setTimeout(() => overlay.style.display = 'none', 300);
     }
 
-    function saveSettings() {
-        currentSettings.appIcon = document.querySelector('input[name="appIcon"]:checked').value;
-        currentSettings.dict = document.querySelector('input[name="dict"]:checked').value;
-        currentSettings.font = document.getElementById('st-font').value;
-        currentSettings.scale = parseFloat(document.getElementById('st-scale').value);
-        currentSettings.newLimit = parseInt(document.getElementById('st-new').value);
-        
-        currentSettings.ttsLarge = document.getElementById('st-tts-large').checked;
-        currentSettings.ttsHard = document.getElementById('st-tts-hard').checked;
-        currentSettings.ttsGood = document.getElementById('st-tts-good').checked;
+function saveSettings() {
+    currentSettings.appIcon = document.querySelector('input[name="appIcon"]:checked')?.value || 'icon-egg.png';
+    currentSettings.dict = document.querySelector('input[name="dict"]:checked')?.value || 'concise';
+    currentSettings.font = document.getElementById('st-font')?.value || 'kaiti';
+    currentSettings.scale = parseFloat(document.getElementById('st-scale')?.value) || 1.0;
+    currentSettings.newLimit = parseInt(document.getElementById('st-new')?.value) || 10;
+    
+    currentSettings.ttsLarge = document.getElementById('st-tts-large')?.checked || false;
+    currentSettings.ttsHard = document.getElementById('st-tts-hard')?.checked || false;
+    currentSettings.ttsGood = document.getElementById('st-tts-good')?.checked || false;
 
-        localStorage.setItem(`srs_settings_${currentProfile}`, JSON.stringify(currentSettings));
-        applySettingsToUI(); closeSettings(); generateDailyDeck(); 
-        showToast("設定已儲存", "若有變更圖示，請重新加入 iOS 主畫面以生效", "💾");
-    }
+    localStorage.setItem(`srs_settings_${currentProfile}`, JSON.stringify(currentSettings));
+    applySettingsToUI(); closeSettings(); generateDailyDeck(); 
+    showToast("設定已儲存", "若有變更圖示，請重新加入 iOS 主畫面以生效", "💾");
+}
 
     function executeSkip() {
         let mode = document.querySelector('input[name="skipMode"]:checked').value;
@@ -535,11 +548,12 @@
         } else { alert('❌ 防護鎖驗證失敗，操作已阻擋。'); }
     }
 
-    function loadProfileData() {
+function loadProfileData() {
         const dbKey = `srs_db_${currentProfile}`, statsKey = `srs_stats_${currentProfile}`;
         srsDatabase = JSON.parse(localStorage.getItem(dbKey)) || {};
         let loadedStats = JSON.parse(localStorage.getItem(statsKey));
-        let today = new Date().toISOString().slice(0, 10); 
+        // 修正跨日漏洞：改用本地時區日期判定
+        let today = getTodayString();
         
         if (!loadedStats || loadedStats.lastDateCheck !== today) {
             stats = { daily: { reviewed: 0, learned: 0 }, streak: (loadedStats && loadedStats.lastDateCheck === getYesterdayString()) ? (loadedStats.streak + 1) : 1, lastDateCheck: today, lastRealmIdx: loadedStats ? loadedStats.lastRealmIdx : 0 };
@@ -660,12 +674,24 @@
         document.getElementById('gate-status-panel').innerHTML = `<strong>🔒 認知負荷閘門 (當前攻略: Tier ${currentFocusTier}) ${forceMsg}</strong><br><div style="font-size:0.9rem; margin-top:8px;">精熟度要求 ${Math.round(SAFETY_THRESHOLD*100)}%：目前 ${Math.round(tStats.rate*100)}% (${tStats.mastered}/${tStats.total})</div><div class="gate-bar-bg"><div class="gate-bar-fill" style="width:${Math.min(100, tStats.rate*100)}%"></div></div>`;
     }
 
+// 建立全域變數，阻擋 Safari 惡意垃圾回收 (GC) 導致的斷音
+    window._currentSpeech = null;
+
     function speakWord(word) {
         if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel();
-        let u = new SpeechSynthesisUtterance(word);
-        u.lang = 'zh-TW'; u.rate = 0.85; 
-        window.speechSynthesis.speak(u);
+        
+        // 將物件實例化於全域，強制保留記憶體位址
+        window._currentSpeech = new SpeechSynthesisUtterance(word);
+        window._currentSpeech.lang = 'zh-TW'; 
+        window._currentSpeech.rate = 0.85; 
+        
+        // 錯誤攔截機制
+        window._currentSpeech.onerror = function(e) {
+            console.warn("TTS Error:", e);
+        };
+
+        window.speechSynthesis.speak(window._currentSpeech);
     }
 
     function handleCardClick(word) {
@@ -766,7 +792,14 @@
         updateDashboard(false);
     }
 
-    function startFocusMode() {
+function startFocusMode() {
+        // 【核心防禦】在使用者點擊按鈕的當下，發送空語音強行解鎖 iOS 音訊引擎
+        if (window.speechSynthesis) {
+            let unlockUtterance = new SpeechSynthesisUtterance('');
+            unlockUtterance.volume = 0;
+            window.speechSynthesis.speak(unlockUtterance);
+        }
+
         document.getElementById('focus-mode').classList.add('active');
         renderNextCard();
     }
@@ -799,11 +832,20 @@
             r.nextReview = Date.now() + (cooldownDays * 24 * 60 * 60 * 1000);
             if (isNewCard) stats.daily.learned = (stats.daily.learned || 0) + 1; else stats.daily.reviewed = (stats.daily.reviewed || 0) + 1;
             sessionQueue.shift(); 
-        } else { 
+} else { 
             r.nextReview = Date.now(); 
             let failedItem = sessionQueue.shift();
+            
+            // 加入錯誤計數防呆機制，避免無窮迴圈
+            failedItem.errorCount = (failedItem.errorCount || 0) + 1;
             failedItem.t = 'penalty'; 
-            sessionQueue.push(failedItem); 
+            
+            if (failedItem.errorCount >= 3) {
+                // 單次 Session 錯超過 3 次，放過大腦，直接結束該字卡的今日複習
+                showToast("大腦保護機制", `「${word}」已達錯誤上限，明日再戰！`, "🛡️");
+            } else {
+                sessionQueue.push(failedItem); 
+            }
         }
 
         saveData();
