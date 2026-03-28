@@ -429,10 +429,14 @@
         applySettingsToUI();
     }
 
-    function applySettingsToUI() {
+function applySettingsToUI() {
         let root = document.documentElement;
-        if (currentSettings.font === 'kaiti') root.style.setProperty('--char-font', '"LXGW WenKai TC", "Kaiti TC", "STKaiti", "BiauKai", "KaiTi", "DFKai-SB", "TW-Kai", "MingLiU", serif');
-        else root.style.setProperty('--char-font', '"PingFang TC", "Microsoft JhengHei", sans-serif');
+        // 修正：動態套用時，必須使用新的芫荽體與標準楷書優先級
+        if (currentSettings.font === 'kaiti') {
+            root.style.setProperty('--char-font', '"BiauKai", "Kaiti TC", "TW-Kai", "DFKai-SB", "Iansui", serif');
+        } else {
+            root.style.setProperty('--char-font', '"PingFang TC", "Microsoft JhengHei", sans-serif');
+        }
         root.style.setProperty('--char-scale', currentSettings.scale);
         
         let iconLink = document.getElementById('dynamic-icon');
