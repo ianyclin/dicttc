@@ -789,8 +789,21 @@ function loadProfileData() {
             
             if (extraClicks >= 2) btnHtml = `<p style="color: var(--danger); font-weight: bold; margin-top: 15px;">🛑 今日加碼已達上限 (2/2)，請讓大腦休息！</p>`;
             else if (extraAvailable > 0) btnHtml = `<button class="btn btn-outline" onclick="drawExtraCards()" style="border-color: var(--danger); color: var(--danger);">🔥 加碼挑戰新字 (剩餘 ${2 - extraClicks} 次)</button>`;
-            else btnHtml = `<p style="color: var(--warning); margin-top: 15px;">🏁 當前解鎖階層已無新字，請先精熟舊字以開啟新 Tier。</p>`;
-
+else {
+    let currentMaxTier = Math.max(...unlockedTiers, currentSettings.forceUnlockTier || 1);
+    if (currentMaxTier < MAX_TIER) {
+        btnHtml = `
+        <p style="color: var(--warning); margin-top: 15px; margin-bottom: 10px;">🏁 當前解鎖階層已無新字。</p>
+        <div style="background: #fffbeb; padding: 12px; border-radius: 8px; border: 1px dashed #f59e0b; display: inline-block;">
+            <div style="font-size: 0.85rem; color: #b45309; margin-bottom: 8px;">👨‍👧‍👦 家長覆寫權限：若評估負擔許可，可手動解鎖下一層</div>
+            <button class="btn btn-outline" onclick="forceUnlockNextTier()" style="border-color: #f59e0b; color: #d97706; font-size: 0.9rem;">
+                🔓 強制開放 Tier ${currentMaxTier + 1}
+            </button>
+        </div>`;
+    } else {
+        btnHtml = `<p style="color: var(--success); margin-top: 15px;">🏆 所有 Tier 皆已解鎖！</p>`;
+    }
+}
             deckDiv.innerHTML = `<div style="text-align:center; padding: 40px; width: 100%;"><div style="color: var(--success); font-weight:bold; font-size: 1.5rem; margin-bottom: 20px;">🎉 今日任務已達成！</div>${btnHtml}</div>`;
         }
         updateDashboard(false);
@@ -880,7 +893,22 @@ function startFocusMode() {
         showToast("火焰挑戰開始！", `額外領取了 ${addedCount} 張新字卡`, "🔥");
         startFocusMode(); 
     }
-
+function forceUnlockNextTier() {
+    if (confirm("⚠️ 家長確認：\n\n強制解鎖將無視 85% 精熟度防護，提早將下一層字卡混入新卡池。\n\n確定執行？")) {
+        let unlocked = getUnlockedTiers();
+        let currentMax = Math.max(...unlocked, currentSettings.forceUnlockTier || 1);
+        
+        if (currentMax < MAX_TIER) {
+            currentSettings.forceUnlockTier = currentMax + 1;
+            localStorage.setItem(`srs_settings_${currentProfile}`, JSON.stringify(currentSettings));
+            showToast("閘門手動覆寫", `已強制開放至 Tier ${currentSettings.forceUnlockTier}！`, "🔓");
+            
+            // 重構佇列並刷新畫面
+            generateDailyDeck(); 
+            updateDashboard(false);
+        }
+    }
+}
     function exportData() {
         const blob = new Blob([JSON.stringify({db: srsDatabase, stats: stats, settings: currentSettings})], {type: "application/json"});
         const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `srs_profile_${currentProfile}_backup.json`; a.click();
