@@ -894,11 +894,22 @@ function startFocusMode() {
         startFocusMode(); 
     }
 function forceUnlockNextTier() {
-    if (confirm("⚠️ 家長確認：\n\n強制解鎖將無視 85% 精熟度防護，提早將下一層字卡混入新卡池。\n\n確定執行？")) {
-        let unlocked = getUnlockedTiers();
-        let currentMax = Math.max(...unlocked, currentSettings.forceUnlockTier || 1);
-        
-        if (currentMax < MAX_TIER) {
+    let unlocked = getUnlockedTiers();
+    let currentMax = Math.max(...unlocked, currentSettings.forceUnlockTier || 1);
+    
+    if (currentMax >= MAX_TIER) {
+        showToast("已達上限", "所有 Tier 皆已解鎖！", "🏆");
+        return;
+    }
+
+    // 第一層防護：家長動態運算鎖 (Math CAPTCHA)
+    let a = Math.floor(Math.random() * 5) + 5; 
+    let b = Math.floor(Math.random() * 5) + 5;
+    let ans = prompt(`🚨 家長防護鎖：\n請輸入 ${a} × ${b} 的答案以授權解鎖 Tier ${currentMax + 1}：`);
+    
+    if (parseInt(ans) === a * b) {
+        // 第二層防護：破壞演算法警告與意圖確認
+        if (confirm(`最終確認：強制解鎖將無視 85% 精熟度防護，提早將 Tier ${currentMax + 1} 字卡混入新卡池。\n\n確定執行？`)) {
             currentSettings.forceUnlockTier = currentMax + 1;
             localStorage.setItem(`srs_settings_${currentProfile}`, JSON.stringify(currentSettings));
             showToast("閘門手動覆寫", `已強制開放至 Tier ${currentSettings.forceUnlockTier}！`, "🔓");
@@ -907,6 +918,8 @@ function forceUnlockNextTier() {
             generateDailyDeck(); 
             updateDashboard(false);
         }
+    } else { 
+        alert('❌ 防護鎖驗證失敗，解鎖操作已阻擋。'); 
     }
 }
     function exportData() {
