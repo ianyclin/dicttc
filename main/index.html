@@ -676,6 +676,7 @@ function loadProfileData() {
         
         let forceMsg = currentSettings.forceUnlockTier ? `<span style="color:var(--warning); font-size:0.8rem; margin-left:10px;">(跳躍模式已啟用)</span>` : "";
         document.getElementById('gate-status-panel').innerHTML = `<strong>🔒 認知負荷閘門 (當前攻略: Tier ${currentFocusTier}) ${forceMsg}</strong><br><div style="font-size:0.9rem; margin-top:8px;">精熟度要求 ${Math.round(SAFETY_THRESHOLD*100)}%：目前 ${Math.round(tStats.rate*100)}% (${tStats.mastered}/${tStats.total})</div><div class="gate-bar-bg"><div class="gate-bar-fill" style="width:${Math.min(100, tStats.rate*100)}%"></div></div>`;
+   checkBackupStatus();
     }
 
 // 建立全域變數，阻擋 Safari 惡意垃圾回收 (GC) 導致的斷音
@@ -922,9 +923,43 @@ function forceUnlockNextTier() {
         alert('❌ 防護鎖驗證失敗，解鎖操作已阻擋。'); 
     }
 }
-    function exportData() {
+function exportData() {
         const blob = new Blob([JSON.stringify({db: srsDatabase, stats: stats, settings: currentSettings})], {type: "application/json"});
         const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `srs_profile_${currentProfile}_backup.json`; a.click();
+        
+        // 紀錄當前設定檔的最後備份時間戳記
+        localStorage.setItem(`srs_last_backup_${currentProfile}`, Date.now());
+        showToast("備份成功", "已更新最後備份時間", "💾");
+        checkBackupStatus(); // 備份後立即刷新提醒狀態
+    }
+
+    // 新增：備份狀態檢查與 UI 渲染函式
+    function checkBackupStatus() {
+        let lastBackup = localStorage.getItem(`srs_last_backup_${currentProfile}`);
+        // 若無紀錄視為 999 天，否則計算經過天數
+        let daysSince = lastBackup ? (Date.now() - parseInt(lastBackup)) / (1000 * 60 * 60 * 24) : 999;
+        
+        let banner = document.getElementById('backup-warning-banner');
+        if (!banner) {
+            // 若橫幅不存在則動態創建，並插入至 dashboard 最上方
+            banner = document.createElement('div');
+            banner.id = 'backup-warning-banner';
+            banner.style.cssText = "background: #fef2f2; border: 1px dashed var(--danger); padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;";
+            let db = document.getElementById('dashboard');
+            db.insertBefore(banner, db.firstChild);
+        }
+
+        // 設定觸發閾值：7 天 (可自行修改數字)
+        if (daysSince > 7) {
+            let msg = lastBackup ? `距離上次備份已超過 <b>${Math.floor(daysSince)}</b> 天！` : "您尚未進行過備份，資料有遺失風險！";
+            banner.innerHTML = `
+                <span style="color: var(--danger); font-size: 0.9rem; line-height: 1.4;">⚠️ <strong>備份提醒：</strong><br>${msg}</span>
+                <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="exportData()">立即備份</button>
+            `;
+            banner.style.display = 'flex';
+        } else {
+            banner.style.display = 'none';
+        }
     }
 
     function importData(e) {
