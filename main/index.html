@@ -346,7 +346,7 @@
 
     <footer style="text-align: center; padding: 20px; color: var(--text-light); font-size: 0.85rem; margin-top: 40px; border-top: 1px solid #e2e8f0;">
         <p>&copy; 2026 SRS Learning System. All Rights Reserved.</p>
-        <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;">SRS Engine v6.5 | MOE 5021 字頻 | Inline Font</p>
+        <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;">SRS Engine v6.6 | MOE 5021 字頻 | Inline Font</p>
         <p style="font-size: 0.75rem; font-weight: bold; margin-top: 10px;">
             Author: <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: none; opacity: 0.8;">fb/指數三寶飯</a>
         </p>
@@ -574,103 +574,68 @@
                     <button type="button" class="btn btn-outline" style="width:100%; font-size: 0.85rem; border-color: #cbd5e1; color: #64748b;" onclick="toggleChangelog()">🕒 查看版本變更沿革</button>
                     <div id="changelog-box" class="changelog-box">
 
-                        <div style="margin-bottom:14px; padding-bottom:10px; border-bottom: 1px dashed #e2e8f0;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
-                                <div><span class="ver-tag">v6.5</span><strong>產品定位：親子共學</strong></div>
+                        <div style="margin-bottom:16px; padding: 12px; background: #f0fdf4; border-left: 3px solid var(--success); border-radius: 6px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                                <div><span class="ver-tag">v6.6</span><strong>實際使用回饋修正</strong></div>
                                 <div class="date-tag">2026.05.14</div>
                             </div>
-                            <div style="font-size:0.8rem; color: var(--text-light); padding-left: 4px; line-height: 1.5;">
-                                · 標題「兒童 SRS 字卡系統」➝「親子 SRS 字卡系統」<br>
-                                · 主按鈕「開始學習」➝「開始一起學習」<br>
-                                · Onboarding 按鈕同步調整<br>
-                                · 強化「家長 + 孩子共學」的產品訊號
+                            <div style="font-size:0.8rem; color: var(--text); padding-left: 4px; line-height: 1.5;">
+                                · 自動備份延後到進化動畫播完才執行<br>
+                                · 「忘記」後重做的字卡只顯示 2 個按鈕（避免造假 SRS）
                             </div>
                         </div>
 
                         <div style="margin-bottom:14px; padding-bottom:10px; border-bottom: 1px dashed #e2e8f0;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
-                                <div><span class="ver-tag">v6.4</span><strong>說明頁與 UI 細部整理</strong></div>
-                                <div class="date-tag">2026.05.14</div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                                <div><span class="ver-tag">v6.0-6.5</span><strong>核心改造（親子共學版）</strong></div>
+                                <div class="date-tag">2026.05.13-14</div>
                             </div>
-                            <div style="font-size:0.8rem; color: var(--text-light); padding-left: 4px; line-height: 1.5;">
-                                · 說明頁面重整為 6 個精簡區塊，砍掉重複內容<br>
-                                · 「備份與裝置轉移」獨立成醒目區塊（紅色強調）<br>
-                                · 學習區頂端提示移到「中斷離開」與「剩餘張數」之間<br>
-                                · 手機版 stat-box 強制 2×2 排版（避免 3+1 不對稱）<br>
-                                · 移除說明面板內冗餘的「重新查看指引」按鈕<br>
-                                · 加回「忘記重學機制」說明<br>
-                                · 各年級識字量加 Tier 對照標籤、用 table 對齊分隔線<br>
-                                · 還原「各年級女生識字量普遍優於男生」研究註記
-                            </div>
-                        </div>
-
-                        <div style="margin-bottom:14px; padding-bottom:10px; border-bottom: 1px dashed #e2e8f0;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
-                                <div><span class="ver-tag">v6.3</span><strong>親子共學引導</strong></div>
-                                <div class="date-tag">2026.05.14</div>
-                            </div>
-                            <div style="font-size:0.8rem; color: var(--text-light); padding-left: 4px; line-height: 1.5;">
-                                · 首次使用跳出親子共學 onboarding（念音 + 造詞 + 誠實按鈕）<br>
-                                · 學習區頂端加常駐溫和提示<br>
-                                · 說明面板新增完整親子共學指引區塊<br>
-                                · stat-box 可點互動視覺優化（chevron + 邊框 hover）
-                            </div>
-                        </div>
-
-                        <div style="margin-bottom:14px; padding-bottom:10px; border-bottom: 1px dashed #e2e8f0;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
-                                <div><span class="ver-tag">v6.2</span><strong>字庫清單與 UI 細部優化</strong></div>
-                                <div class="date-tag">2026.05.14</div>
-                            </div>
-                            <div style="font-size:0.8rem; color: var(--text-light); padding-left: 4px; line-height: 1.5;">
-                                · 看板上「🌱 學習中」「🌳 已精熟」可點擊開啟字庫清單<br>
-                                · 字卡清單支援 Tier 篩選、多種排序、弱字標記<br>
-                                · 字卡資訊統一顯示「下次出現時間」（動態計算）<br>
-                                · 進化稱號全面升級（赤影火犬 ➔ 焚天萬界帝 系列）<br>
-                                · 設定／說明面板標題改為捲動凍結 (sticky)<br>
-                                · 四個 stat-box 加上 emoji 視覺辨識
-                            </div>
-                        </div>
-
-                        <div style="margin-bottom:14px; padding-bottom:10px; border-bottom: 1px dashed #e2e8f0;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
-                                <div><span class="ver-tag">v6.1</span><strong>字庫與字體系統大改</strong></div>
-                                <div class="date-tag">2026.05.13</div>
-                            </div>
-                            <div style="font-size:0.8rem; color: var(--text-light); padding-left: 4px; line-height: 1.5;">
+                            <div style="font-size:0.8rem; color: var(--text-light); padding-left: 4px; line-height: 1.7;">
+                                <strong style="color: var(--text);">🧬 學習引擎</strong><br>
                                 · 字庫換為教育部 5021 字頻表前 3500 字<br>
-                                · Tier 對齊年級里程碑（脫盲、小一～小六）<br>
-                                · 芫荽體 (Iansui) 改為內嵌 woff2，永不依賴 CDN<br>
-                                · 自動備份開關、進化河流漸層條<br>
-                                · 序列化進化動畫、累計學習日統計
+                                · Tier 分層對齊年級里程碑（小一～國中入門）<br>
+                                · 多項 SRS 邏輯修正（新卡分級、忘記重學）<br>
+                                <br>
+                                <strong style="color: var(--text);">🎮 30 階神獸進化</strong><br>
+                                · 從 11 階升級為 30 階（共通 10 + 三系各 20）<br>
+                                · Lv 11 觸發屬性覺醒：烈焰／冰霜／雷霆<br>
+                                · 神獸進化史圖鑑、序列化進化動畫<br>
+                                · 進化河流漸層進度條<br>
+                                <br>
+                                <strong style="color: var(--text);">👨‍👧‍👦 親子共學定位</strong><br>
+                                · 命名「兒童」➝「親子」、按鈕「開始學習」➝「開始一起學習」<br>
+                                · 首次使用跳出念音/造詞/誠實按鈕三原則引導<br>
+                                · 學習區頂端常駐溫和提示<br>
+                                <br>
+                                <strong style="color: var(--text);">📚 字庫清單與看板</strong><br>
+                                · 點「🌱 學習中」「🌳 已精熟」可開啟字卡清單<br>
+                                · 弱字標記、Tier 篩選、多種排序<br>
+                                · 字卡資訊統一顯示「下次出現時間」<br>
+                                · 累計學習日統計<br>
+                                <br>
+                                <strong style="color: var(--text);">💾 備份保護</strong><br>
+                                · 自動備份開關（每日完成學習後自動下載）<br>
+                                · 頂端醒目 banner、beforeunload 防呆<br>
+                                · 跳級設定加乘法兒童安全鎖<br>
+                                <br>
+                                <strong style="color: var(--text);">🎨 介面細節</strong><br>
+                                · 芫荽體 (Iansui) 內嵌 woff2，永不依賴 CDN<br>
+                                · 設定／說明面板捲動標題凍結<br>
+                                · 手機版 stat-box 強制 2×2 排版<br>
+                                · 說明頁面重整為 6 個精簡區塊
                             </div>
                         </div>
 
-                        <div style="margin-bottom:14px; padding-bottom:10px; border-bottom: 1px dashed #e2e8f0;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
-                                <div><span class="ver-tag">v6.0</span><strong>30 階三系進化系統</strong></div>
-                                <div class="date-tag">2026.05.13</div>
-                            </div>
-                            <div style="font-size:0.8rem; color: var(--text-light); padding-left: 4px; line-height: 1.5;">
-                                · 神獸進化從 11 階升級為 30 階（共通 10 + 三系各 20）<br>
-                                · Lv 11 觸發屬性覺醒，可選烈焰／冰霜／雷霆系<br>
-                                · 看板新增神獸進化史圖鑑<br>
-                                · 學習完成後鼓勵卡 + 明日提醒<br>
-                                · 多項 SRS 邏輯修正（新卡分級、忘記重學等）<br>
-                                · 備份保護機制（頂端 banner、beforeunload 警告）
-                            </div>
-                        </div>
-
-                        <div style="margin-bottom:14px; padding-bottom:10px; border-bottom: 1px dashed #e2e8f0;">
-                            <div style="font-size:0.78rem; color: var(--text-light); font-weight: bold; margin-bottom: 6px;">📜 v5 系列（早期版本）</div>
+                        <div style="margin-bottom:0;">
+                            <div style="font-size:0.78rem; color: var(--text-light); font-weight: bold; margin-bottom: 6px;">📜 v5 系列（2026.03）</div>
                             <div style="font-size:0.78rem; color: var(--text-light); line-height: 1.8; padding-left: 4px;">
-                                <span class="ver-tag">v5.9</span>雲端楷體引擎；轉移指南；動態字庫對齊 <span style="color:#cbd5e1; margin-left:6px;">2026.03</span><br>
-                                <span class="ver-tag">v5.7</span>PWA 宣告；自訂 iOS 桌面圖示 <span style="color:#cbd5e1; margin-left:6px;">2026.03</span><br>
-                                <span class="ver-tag">v5.6</span>🚀 跨級跳躍模式實裝 <span style="color:#cbd5e1; margin-left:6px;">2026.03</span><br>
-                                <span class="ver-tag">v5.4</span>TTS 精準發音模組 <span style="color:#cbd5e1; margin-left:6px;">2026.03</span><br>
-                                <span class="ver-tag">v5.3</span>專注模式；狀態機佇列 <span style="color:#cbd5e1; margin-left:6px;">2026.03</span><br>
-                                <span class="ver-tag">v5.2</span>設定面板；字典路由切換 <span style="color:#cbd5e1; margin-left:6px;">2026.03</span><br>
-                                <span class="ver-tag">v5.1</span>SRS 重啟；解除複習上限 <span style="color:#cbd5e1; margin-left:6px;">2026.03</span>
+                                <span class="ver-tag">v5.9</span>雲端楷體引擎；轉移指南；動態字庫對齊<br>
+                                <span class="ver-tag">v5.7</span>PWA 宣告；自訂 iOS 桌面圖示<br>
+                                <span class="ver-tag">v5.6</span>🚀 跨級跳躍模式實裝<br>
+                                <span class="ver-tag">v5.4</span>TTS 精準發音模組<br>
+                                <span class="ver-tag">v5.3</span>專注模式；狀態機佇列<br>
+                                <span class="ver-tag">v5.2</span>設定面板；字典路由切換<br>
+                                <span class="ver-tag">v5.1</span>SRS 重啟；解除複習上限
                             </div>
                         </div>
 
@@ -1669,6 +1634,19 @@ function loadProfileData() {
 
         let ttsIcon = (currentSettings.ttsLarge || currentSettings.ttsHard || currentSettings.ttsGood) ? `<span style="position:absolute; top:20px; right:20px; font-size:1.2rem; opacity:0.5;">🔊</span>` : '';
 
+        // penalty 卡（剛剛按過忘記、佇列尾端重出現）：只顯示「忘記/困難」
+        // 避免孩子剛說不會、立刻按良好/簡單造假
+        let isPenalty = (type === 'penalty');
+        let evalButtons = isPenalty ? `
+                    <button class="btn-eval btn-eval-forget" onclick="processReview('${word}', 0)">還是忘記</button>
+                    <button class="btn-eval btn-eval-hard" onclick="processReview('${word}', 1)">這次記得了 (${str1})</button>
+        ` : `
+                    <button class="btn-eval btn-eval-forget" onclick="processReview('${word}', 0)">忘記</button>
+                    <button class="btn-eval btn-eval-hard" onclick="processReview('${word}', 1)">困難 (${str1})</button>
+                    <button class="btn-eval btn-eval-good" onclick="processReview('${word}', 2)">良好 (${str2})</button>
+                    <button class="btn-eval btn-eval-easy" onclick="processReview('${word}', 3)">簡單 (${str3})</button>
+        `;
+
         return `
             <div class="card ${type}">
                 ${ttsIcon}
@@ -1681,12 +1659,7 @@ function loadProfileData() {
                     ${word}
                 </div>
                 
-                <div class="eval-buttons">
-                    <button class="btn-eval btn-eval-forget" onclick="processReview('${word}', 0)">忘記</button>
-                    <button class="btn-eval btn-eval-hard" onclick="processReview('${word}', 1)">困難 (${str1})</button>
-                    <button class="btn-eval btn-eval-good" onclick="processReview('${word}', 2)">良好 (${str2})</button>
-                    <button class="btn-eval btn-eval-easy" onclick="processReview('${word}', 3)">簡單 (${str3})</button>
-                </div>
+                <div class="eval-buttons">${evalButtons}</div>
             </div>`;
     }
 
@@ -1758,10 +1731,19 @@ function loadProfileData() {
             let hasLearned = (stats.daily.learned || 0) + (stats.daily.reviewed || 0) > 0;
 
             // 自動備份：今日有學習 + 開啟自動備份 + 今日尚未自動備份過
+            // 若進化動畫正在播，等動畫結束才備份，避免打斷孩子的成就感
             if (hasLearned && currentSettings.autoBackup && !stats.daily.autoBackupDone) {
                 stats.daily.autoBackupDone = true;
                 saveData();
-                setTimeout(() => exportData(), 800); // 給鼓勵卡先 render
+                const triggerBackup = () => {
+                    if (window._evolutionAnimating) {
+                        // 動畫播放中 → 200ms 後再檢查
+                        setTimeout(triggerBackup, 200);
+                    } else {
+                        exportData();
+                    }
+                };
+                setTimeout(triggerBackup, 800);
             }
 
             let cardHtml;
