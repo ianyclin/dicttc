@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>兒童 SRS 字卡學習系統</title>
+    <title>親子 SRS 字卡學習系統</title>
     
     <link id="dynamic-icon" rel="apple-touch-icon" href="icon-egg.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -42,6 +42,11 @@
         #dashboard { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .hidden { display: none !important; }
         .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-top: 15px; }
+        @media (max-width: 600px) {
+            /* 手機強制 2×2 排版，避免 3+1 不對稱 */
+            .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stat-box { padding: 12px 10px; }
+        }
         .stat-box { background: var(--bg); padding: 15px; border-radius: 8px; text-align: center; }
         .stat-num { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
         .gate-status { margin-top: 15px; padding: 15px; background: #f8fafc; border-left: 4px solid var(--primary); border-radius: 0 8px 8px 0; }
@@ -53,8 +58,26 @@
         /* 專注模式 UI */
         #focus-mode { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s ease; opacity: 0; pointer-events: none; }
         #focus-mode.active { opacity: 1; pointer-events: auto; }
-        .focus-header { position: absolute; top: 20px; width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-sizing: border-box; }
-        .focus-remain-badge { background: var(--primary); color: white; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .focus-header { position: absolute; top: 20px; width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-sizing: border-box; gap: 8px; }
+        .focus-remain-badge { background: var(--primary); color: white; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); white-space: nowrap; }
+        .focus-hint {
+            background: rgba(255, 251, 235, 0.95);
+            border: 1px solid #fde68a;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            color: #92400e;
+            font-weight: 600;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        @media (max-width: 480px) {
+            .focus-hint { font-size: 0.78rem; padding: 5px 10px; }
+            .focus-remain-badge { font-size: 0.9rem; padding: 5px 12px; }
+        }
+        @media (max-width: 380px) {
+            .focus-hint { display: none; } /* 極小螢幕避免擠到字卡 */
+        }
         
         .card { background: var(--card-bg); width: 280px; padding: 20px; border-radius: 16px; box-shadow: 0 15px 25px -5px rgba(0,0,0,0.15); display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 6px solid var(--primary); position: relative; }
         .card.review { border-top-color: var(--warning); }
@@ -96,12 +119,18 @@
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 9000; opacity: 0; transition: opacity 0.3s; }
         .modal-overlay.show { display: flex; opacity: 1; }
         .modal-content { 
-            background: #fff; width: 90%; max-width: 450px; border-radius: 16px; padding: 24px 24px 0 24px; 
+            background: #fff; width: 90%; max-width: 450px; border-radius: 16px; padding: 0 24px 0 24px; 
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); transform: translateY(20px); transition: transform 0.3s; 
             max-height: 80vh; max-height: 80dvh;
             overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column;
         }
         .modal-overlay.show .modal-content { transform: translateY(0); }
+        /* 設定/說明面板的標題列固定在頂端，捲動時不消失 */
+        .modal-sticky-header {
+            position: sticky; top: 0; background: #fff; padding: 20px 0 14px 0; margin-bottom: 6px;
+            border-bottom: 1px solid #e2e8f0; z-index: 10;
+        }
+        .modal-content > div:first-child { padding-top: 4px; }
         .setting-group { margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; }
         .setting-group:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .setting-title { font-weight: bold; margin-bottom: 10px; color: var(--text); display: flex; align-items: center; gap: 8px; }
@@ -211,10 +240,33 @@
         .evo-cell .lv-title { font-size: 0.62rem; line-height: 1.15; margin-top: 1px; }
 
         /* 字卡清單（學習中／已精熟）*/
-        .stat-box.clickable { cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; }
-        .stat-box.clickable:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        .stat-box.clickable {
+            cursor: pointer;
+            position: relative;
+            border: 1px solid transparent;
+            transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .stat-box.clickable:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.12);
+        }
         .stat-box.clickable:active { transform: translateY(0); }
-        .stat-box.clickable::after { content: "👁"; font-size: 0.65rem; opacity: 0.4; margin-left: 4px; }
+        .stat-box.clickable::after {
+            content: "›";
+            position: absolute;
+            top: 6px; right: 12px;
+            font-size: 1.4rem;
+            line-height: 1;
+            color: var(--text-light);
+            opacity: 0.4;
+            transition: opacity 0.15s, color 0.15s, transform 0.15s;
+        }
+        .stat-box.clickable:hover::after {
+            opacity: 1;
+            color: var(--primary);
+            transform: translateX(3px);
+        }
 
         .charlist-modal .modal-content { max-width: 600px; max-height: 80vh; display: flex; flex-direction: column; }
         .charlist-controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
@@ -259,7 +311,7 @@
 
     <div class="header-stats">
         <div class="flex-row">
-            <h2 style="margin:0;">🧠 兒童 SRS 字卡系統</h2>
+            <h2 style="margin:0;">🧠 親子 SRS 字卡系統</h2>
             <div style="display:flex; gap:8px; flex-wrap: wrap;">
                 <button class="btn btn-outline" onclick="toggleDashboard()">📊 看板</button>
                 <button class="btn btn-outline" onclick="exportData()" style="border-color: var(--success); color: var(--success);">💾 備份</button>
@@ -281,10 +333,10 @@
 
     <div id="dashboard" class="hidden">
         <div class="stat-grid">
-            <div class="stat-box clickable" onclick="openCharList('learning')" title="點擊查看學習中的字"><div class="stat-num" id="stat-learning">0</div>學習中</div>
-            <div class="stat-box clickable" onclick="openCharList('mastered')" title="點擊查看已精熟的字"><div class="stat-num" id="stat-grad">0</div>已精熟</div>
-            <div class="stat-box" title="連續每天開 App 的天數（中斷一天就歸零）"><div class="stat-num" id="stat-streak">0</div>連續天數</div>
-            <div class="stat-box" title="實際有答題的累計天數（不會歸零）"><div class="stat-num" id="stat-total-days">0</div>累計學習日</div>
+            <div class="stat-box clickable" onclick="openCharList('learning')" title="點擊查看學習中的字"><div class="stat-num" id="stat-learning">0</div>🌱 學習中</div>
+            <div class="stat-box clickable" onclick="openCharList('mastered')" title="點擊查看已精熟的字"><div class="stat-num" id="stat-grad">0</div>🌳 已精熟</div>
+            <div class="stat-box" title="連續每天開 App 的天數（中斷一天就歸零）"><div class="stat-num" id="stat-streak">0</div>🔥 連續天數</div>
+            <div class="stat-box" title="實際有答題的累計天數（不會歸零）"><div class="stat-num" id="stat-total-days">0</div>📅 累計學習日</div>
         </div>
         <div class="gate-status" id="gate-status-panel"></div>
         <div id="evolution-history" style="margin-top: 20px;"></div>
@@ -294,7 +346,7 @@
 
     <footer style="text-align: center; padding: 20px; color: var(--text-light); font-size: 0.85rem; margin-top: 40px; border-top: 1px solid #e2e8f0;">
         <p>&copy; 2026 SRS Learning System. All Rights Reserved.</p>
-        <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;">SRS Engine v6.1 | MOE 5021 字頻 | Inline Font</p>
+        <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px;">SRS Engine v6.5 | MOE 5021 字頻 | Inline Font</p>
         <p style="font-size: 0.75rem; font-weight: bold; margin-top: 10px;">
             Author: <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: none; opacity: 0.8;">fb/指數三寶飯</a>
         </p>
@@ -303,9 +355,55 @@
     <div id="focus-mode">
         <div class="focus-header">
             <button class="btn btn-outline" style="border-color: var(--text-light); color: var(--text-light); padding: 6px 12px; font-size: 0.9rem;" onclick="exitFocusMode()">🔙 中斷離開</button>
+            <div class="focus-hint">💡 念音 + 造詞</div>
             <div class="focus-remain-badge">剩餘 <span id="focus-remain">0</span> 張</div>
         </div>
         <div id="focus-card-wrapper"></div>
+    </div>
+
+    <div id="onboarding-overlay" class="modal-overlay" style="z-index: 9800;">
+        <div class="modal-content" style="max-width: 480px; padding: 24px;">
+            <div style="text-align: center; margin-bottom: 18px;">
+                <div style="font-size: 2.5rem; margin-bottom: 8px;">🌱👨‍👧‍👦</div>
+                <h2 style="margin: 0; color: var(--primary); font-size: 1.4rem;">親子共學的小提醒</h2>
+            </div>
+
+            <p style="font-size: 0.95rem; color: var(--text); line-height: 1.6; margin-bottom: 18px;">
+                這個系統會慢慢累積孩子的識字量。為了讓學習真的有效，<strong>請和孩子一起學</strong>，並做到下面三件事：
+            </p>
+
+            <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; padding: 14px; margin-bottom: 12px;">
+                <div style="font-weight: bold; color: #166534; margin-bottom: 6px;">① 一起念出字音 🔊</div>
+                <div style="font-size: 0.85rem; color: #15803d; line-height: 1.5;">確認孩子是真的會念，不是猜的。可以對照系統的發音來驗證。</div>
+            </div>
+
+            <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 14px; margin-bottom: 12px;">
+                <div style="font-weight: bold; color: #92400e; margin-bottom: 6px;">② 一起造一個詞 ✏️</div>
+                <div style="font-size: 0.85rem; color: #b45309; line-height: 1.5;">會念音不等於認識這個字。請孩子用這個字造一個詞（例如「水」→「水果」），才算真的認識。</div>
+            </div>
+
+            <div style="background: #eff6ff; border: 1px solid #93c5fd; border-radius: 10px; padding: 14px; margin-bottom: 16px;">
+                <div style="font-weight: bold; color: #1e40af; margin-bottom: 6px;">③ 誠實按按鈕，不要硬撐 💪</div>
+                <div style="font-size: 0.85rem; color: #1e3a8a; line-height: 1.5;">
+                    · 念不出來或不會造詞 → 按「忘記」<br>
+                    · 想了一下才會 → 按「困難」<br>
+                    · 順利答對 → 按「良好」<br>
+                    · 一看就會、很熟 → 按「簡單」<br>
+                    系統會根據按鈕安排下次複習時間，誠實才會學得最有效！
+                </div>
+            </div>
+
+            <div style="background: #fef2f2; border: 1px dashed var(--danger); border-radius: 8px; padding: 10px; margin-bottom: 16px;">
+                <div style="font-size: 0.85rem; color: var(--danger); line-height: 1.5;">
+                    ⚠️ <strong>記得備份！</strong> 學習資料儲存在這個瀏覽器內，請定期點頂端的「💾 備份」匯出檔案，避免進度遺失。
+                </div>
+            </div>
+
+            <button id="onboarding-start-btn" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1rem;">好的，開始一起學習 🚀</button>
+            <p style="font-size: 0.75rem; color: var(--text-light); text-align: center; margin-top: 10px; margin-bottom: 0;">
+                這個指引只會在第一次學習時出現，之後可在「📖 說明」中再次查看
+            </p>
+        </div>
     </div>
 
     <div id="evolution-overlay">
@@ -316,8 +414,8 @@
 
     <div id="charlist-overlay" class="modal-overlay charlist-modal">
         <div class="modal-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h2 id="charlist-title" style="margin: 0; font-size: 1.3rem; color: var(--text);">📚 學習中字庫</h2>
+            <div class="modal-sticky-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 id="charlist-title" style="margin: 0; font-size: 1.3rem; color: var(--text);">🌱 學習中字庫</h2>
                 <button onclick="closeCharList()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light);">×</button>
             </div>
             <div id="charlist-summary" class="charlist-summary"></div>
@@ -361,7 +459,7 @@
 <div id="help-overlay" class="modal-overlay">
         <div class="modal-content">
             <div style="flex-grow: 1;">
-                <div class="flex-row" style="margin-bottom: 20px;">
+                <div class="flex-row modal-sticky-header">
                     <h3 style="margin:0; color: var(--success);">📖 系統與使用說明</h3>
                     <button class="btn-icon" onclick="closeHelp()">✕</button>
                 </div>
@@ -369,108 +467,213 @@
 <div class="setting-group">
                     <div class="setting-title">👨‍👧‍👦 作者的話</div>
                     <p style="font-size: 0.9rem; color: var(--text-light); line-height: 1.6; margin-top: 5px; margin-bottom: 0;">
-                        作者是個三寶爸。適逢 AI 浪潮，完全不會寫 code 竟然也可以用 AI 來做有趣的東西了！希望這個系統能用遊戲的方式幫助<strong>【增加閱讀能力】</strong>。目前只有單字，所以附上<strong>【連結字典】</strong>的功能。遇到不會的可以點字，會直接連到字典學習詞彙，適合<strong>【父母和小孩一起】</strong>每天學習。
-                    </p>
-                </div>
-                <div class="setting-group">
-                    <div class="setting-title">🧠 核心理念 (SRS 原理)</div>
-                    <p style="font-size: 0.9rem; color: var(--text-light); line-height: 1.6; margin-top: 5px;">
-                        本系統採用<strong>【間隔重複演算法 (Spaced Repetition System)】</strong>。大腦在即將忘記的瞬間進行複習，記憶效果最好。系統會自動將錯誤的字卡安排在短期內出現，將熟悉的字卡推延至數天或數月後，以最少的時間達成最大的長期記憶量。
+                        作者是個三寶爸，完全不會寫 code，是用 AI 一起做出這個系統。希望能用遊戲的方式陪伴孩子<strong>累積識字量</strong>，培養閱讀基礎。<strong>適合父母和小孩一起每天 5-10 分鐘共學。</strong>
                     </p>
                 </div>
 
                 <div class="setting-group">
-                    <div class="setting-title">🎯 系統機制與規則</div>
-                    <ul class="help-list">
-                        <li><strong>字庫來源</strong>：採用教育部《國小學童常用字詞調查報告書》(2000) 字頻表前 3,500 字，涵蓋日常閱讀約 99.65% 字頻。</li>
-                        <li><strong>字庫分級 (Tier)</strong>：依字頻分 10 層，每層對應一個學齡里程碑：T1-T2（學齡前 500 字）→ T3（小一 700 字）→ T4（小二 1,200 字）→ T5（脫盲 1,680 字）→ T6（小三 2,100 字）→ T7（小四 2,600 字）→ T8（小五 3,100 字）→ T9（小六 3,300 字）→ T10（國中入門 3,500 字）。</li>
-                        <li><strong>認知保護閘門</strong>：當前階層必須有 85% 的字進入長期記憶（複習間隔 > 21 天）才會解鎖下一層，嚴格控制孩子的認知負荷。</li>
-                        <li><strong>跨級跳躍</strong>：對於原本就已經會認的「新卡」，直接按下「簡單」，該字會被保送至 21 天後才複習。</li>
-                        <li><strong>錯誤懲罰機制</strong>：若對字卡按下「忘記」，該字會被打回原形（重新記憶），並且會在當天的佇列尾端再次出現，直到答對為止。</li>
-                    </ul>
-                </div>
-
-                <div class="setting-group">
-                    <div class="setting-title">📊 各年級識字量參考</div>
-                    <p style="font-size: 0.9rem; color: var(--text-light); line-height: 1.6; margin-top: 5px; margin-bottom: 10px;">
-                        依據王瓊珠等人 (2008)《一到九年級學生國字識字量發展》研究，台灣學生平均識字量推估如下，可作為家長評估孩子進度的參考：
+                    <div class="setting-title" style="color: var(--primary);">🌱 親子共學三原則（請務必看完）</div>
+                    <p style="font-size: 0.88rem; color: var(--text); line-height: 1.6; margin-top: 5px; margin-bottom: 10px;">
+                        為了讓學習真的有效，<strong>請和孩子一起學</strong>：
                     </p>
-                    <div style="background: #f8fafc; border-radius: 8px; padding: 12px; font-size: 0.88rem; line-height: 1.8;">
-                        <div>📌 <strong>小一</strong>：約 700 字 &nbsp;｜&nbsp; <strong>小二</strong>：約 1,200 字</div>
-                        <div>📌 <strong>小三</strong>：約 2,100 字 &nbsp;｜&nbsp; <strong>小四</strong>：約 2,600 字</div>
-                        <div>📌 <strong>小五</strong>：約 3,100 字 &nbsp;｜&nbsp; <strong>小六</strong>：約 3,300 字</div>
-                        <div>📌 <strong>國一、國二</strong>：約 3,500 字</div>
-                        <div>📌 <strong>國三</strong>：約 3,700 字</div>
-                        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #cbd5e1; font-size: 0.82rem; color: var(--text-light);">
-                            ※ 黃富順 (1994) 研究：認識 1,680 字以上可達「脫盲」標準。<br>
-                            ※ 識字量在小一至小五成長最快，平均每年增加 600 字左右。<br>
-                            ※ 各年級女生識字量普遍優於男生。
+
+                    <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; padding: 12px; margin-bottom: 10px;">
+                        <div style="font-weight: bold; color: #166534; margin-bottom: 4px; font-size: 0.92rem;">① 一起念出字音 🔊</div>
+                        <div style="font-size: 0.82rem; color: #15803d; line-height: 1.5;">確認孩子真的會念，不是猜的。對照系統發音來驗證。</div>
+                    </div>
+
+                    <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 12px; margin-bottom: 10px;">
+                        <div style="font-weight: bold; color: #92400e; margin-bottom: 4px; font-size: 0.92rem;">② 一起造一個詞 ✏️</div>
+                        <div style="font-size: 0.82rem; color: #b45309; line-height: 1.5;">會念音 ≠ 認識這個字。請孩子用這個字造一個詞（例如「水」→「水果」），才算真的認識。</div>
+                    </div>
+
+                    <div style="background: #eff6ff; border: 1px solid #93c5fd; border-radius: 10px; padding: 12px; margin-bottom: 0;">
+                        <div style="font-weight: bold; color: #1e40af; margin-bottom: 4px; font-size: 0.92rem;">③ 誠實按按鈕 💪</div>
+                        <div style="font-size: 0.82rem; color: #1e3a8a; line-height: 1.6;">
+                            · 念不出來或不會造詞 → <strong>忘記</strong>（當天再出現）<br>
+                            · 想了一下才會 → <strong>困難</strong>（1 天後）<br>
+                            · 順利答對 → <strong>良好</strong>（3 天後）<br>
+                            · 一看就會、很熟 → <strong>簡單</strong>（21 天後）<br>
+                            <em style="color:#475569;">誠實按，系統才能正確安排複習時間。</em>
                         </div>
                     </div>
                 </div>
 
                 <div class="setting-group">
-                    <div class="setting-title">⚙️ 個人化設定與操作</div>
-                    <ul class="help-list">
-                        <li><strong>專注模式</strong>：點擊「開始學習」後，畫面一次僅呈現一張字卡，避免視覺雜訊干擾專注力。</li>
-                        <li><strong>獨立設定檔</strong>：右上角「⚙️ 設定」可針對不同孩童獨立調整：新字配額、發音時機、桌面圖示與字典來源。</li>
-                        <li><strong>💾 資料備份與跨裝置轉移</strong>：系統採離線運作，請定期點擊頂端「💾 備份」按鈕以防進度遺失。也可在「設定 → 自動備份」開啟每日自動下載。匯入功能在「設定 → 資料管理」內。</li>
-                        <li><strong>⚠️ 無法發音：</strong>若點擊字卡完全無聲，請確認手機側邊的「實體靜音鍵」已切換至響鈴模式，並且已將媒體音量調大。</li>
-                        <li><strong>📱 iPhone 桌面 App 轉移指南</strong>：強烈建議透過 Safari 的「分享 ➔ 加入主畫面」將系統轉為桌面 App，查字典時會更加流暢！<br><span style="color:var(--danger); font-size:0.85rem; display:inline-block; margin-top:4px; line-height:1.4;">⚠️ 提醒：桌面 App 與 Safari 瀏覽器的存檔是獨立不互通的。請先在 Safari「💾 備份」，接著開啟您新增在桌面的 App，到「設定 → 從備份檔匯入復原」，即可完成進度轉移。</span></li>
+                    <div class="setting-title">📚 系統怎麼運作</div>
+                    <ul class="help-list" style="margin-top: 8px;">
+                        <li><strong>SRS 間隔重複</strong>：自動把容易忘的字安排在短期複習，熟悉的字推延到數週、數月後。以最少時間獲得最大記憶量。</li>
+                        <li><strong>字庫來源</strong>：教育部《國小學童常用字詞調查報告書》(2000) 字頻表前 3,500 字，涵蓋日常閱讀 99.65% 字頻。</li>
+                        <li><strong>10 階 Tier 分級</strong>：依字頻分層，每層對應一個學齡里程碑（詳見下方「各年級識字量參考」）。</li>
+                        <li><strong>認知保護閘門</strong>：當前 Tier 必須有 85% 的字進入長期記憶才解鎖下一層，避免一次塞太多。</li>
+                        <li><strong>跨級跳躍</strong>：本來就會的字，按「簡單」一鍵保送 21 天後再複習。「設定 → 跨級跳躍模式」可批次處理已會的層級。</li>
+                        <li><strong>忘記重學機制</strong>：按下「忘記」時，該字會被打回初始狀態並排回當天佇列，直到答對為止。連續錯 3 次後系統會放過孩子（避免越錯越挫敗），改到明天再學。</li>
                     </ul>
+                </div>
+
+                <div class="setting-group">
+                    <div class="setting-title">📊 各年級識字量參考</div>
+                    <p style="font-size: 0.85rem; color: var(--text-light); line-height: 1.5; margin-top: 5px; margin-bottom: 10px;">
+                        王瓊珠等 (2008)《一到九年級學生國字識字量發展》研究：
+                    </p>
+                    <div style="background: #f8fafc; border-radius: 8px; padding: 12px; font-size: 0.86rem;">
+                        <table style="width: 100%; border-collapse: collapse; line-height: 1.8;">
+                            <tr>
+                                <td style="padding: 2px 0;">📌 <strong>小一</strong>：約 700 字 <span style="color: var(--primary); font-size: 0.78rem;">(T3)</span></td>
+                                <td style="width: 20px; text-align: center; color: #cbd5e1;">｜</td>
+                                <td style="padding: 2px 0;">📌 <strong>小二</strong>：約 1,200 字 <span style="color: var(--primary); font-size: 0.78rem;">(T4)</span></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 2px 0;">📌 <strong>小三</strong>：約 2,100 字 <span style="color: var(--primary); font-size: 0.78rem;">(T6)</span></td>
+                                <td style="width: 20px; text-align: center; color: #cbd5e1;">｜</td>
+                                <td style="padding: 2px 0;">📌 <strong>小四</strong>：約 2,600 字 <span style="color: var(--primary); font-size: 0.78rem;">(T7)</span></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 2px 0;">📌 <strong>小五</strong>：約 3,100 字 <span style="color: var(--primary); font-size: 0.78rem;">(T8)</span></td>
+                                <td style="width: 20px; text-align: center; color: #cbd5e1;">｜</td>
+                                <td style="padding: 2px 0;">📌 <strong>小六</strong>：約 3,300 字 <span style="color: var(--primary); font-size: 0.78rem;">(T9)</span></td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="padding: 2px 0;">📌 <strong>國中</strong>：約 3,500-3,700 字 <span style="color: var(--primary); font-size: 0.78rem;">(T10+)</span></td>
+                            </tr>
+                        </table>
+                        <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #cbd5e1; font-size: 0.78rem; color: var(--text-light); line-height: 1.6;">
+                            ※ 黃富順 (1994)：認識 1,680 字以上可達「脫盲」標準（本系統的 T5）<br>
+                            ※ 小一至小五成長最快，平均每年增加約 600 字<br>
+                            ※ 各年級女生識字量普遍優於男生
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <div class="setting-title" style="color: var(--danger);">💾 重要！備份與裝置轉移</div>
+                    <p style="font-size: 0.88rem; color: var(--text); line-height: 1.6; margin-top: 5px; margin-bottom: 10px;">
+                        系統採離線運作，<strong>資料只存在這個瀏覽器內</strong>。請務必養成備份習慣：
+                    </p>
+
+                    <div style="background: #fef2f2; border-left: 3px solid var(--danger); padding: 10px 12px; margin-bottom: 10px; font-size: 0.85rem; line-height: 1.6;">
+                        <strong>📥 平常使用：</strong><br>
+                        · 點頂端 <strong>「💾 備份」</strong>匯出 JSON 檔（建議存到 iCloud/Google Drive）<br>
+                        · 或在「設定 → 自動備份」開啟<strong>每日自動下載</strong><br>
+                        · 累積學習超過 7 天未備份會跳醒目提醒
+                    </div>
+
+                    <div style="background: #fef2f2; border-left: 3px solid var(--danger); padding: 10px 12px; margin-bottom: 10px; font-size: 0.85rem; line-height: 1.6;">
+                        <strong>📲 換手機 / 加裝桌面 App：</strong><br>
+                        · 強烈建議透過 Safari「分享 ➔ 加入主畫面」做成桌面 App<br>
+                        · <span style="color:var(--danger);">桌面 App 與 Safari 的資料是<strong>獨立不互通</strong>的</span><br>
+                        · 在舊裝置／瀏覽器先「💾 備份」，到新環境用「設定 → 從備份檔匯入復原」
+                    </div>
+
+                    <div style="background: #fffbeb; border-left: 3px solid var(--warning); padding: 10px 12px; font-size: 0.85rem; line-height: 1.6;">
+                        <strong>🔇 無法發音：</strong>確認手機側邊靜音鍵切到「響鈴」、媒體音量已開大。
+                    </div>
                 </div>
 
                 <div class="setting-group">
                     <button type="button" class="btn btn-outline" style="width:100%; font-size: 0.85rem; border-color: #cbd5e1; color: #64748b;" onclick="toggleChangelog()">🕒 查看版本變更沿革</button>
                     <div id="changelog-box" class="changelog-box">
-                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                            <div><span class="ver-tag">v6.1</span>教育部 5021 字頻字庫；3500 字目標；自動備份；字體內嵌。</div>
-                            <div class="date-tag">2026.05.13</div>
+
+                        <div style="margin-bottom:14px; padding-bottom:10px; border-bottom: 1px dashed #e2e8f0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+                                <div><span class="ver-tag">v6.5</span><strong>產品定位：親子共學</strong></div>
+                                <div class="date-tag">2026.05.14</div>
+                            </div>
+                            <div style="font-size:0.8rem; color: var(--text-light); padding-left: 4px; line-height: 1.5;">
+                                · 標題「兒童 SRS 字卡系統」➝「親子 SRS 字卡系統」<br>
+                                · 主按鈕「開始學習」➝「開始一起學習」<br>
+                                · Onboarding 按鈕同步調整<br>
+                                · 強化「家長 + 孩子共學」的產品訊號
+                            </div>
                         </div>
-                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                            <div><span class="ver-tag">v6.0</span>30 階三系進化；轉職大廳；備份保護；鼓勵卡。</div>
-                            <div class="date-tag">2026.05.13</div>
+
+                        <div style="margin-bottom:14px; padding-bottom:10px; border-bottom: 1px dashed #e2e8f0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+                                <div><span class="ver-tag">v6.4</span><strong>說明頁與 UI 細部整理</strong></div>
+                                <div class="date-tag">2026.05.14</div>
+                            </div>
+                            <div style="font-size:0.8rem; color: var(--text-light); padding-left: 4px; line-height: 1.5;">
+                                · 說明頁面重整為 6 個精簡區塊，砍掉重複內容<br>
+                                · 「備份與裝置轉移」獨立成醒目區塊（紅色強調）<br>
+                                · 學習區頂端提示移到「中斷離開」與「剩餘張數」之間<br>
+                                · 手機版 stat-box 強制 2×2 排版（避免 3+1 不對稱）<br>
+                                · 移除說明面板內冗餘的「重新查看指引」按鈕<br>
+                                · 加回「忘記重學機制」說明<br>
+                                · 各年級識字量加 Tier 對照標籤、用 table 對齊分隔線<br>
+                                · 還原「各年級女生識字量普遍優於男生」研究註記
+                            </div>
                         </div>
-                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                            <div><span class="ver-tag">v5.9.2</span>雲端楷體引擎掛載；轉移指南擴充。</div>
-                            <div class="date-tag">2026.03.24</div>
+
+                        <div style="margin-bottom:14px; padding-bottom:10px; border-bottom: 1px dashed #e2e8f0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+                                <div><span class="ver-tag">v6.3</span><strong>親子共學引導</strong></div>
+                                <div class="date-tag">2026.05.14</div>
+                            </div>
+                            <div style="font-size:0.8rem; color: var(--text-light); padding-left: 4px; line-height: 1.5;">
+                                · 首次使用跳出親子共學 onboarding（念音 + 造詞 + 誠實按鈕）<br>
+                                · 學習區頂端加常駐溫和提示<br>
+                                · 說明面板新增完整親子共學指引區塊<br>
+                                · stat-box 可點互動視覺優化（chevron + 邊框 hover）
+                            </div>
                         </div>
-                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                            <div><span class="ver-tag">v5.9.1</span>沿革捲動追蹤修正。</div>
-                            <div class="date-tag">2026.03.24</div>
+
+                        <div style="margin-bottom:14px; padding-bottom:10px; border-bottom: 1px dashed #e2e8f0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+                                <div><span class="ver-tag">v6.2</span><strong>字庫清單與 UI 細部優化</strong></div>
+                                <div class="date-tag">2026.05.14</div>
+                            </div>
+                            <div style="font-size:0.8rem; color: var(--text-light); padding-left: 4px; line-height: 1.5;">
+                                · 看板上「🌱 學習中」「🌳 已精熟」可點擊開啟字庫清單<br>
+                                · 字卡清單支援 Tier 篩選、多種排序、弱字標記<br>
+                                · 字卡資訊統一顯示「下次出現時間」（動態計算）<br>
+                                · 進化稱號全面升級（赤影火犬 ➔ 焚天萬界帝 系列）<br>
+                                · 設定／說明面板標題改為捲動凍結 (sticky)<br>
+                                · 四個 stat-box 加上 emoji 視覺辨識
+                            </div>
                         </div>
-                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                            <div><span class="ver-tag">v5.9</span>動態庫對齊；圖示預覽。</div>
-                            <div class="date-tag">2026.03.24</div>
+
+                        <div style="margin-bottom:14px; padding-bottom:10px; border-bottom: 1px dashed #e2e8f0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+                                <div><span class="ver-tag">v6.1</span><strong>字庫與字體系統大改</strong></div>
+                                <div class="date-tag">2026.05.13</div>
+                            </div>
+                            <div style="font-size:0.8rem; color: var(--text-light); padding-left: 4px; line-height: 1.5;">
+                                · 字庫換為教育部 5021 字頻表前 3500 字<br>
+                                · Tier 對齊年級里程碑（脫盲、小一～小六）<br>
+                                · 芫荽體 (Iansui) 改為內嵌 woff2，永不依賴 CDN<br>
+                                · 自動備份開關、進化河流漸層條<br>
+                                · 序列化進化動畫、累計學習日統計
+                            </div>
                         </div>
-                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                            <div><span class="ver-tag">v5.8</span>行動端 UI (dvh)；黏性底欄。</div>
-                            <div class="date-tag">2026.03.24</div>
+
+                        <div style="margin-bottom:14px; padding-bottom:10px; border-bottom: 1px dashed #e2e8f0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+                                <div><span class="ver-tag">v6.0</span><strong>30 階三系進化系統</strong></div>
+                                <div class="date-tag">2026.05.13</div>
+                            </div>
+                            <div style="font-size:0.8rem; color: var(--text-light); padding-left: 4px; line-height: 1.5;">
+                                · 神獸進化從 11 階升級為 30 階（共通 10 + 三系各 20）<br>
+                                · Lv 11 觸發屬性覺醒，可選烈焰／冰霜／雷霆系<br>
+                                · 看板新增神獸進化史圖鑑<br>
+                                · 學習完成後鼓勵卡 + 明日提醒<br>
+                                · 多項 SRS 邏輯修正（新卡分級、忘記重學等）<br>
+                                · 備份保護機制（頂端 banner、beforeunload 警告）
+                            </div>
                         </div>
-                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                            <div><span class="ver-tag">v5.7</span>PWA 宣告；自訂 iOS 圖示。</div>
-                            <div class="date-tag">2026.03.24</div>
+
+                        <div style="margin-bottom:14px; padding-bottom:10px; border-bottom: 1px dashed #e2e8f0;">
+                            <div style="font-size:0.78rem; color: var(--text-light); font-weight: bold; margin-bottom: 6px;">📜 v5 系列（早期版本）</div>
+                            <div style="font-size:0.78rem; color: var(--text-light); line-height: 1.8; padding-left: 4px;">
+                                <span class="ver-tag">v5.9</span>雲端楷體引擎；轉移指南；動態字庫對齊 <span style="color:#cbd5e1; margin-left:6px;">2026.03</span><br>
+                                <span class="ver-tag">v5.7</span>PWA 宣告；自訂 iOS 桌面圖示 <span style="color:#cbd5e1; margin-left:6px;">2026.03</span><br>
+                                <span class="ver-tag">v5.6</span>🚀 跨級跳躍模式實裝 <span style="color:#cbd5e1; margin-left:6px;">2026.03</span><br>
+                                <span class="ver-tag">v5.4</span>TTS 精準發音模組 <span style="color:#cbd5e1; margin-left:6px;">2026.03</span><br>
+                                <span class="ver-tag">v5.3</span>專注模式；狀態機佇列 <span style="color:#cbd5e1; margin-left:6px;">2026.03</span><br>
+                                <span class="ver-tag">v5.2</span>設定面板；字典路由切換 <span style="color:#cbd5e1; margin-left:6px;">2026.03</span><br>
+                                <span class="ver-tag">v5.1</span>SRS 重啟；解除複習上限 <span style="color:#cbd5e1; margin-left:6px;">2026.03</span>
+                            </div>
                         </div>
-                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                            <div><span class="ver-tag">v5.6</span>🚀 跨級跳躍模式實裝。</div>
-                            <div class="date-tag">2026.03.24</div>
-                        </div>
-                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                            <div><span class="ver-tag">v5.4</span>TTS 精準發音模組。</div>
-                            <div class="date-tag">2026.03.24</div>
-                        </div>
-                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                            <div><span class="ver-tag">v5.3</span>專注模式；狀態機佇列。</div>
-                            <div class="date-tag">2026.03.24</div>
-                        </div>
-                        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                            <div><span class="ver-tag">v5.2</span>設定面板；字典路由切換。</div>
-                            <div class="date-tag">2026.03.24</div>
-                        </div>
-                        <div style="margin-bottom:0; display:flex; justify-content:space-between; align-items:center;">
-                            <div><span class="ver-tag">v5.1</span>SRS 重啟；解除複習上限。</div>
-                            <div class="date-tag">2026.03.24</div>
-                        </div>
+
                     </div>
                 </div>
 
@@ -485,7 +688,7 @@
     <div id="settings-overlay" class="modal-overlay">
         <div class="modal-content">
             <div style="flex-grow: 1;">
-                <div class="flex-row" style="margin-bottom: 20px;">
+                <div class="flex-row modal-sticky-header">
                     <h3 style="margin:0;">⚙️ 系統設定 (Profile <span id="st-profile-id"></span>)</h3>
                     <button class="btn-icon" onclick="closeSettings()">✕</button>
                 </div>
@@ -781,7 +984,7 @@
         let sortEl = document.getElementById('charlist-sort');
 
         if (mode === 'learning') {
-            titleEl.innerText = '📚 學習中字庫';
+            titleEl.innerText = '🌱 學習中字庫';
             sortEl.innerHTML = `
                 <option value="weak">弱字優先 (Stage 低)</option>
                 <option value="due">下次複習日</option>
@@ -789,7 +992,7 @@
                 <option value="reps">複習次數最多</option>
             `;
         } else {
-            titleEl.innerText = '🏆 已精熟字庫';
+            titleEl.innerText = '🌳 已精熟字庫';
             sortEl.innerHTML = `
                 <option value="recent">最近精熟</option>
                 <option value="tier">Tier 由低到高</option>
@@ -857,12 +1060,10 @@
         let html = '';
         for (let c of chars) {
             let stagePct = (c.stage / MAX_STAGE) * 100;
-            let stageColor = c.stage <= 2 ? '#ef4444' : c.stage <= 4 ? '#f59e0b' : c.stage <= 5 ? '#3b82f6' : '#22c55e';
+            let stageColor = c.stage <= 2 ? '#ef4444' : c.stage <= 4 ? '#f59e0b' : c.stage <= 5 ? '#3b82f6' : c.stage >= MAX_STAGE ? '#16a34a' : '#22c55e';
             let cls = mode === 'learning' && c.stage <= 2 ? 'weak' : (mode === 'mastered' && c.stage >= MAX_STAGE ? 'graduated' : '');
-            let dueDays = c.nextReview > 0 ? Math.max(0, Math.ceil((c.nextReview - now) / 86400000)) : 0;
-            let meta = mode === 'learning'
-                ? `S${c.stage} · ${dueDays === 0 ? '今日' : dueDays + '天後'}`
-                : `S${c.stage} · ${c.interval}d 間隔`;
+            // 統一顯示「下次出現時間」
+            let meta = formatDueTime(c.nextReview, c.stage);
             html += `
                 <div class="char-cell ${cls}" title="Tier ${c.tier} · Stage ${c.stage}/${MAX_STAGE} · 複習 ${c.reps} 次">
                     <div class="ch-text">${c.word}</div>
@@ -872,6 +1073,21 @@
                 </div>`;
         }
         document.getElementById('charlist-grid').innerHTML = html;
+    }
+
+    // 把「下次複習時間」格式化為人類可讀字串
+    function formatDueTime(nextReview, stage) {
+        if (stage >= MAX_STAGE) return '已畢業';
+        if (!nextReview) return '今日';
+        let now = Date.now();
+        let diffMs = nextReview - now;
+        if (diffMs <= 0) return '今日待複習';
+        let days = Math.ceil(diffMs / 86400000);
+        if (days <= 1) return '明日';
+        if (days <= 7) return `${days} 天後`;
+        if (days <= 30) return `${Math.round(days/7)} 週後`;
+        if (days <= 180) return `${Math.round(days/30)} 個月後`;
+        return `${Math.round(days/30)} 個月後`;
     }
 
     // 取得指定 Lv 的稱號與 emoji（給序列化動畫用）
@@ -1513,7 +1729,7 @@ function loadProfileData() {
             deckDiv.innerHTML = `
                 <div style="text-align:center; padding: 40px; width: 100%;">
                     <div style="font-size: 1.2rem; color: var(--text-light); margin-bottom: 25px;">今日任務佇列： <strong>${sessionQueue.length}</strong> 張卡片</div>
-                    <button class="btn btn-primary" style="font-size: 1.5rem; padding: 15px 40px; border-radius: 50px; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);" onclick="startFocusMode()">🚀 開始學習</button>
+                    <button class="btn btn-primary" style="font-size: 1.5rem; padding: 15px 40px; border-radius: 50px; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);" onclick="startFocusMode()">🚀 開始一起學習</button>
                 </div>`;
         } else {
             let extraAvailable = 0, unlockedTiers = getUnlockedTiers();
@@ -1585,15 +1801,49 @@ function loadProfileData() {
     }
 
 function startFocusMode() {
+        // 首次使用：跳出親子共學引導
+        const onboardKey = `srs_onboarded_${currentProfile}`;
+        if (!localStorage.getItem(onboardKey)) {
+            showOnboarding();
+            localStorage.setItem(onboardKey, '1');
+            return;
+        }
+        actuallyStartFocusMode();
+    }
+
+    function actuallyStartFocusMode() {
         // 【核心防禦】在使用者點擊按鈕的當下，發送空語音強行解鎖 iOS 音訊引擎
         if (window.speechSynthesis) {
             let unlockUtterance = new SpeechSynthesisUtterance('');
             unlockUtterance.volume = 0;
             window.speechSynthesis.speak(unlockUtterance);
         }
-
         document.getElementById('focus-mode').classList.add('active');
         renderNextCard();
+    }
+
+    function showOnboarding(isReview) {
+        let overlay = document.getElementById('onboarding-overlay');
+        let btn = document.getElementById('onboarding-start-btn');
+        // 從說明面板再次查看 → 按鈕變「關閉」、不會自動進入學習
+        if (isReview) {
+            btn.innerText = '我知道了 ✓';
+            btn.onclick = () => closeOnboarding(false);
+        } else {
+            btn.innerText = '好的，開始一起學習 🚀';
+            btn.onclick = () => closeOnboarding(true);
+        }
+        overlay.style.display = 'flex';
+        setTimeout(() => overlay.classList.add('show'), 10);
+    }
+
+    function closeOnboarding(thenStart) {
+        let overlay = document.getElementById('onboarding-overlay');
+        overlay.classList.remove('show');
+        setTimeout(() => {
+            overlay.style.display = 'none';
+            if (thenStart) actuallyStartFocusMode();
+        }, 300);
     }
 
     function exitFocusMode() {
